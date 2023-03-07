@@ -11,5 +11,5 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib/spdlog)
 
 add_executable(spdlog_main ${source_dir})
 
-target_link_libraries(spdlog_main spdlog::spdlog)
+target_link_libraries(spdlog_main spdlog)
 

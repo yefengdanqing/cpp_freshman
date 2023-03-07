@@ -1,9 +1,9 @@
-#include "iostream"
-#include "fmt/format.h"
-#include "unordered_map"
-#include "vector"
+#include <iostream>
+#include <unordered_map>
+#include <vector>
 
-int main() {
+#include "fmt/format.h"
+void test_fmt() {
     std::string f1 = "{{\"status\": {}}}"; // ok
     std::string f2 = "{\"status\": {}}";   // not ok
 //    std::string f3 = "{\"status\": 1}";    // not ok
@@ -26,5 +26,16 @@ int main() {
     }
     std::cout << res << std::endl;
     std::cout << fmt::format("{a}, {c}", fmt::arg("a", 1), fmt::arg("b", 2), fmt::arg("c", 3)) << std::endl;
+}
+
+void test_vector() {
+    std::vector<int> datas{1,2,3,4,5};
+    std::cout << datas.size() << " " << datas.capacity()<< std::endl;
+    datas.reserve(10);
+    std::cout << datas.size() << " " << datas.capacity()<< std::endl;
+}
+
+int main() {
+    test_vector();
     return 0;
 }

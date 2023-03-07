@@ -7,5 +7,10 @@ build
     cmake .. -DEXEC_NAME=fmt
     cmake .. -DEXEC_NAME=spdlog
     cmake .. -DEXEC_NAME=...
+    ...
+    ...
+4 make
+
+
 
 
