@@ -9,5 +9,5 @@ set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin/googletest)
 
 add_executable(googletest_main ${source_dir})
 
-target_link_libraries(googletest_main gtest_main)
+target_link_libraries(googletest_main gtest_main gtest)
 
