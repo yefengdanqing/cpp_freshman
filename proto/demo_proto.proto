@@ -1,0 +1,18 @@
+syntax = "proto3";
+option cc_generic_services = true;
+
+package example;
+
+message Request {
+    string message = 1;
+    string request_id = 2;
+}
+
+message Response {
+    string reply = 1;
+    string request_id = 2;
+}
+
+service ExampleService {
+    rpc SayHello(Request) returns (Response);
+}

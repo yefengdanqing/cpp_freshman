@@ -1,25 +1,28 @@
-#include <iostream>  
-#include <boost/thread/thread.hpp>  
-#include <boost/regex.hpp>
-void hello()
+#include <iostream>
+#include <utility> 
+
+
+#include <boost/graph/graph_traits.hpp>
+#include <boost/graph/adjacency_list.hpp>
+#include "gtest/gtest.h"
+
+
+#include "graph_test.h"
+#include "function_test.h"
+#include "my_graph_test.h"
+
+ 
+using namespace std;
+using namespace boost;
+
+
+int main(int argc, char* argv[])
 {
-    std::cout << "Hello world, I'm a thread!" << std::endl;
-}
-int main()
-{
-    boost::thread thrd(&hello);
-    thrd.join();
-    std::string   str = "2013-08-15";
-    boost::regex  rex("(?<year>[0-9]{4}).*(?<month>[0-9]{2}).*(?<day>[0-9]{2})");
-    boost::smatch res;
-    
-    std::string::const_iterator begin = str.begin();
-    std::string::const_iterator end   = str.end();
-    
-    if (boost::regex_search(begin, end, res, rex))
-    {
-        std::cout << "Day:   " << res ["day"] << std::endl
-        << "Month: " << res ["month"] << std::endl
-        << "Year:  " << res ["year"] << std::endl;
-    }
-}
+    // build_test_graph();
+    // build_test_graph1();
+    build_adjacency_list();
+    ::testing::InitGoogleTest();
+    return RUN_ALL_TESTS();
+
+    // return 0;
+};
