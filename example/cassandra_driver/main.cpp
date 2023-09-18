@@ -6,10 +6,14 @@ int main(int argc, char* argv[]) {
   CassFuture* connect_future = NULL;
   CassCluster* cluster = cass_cluster_new();
   CassSession* session = cass_session_new();
-  char* hosts = "127.0.0.1";
+  char* hosts = "172.31.16.245";
   if (argc > 1) {
     hosts = argv[1];
   }
+  cluster->with_credentials("cassandra", "cassandra");
+
+  //cass_cluster_set_authenticator(cluster, cass_authenticator_new_plain_text(username, password));
+
 
   /* Add contact points */
   cass_cluster_set_contact_points(cluster, hosts);

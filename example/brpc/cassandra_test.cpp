@@ -76,8 +76,15 @@ bool GetDmpDataFromCassandra(const butil::StringPiece& query) {
 }
 
 int main() {
-    std::string query = "SELECT top_tag, dev_install_pkg, install_pkg_info_by_tw FROM user_action.realtime_user_action WHERE oneid = 'd20f1d4b3e15b3db71c64ba78ab6e1fe'";
-    bool result = GetDmpDataFromCassandra(query);
+    std::string query = "SELECT emp_id,emp_name,emp_city,emp_phone,emp_sal FROM rs_test_space.emp WHERE oneid = '";
+    for(int i = 0; i < 1000000; i++) {
+        int j = (i % 11);
+        std::string query_tmp = query;
+        query_tmp.append(std::to_string(j)).append("';");
+
+        bool result = GetDmpDataFromCassandra(query);
+    }
+    
 }
 
 
