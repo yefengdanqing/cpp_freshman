@@ -20,9 +20,7 @@ bool GetDmpDataFromCassandra(const butil::StringPiece& query) {
     
     
 
-    // std::shared_ptr<brpc::policy::CassandraAuthenticator> m_dmp_auth_ = std::make_shared<brpc::policy::CassandraAuthenticator>(new brpc::policy::CassandraAuthenticator("U&6zBV$*wBuYUpJRq$hp", "Z8tzjTMBe^M2#hat$nAJ", "user_action"));
-
-    brpc::policy::CassandraAuthenticator* m_dmp_auth_ = new brpc::policy::CassandraAuthenticator("U&6zBV$*wBuYUpJRq$hp", "Z8tzjTMBe^M2#hat$nAJ", "user_action");
+    brpc::policy::CassandraAuthenticator* m_dmp_auth_ = new brpc::policy::CassandraAuthenticator("cassandra", "cassandra", "rs_test_space");
 
     brpc::ChannelOptions options;
     options.protocol = brpc::PROTOCOL_CQL;
