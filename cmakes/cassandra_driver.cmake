@@ -11,5 +11,5 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib/cassandra_driver)
 
 add_executable(cassandra_driver_main ${source_dir})
 
-target_link_libraries(cassandra_driver_main cassandra_driver uv)
+target_link_libraries(cassandra_driver_main scylla-cpp-driver uv)
 

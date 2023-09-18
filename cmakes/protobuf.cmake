@@ -10,6 +10,7 @@ message(STATUS "This is SOURCE dir " ${source_dir})
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin/protobuf)
 set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib/protobuf)
 
+
 add_executable(protobuf_main ${source_dir} ${protocol_dir})
 
 
@@ -17,8 +18,8 @@ add_executable(protobuf_main ${source_dir} ${protocol_dir})
 file(GLOB PBUF_FILES "${PROJECT_SOURCE_DIR}/proto/*.proto")
 message("proto buf files: ${PBUF_FILES}")
 
-custom_protobuf_generate_cpp(PBUF_SRCS PBUF_HDRS ${PBUF_FILES})
-message("proto buf result files:[${PBUF_SRCS}][${PBUF_HDRS}]")
+CUSTOM_PROTOBUF_GENERATE_CPP(PBUF_SRCS PBUF_HDRS ${PBUF_FILES})
+message("protobuf result files:[${PBUF_SRCS}][${PBUF_HDRS}]")
 
 # add_custom_command(
 #     OUTPUT ${PROJECT_SOURCE_DIR}/build/protocol/protobuf/cpp/person.pb.cc
@@ -35,6 +36,6 @@ add_custom_target(
 
 
 add_dependencies(protobuf_main compile_all_protos)
-target_link_libraries(protobuf_main protobuf protobuf-lite protoc)
+target_link_libraries(protobuf_main protoc protobuf protobuf-lite)
 #target_link_libraries(protobuf_main protobuf)
 

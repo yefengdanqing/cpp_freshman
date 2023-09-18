@@ -1,0 +1,567 @@
+PROJECT(RANKER)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.11)
+#set(CMAKE_VERBOSE_MAKEFILE ON)
+
+CONFIGURE_FILE(
+        "${PROJECT_SOURCE_DIR}/include/Version.h.in"
+        "${PROJECT_SOURCE_DIR}/include/Version.h"
+)
+set(CMAKE_CXX_STANDARD 17)
+SET(CMAKE_BUILD_TYPE "${CMAKE_BUILD_TYPE}" CACHE STRING
+        "Choose the type of build, options are: None Debug Release RelWithDebInfo Asan Pprof."
+        FORCE)
+message("* Current build type is : ${CMAKE_BUILD_TYPE}")
+
+SET(CMAKE_CXX_FLAGS_ASAN "-O2 -g -fsanitize=address -fno-omit-frame-pointer" CACHE STRING
+        "Flags used by the C++ compiler during asan builds."
+        FORCE)
+SET(CMAKE_C_FLAGS_ASAN "-O2 -g -fsanitize=address -fno-omit-frame-pointer" CACHE STRING
+        "Flags used by the C compiler during asan builds."
+        FORCE)
+SET(CMAKE_EXE_LINKER_FLAGS_ASAN
+        "-static-libasan" CACHE STRING
+        "Flags used for linking binaries during asan builds."
+        FORCE)
+SET(CMAKE_SHARED_LINKER_FLAGS_ASAN
+        "-static-libasan" CACHE STRING
+        "Flags used for linking shared libraries during asan builds."
+        FORCE)
+MARK_AS_ADVANCED(
+        CMAKE_CXX_FLAGS_ASAN
+        CMAKE_C_FLAGS_ASAN
+        CMAKE_EXE_LINKER_FLAGS_ASAN
+        CMAKE_SHARED_LINKER_FLAGS_ASAN)
+
+SET(CMAKE_CXX_FLAGS "-w -g -pthread -fno-omit-frame-pointer -Werror=return-type")
+SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -O0")
+SET(CMAKE_CXX_FLAGS_RELEASE "-w -g -pthread -O2 -fno-omit-frame-pointer -Werror=return-type")
+SET(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
+
+add_definitions(-Wall -g)
+if (${NO_DEBUG} EQUAL "1")
+    add_definitions(-DNO_DEBUG)
+endif ()
+
+if (${PERF} EQUAL "1")
+    add_definitions(-DPERF)
+endif ()
+if (${EnableLoacalDebug} EQUAL "1")
+    add_definitions(-DEnableLoacalDebug=1)
+endif ()
+add_definitions(-DASYNC_RANKER)
+add_definitions(-DHOLD_ALL_BUILDER=1)
+
+add_custom_target(third)
+
+# dependencies
+include(${CMAKE_CURRENT_LIST_DIR}/external/check_version.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/external/utils.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/external/gperftools/check.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/external/robin_map/check.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/external/gflags/check.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/external/libconfig/check.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/external/log4cplus/check.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/external/leveldb/check.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/external/bde/check.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/external/openssl/check.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/external/libcuckoo/check.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/external/jemalloc/check.cmake)
+
+#include(${CMAKE_CURRENT_LIST_DIR}/external/protobuf/check.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/external/protobuf3/check.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/external/thrift/check.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/external/boost/check.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/external/seastar/check.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/external/json11/check.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/external/spdlog/check.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/external/fmt/check.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/external/concurrentqueue/check.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/external/ppconsul/check.cmake)
+
+include(${CMAKE_CURRENT_LIST_DIR}/external/flatbuffers/check.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/external/cassandra-cpp-driver/check.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/external/rapidjson/check.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/external/libtorch/check.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/external/dbg_macro/check.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/external/ml_unity/check.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/external/mongo-cxx-driver/check.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/external/online_debug_lib_cc/check.cmake)
+#include(${CMAKE_CURRENT_LIST_DIR}/thirdparty/es_lib.cmake)
+
+include(thirdparty/feature-generation-lib.cmake)
+
+file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/gen/thrift/cpp/enum)
+file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/gen/thrift/cpp/rs)
+file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/gen/protobuf/cpp)
+
+add_custom_command(
+        OUTPUT ${PROJECT_BINARY_DIR}/gen/thrift/cpp/enum/enum_types.h
+        ${PROJECT_BINARY_DIR}/gen/thrift/cpp/enum/enum_types.cpp
+        ${PROJECT_BINARY_DIR}/gen/thrift/cpp/enum/enum_constants.h
+        ${PROJECT_BINARY_DIR}/gen/thrift/cpp/enum/enum_constants.cpp
+        COMMAND thrift::thrift -gen cpp:cob_style,moveable_types
+        -out ${PROJECT_BINARY_DIR}/gen/thrift/cpp/enum
+        ${ADSERVER_ROOT_DIR}/common/thrift/enum.thrift
+        DEPENDS ${ADSERVER_ROOT_DIR}/common/thrift/enum.thrift)
+
+add_custom_command(
+        OUTPUT ${PROJECT_BINARY_DIR}/gen/thrift/cpp/rs/rs_package_info_types.h
+        ${PROJECT_BINARY_DIR}/gen/thrift/cpp/rs/rs_package_info_types.cpp
+        ${PROJECT_BINARY_DIR}/gen/thrift/cpp/rs/rs_package_info_constants.h
+        ${PROJECT_BINARY_DIR}/gen/thrift/cpp/rs/rs_package_info_constants.cpp
+        COMMAND thrift::thrift -v -gen cpp:cob_style,moveable_types
+        -out ${PROJECT_BINARY_DIR}/gen/thrift/cpp/rs
+        ${ADSERVER_ROOT_DIR}/recommend_protocols/rs_package_info.thrift
+        DEPENDS ${ADSERVER_ROOT_DIR}/recommend_protocols/rs_package_info.thrift)
+
+add_custom_command(
+        OUTPUT ${PROJECT_BINARY_DIR}/gen/thrift/cpp/rs/rs_demand_context_types.h
+        ${PROJECT_BINARY_DIR}/gen/thrift/cpp/rs/rs_demand_context_types.cpp
+        ${PROJECT_BINARY_DIR}/gen/thrift/cpp/rs/rs_demand_context_constants.h
+        ${PROJECT_BINARY_DIR}/gen/thrift/cpp/rs/rs_demand_context_constants.cpp
+        COMMAND thrift::thrift -v -gen cpp:cob_style,moveable_types
+        -out ${PROJECT_BINARY_DIR}/gen/thrift/cpp/rs
+        -I ${ADSERVER_ROOT_DIR}/recommend_protocols
+        ${ADSERVER_ROOT_DIR}/recommend_protocols/rs_demand_context.thrift
+        DEPENDS ${ADSERVER_ROOT_DIR}/recommend_protocols/rs_demand_context.thrift
+        ${ADSERVER_ROOT_DIR}/recommend_protocols/rs_package_info.thrift)
+
+
+add_custom_command(
+        OUTPUT ${PROJECT_BINARY_DIR}/gen/thrift/cpp/rs/rs_supply_context_types.h
+        ${PROJECT_BINARY_DIR}/gen/thrift/cpp/rs/rs_supply_context_types.cpp
+        ${PROJECT_BINARY_DIR}/gen/thrift/cpp/rs/rs_supply_context_constants.h
+        ${PROJECT_BINARY_DIR}/gen/thrift/cpp/rs/rs_supply_context_constants.cpp
+        COMMAND thrift::thrift -v -gen cpp:cob_style,moveable_types
+        -out ${PROJECT_BINARY_DIR}/gen/thrift/cpp/rs
+        -I ${ADSERVER_ROOT_DIR}/recommend_protocols
+        ${ADSERVER_ROOT_DIR}/recommend_protocols/rs_supply_context.thrift
+        DEPENDS ${ADSERVER_ROOT_DIR}/recommend_protocols/rs_supply_context.thrift
+        ${ADSERVER_ROOT_DIR}/recommend_protocols/rs_package_info.thrift)
+
+
+add_custom_command(
+        OUTPUT ${PROJECT_BINARY_DIR}/gen/thrift/cpp/rs/rs_types.h
+        ${PROJECT_BINARY_DIR}/gen/thrift/cpp/rs/rs_types.cpp
+        ${PROJECT_BINARY_DIR}/gen/thrift/cpp/rs/rs_constants.h
+        ${PROJECT_BINARY_DIR}/gen/thrift/cpp/rs/rs_constants.cpp
+        ${PROJECT_BINARY_DIR}/gen/thrift/cpp/rs/RankerSrv.h
+        ${PROJECT_BINARY_DIR}/gen/thrift/cpp/rs/RankerSrv.cpp
+        ${PROJECT_BINARY_DIR}/gen/thrift/cpp/rs/RankerSrv_server.skeleton.cpp
+        COMMAND thrift::thrift -gen cpp:cob_style,moveable_types
+        -out ${PROJECT_BINARY_DIR}/gen/thrift/cpp/rs
+        -I ${ADSERVER_ROOT_DIR}/common/thrift
+        ${ADSERVER_ROOT_DIR}/recommend_protocols/rs.thrift
+        COMMAND patch -N ${PROJECT_BINARY_DIR}/gen/thrift/cpp/rs/RankerSrv.cpp ${PROJECT_SOURCE_DIR}/src/RankerSrv.cpp.diff
+        DEPENDS ${PROJECT_SOURCE_DIR}/src/RankerSrv.cpp.diff
+        ${ADSERVER_ROOT_DIR}/recommend_protocols/rs.thrift
+        ${ADSERVER_ROOT_DIR}/common/thrift/enum.thrift
+        ${ADSERVER_ROOT_DIR}/recommend_protocols/rs_package_info.thrift
+        ${ADSERVER_ROOT_DIR}/recommend_protocols/rs_demand_context.thrift)
+
+
+add_custom_command(
+        OUTPUT ${PROJECT_BINARY_DIR}/gen/protobuf/cpp/RankerSelector.pb.h
+        ${PROJECT_BINARY_DIR}/gen/protobuf/cpp/RankerSelector.pb.cc
+        COMMAND protobuf::protoc -I ${PROJECT_SOURCE_DIR}/proto
+        --cpp_out ${PROJECT_BINARY_DIR}/gen/protobuf/cpp/
+        ${PROJECT_SOURCE_DIR}/proto/RankerSelector.proto
+        DEPENDS ${PROJECT_SOURCE_DIR}/proto/RankerSelector.proto)
+
+add_custom_command(
+        OUTPUT ${PROJECT_BINARY_DIR}/gen/protobuf/cpp/RankerSelectorNew.pb.h
+        ${PROJECT_BINARY_DIR}/gen/protobuf/cpp/RankerSelectorNew.pb.cc
+        COMMAND protobuf::protoc -I ${PROJECT_SOURCE_DIR}/proto
+        --cpp_out ${PROJECT_BINARY_DIR}/gen/protobuf/cpp/
+        ${PROJECT_SOURCE_DIR}/proto/RankerSelectorNew.proto
+        DEPENDS ${PROJECT_SOURCE_DIR}/proto/RankerSelectorNew.proto)
+
+add_custom_target(saas_rs_feature_proto ALL
+        BYPRODUCTS ${PROJECT_BINARY_DIR}/gen/protobuf/cpp/saas_rs_feature.pb.h
+        ${PROJECT_BINARY_DIR}/gen/protobuf/cpp/saas_rs_feature.pb.cc
+        COMMAND protobuf::protoc -I ${ADSERVER_ROOT_DIR}/recommend_protocols/proto
+        --cpp_out ${PROJECT_BINARY_DIR}/gen/protobuf/cpp/
+        ${ADSERVER_ROOT_DIR}/recommend_protocols/proto/saas_rs_feature.proto
+        DEPENDS ${ADSERVER_ROOT_DIR}/recommend_protocols/proto/saas_rs_feature.proto)
+
+add_custom_target(saas_rs_sdk_feature_proto ALL
+        BYPRODUCTS ${PROJECT_BINARY_DIR}/gen/protobuf/cpp/saas_rs_sdk_feature.pb.h
+        ${PROJECT_BINARY_DIR}/gen/protobuf/cpp/saas_rs_sdk_feature.pb.cc
+        COMMAND protobuf::protoc -I ${ADSERVER_ROOT_DIR}/recommend_protocols/proto
+        --cpp_out ${PROJECT_BINARY_DIR}/gen/protobuf/cpp/
+        ${ADSERVER_ROOT_DIR}/recommend_protocols/proto/saas_rs_sdk_feature.proto
+        DEPENDS ${ADSERVER_ROOT_DIR}/recommend_protocols/proto/saas_rs_sdk_feature.proto)
+
+add_custom_target(stdrank_pb ALL
+        BYPRODUCTS ${PROJECT_BINARY_DIR}/gen/protobuf/cpp/standard_rs/stdrank.pb.h
+        ${PROJECT_BINARY_DIR}/gen/protobuf/cpp/standard_rs/stdrank.pb.cc
+        COMMAND protobuf::protoc -I ${ADSERVER_ROOT_DIR}/protocols/proto
+        --cpp_out ${PROJECT_BINARY_DIR}/gen/protobuf/cpp/
+        ${ADSERVER_ROOT_DIR}/protocols/proto/standard_rs/stdrank.proto
+        DEPENDS ${ADSERVER_ROOT_DIR}/protocols/proto/standard_rs/stdrank.proto)
+
+add_custom_target(feature_extractor_pb ALL
+        BYPRODUCTS ${PROJECT_BINARY_DIR}/gen/protobuf/cpp/algo/feature_extractor.pb.h
+        ${PROJECT_BINARY_DIR}/gen/protobuf/cpp/algo/feature_extractor.pb.cc
+        COMMAND protobuf::protoc -I ${ADSERVER_ROOT_DIR}/protocols/proto
+        --cpp_out ${PROJECT_BINARY_DIR}/gen/protobuf/cpp/
+        ${ADSERVER_ROOT_DIR}/protocols/proto/algo/feature_extractor.proto
+        DEPENDS ${ADSERVER_ROOT_DIR}/protocols/proto/algo/feature_extractor.proto)
+
+add_custom_target(feature_generator_server_pb ALL
+        BYPRODUCTS ${PROJECT_BINARY_DIR}/gen/protobuf/cpp/algo/feature_generator_server.pb.h
+        ${PROJECT_BINARY_DIR}/gen/protobuf/cpp/algo/feature_generator_server.pb.cc
+        COMMAND protobuf::protoc -I ${ADSERVER_ROOT_DIR}/protocols/proto
+        --cpp_out ${PROJECT_BINARY_DIR}/gen/protobuf/cpp/
+        ${ADSERVER_ROOT_DIR}/protocols/proto/algo/feature_generator_server.proto
+        DEPENDS ${ADSERVER_ROOT_DIR}/protocols/proto/algo/feature_generator_server.proto)
+
+add_custom_target(model_inference_pb ALL
+        BYPRODUCTS ${PROJECT_BINARY_DIR}/gen/protobuf/cpp/algo/model_inference.pb.h
+        ${PROJECT_BINARY_DIR}/gen/protobuf/cpp/algo/model_inference.pb.cc
+        COMMAND protobuf::protoc -I ${ADSERVER_ROOT_DIR}/protocols/proto
+        --cpp_out ${PROJECT_BINARY_DIR}/gen/protobuf/cpp/
+        ${ADSERVER_ROOT_DIR}/protocols/proto/algo/model_inference.proto
+        DEPENDS ${ADSERVER_ROOT_DIR}/protocols/proto/algo/model_inference.proto)
+
+add_custom_target(core_model_device_context_info_pb ALL
+        BYPRODUCTS ${PROJECT_BINARY_DIR}/gen/protobuf/cpp/core_model/device_context_info.pb.h
+        ${PROJECT_BINARY_DIR}/gen/protobuf/cpp/core_model/device_context_info.pb.cc
+        COMMAND protobuf::protoc -I ${ADSERVER_ROOT_DIR}/protocols/proto
+        --cpp_out ${PROJECT_BINARY_DIR}/gen/protobuf/cpp/
+        ${ADSERVER_ROOT_DIR}/protocols/proto/core_model/device_context_info.proto
+        DEPENDS ${ADSERVER_ROOT_DIR}/protocols/proto/core_model/device_context_info.proto)
+
+add_custom_target(core_model_demand_context_pb ALL
+        BYPRODUCTS ${PROJECT_BINARY_DIR}/gen/protobuf/cpp/core_model/demand_context.pb.h
+        ${PROJECT_BINARY_DIR}/gen/protobuf/cpp/core_model/demand_context.pb.cc
+        COMMAND protobuf::protoc -I ${ADSERVER_ROOT_DIR}/protocols/proto
+        --cpp_out ${PROJECT_BINARY_DIR}/gen/protobuf/cpp/
+        ${ADSERVER_ROOT_DIR}/protocols/proto/core_model/demand_context.proto
+        DEPENDS ${ADSERVER_ROOT_DIR}/protocols/proto/core_model/demand_context.proto)
+
+add_custom_target(core_model_package_info_pb ALL
+        BYPRODUCTS ${PROJECT_BINARY_DIR}/gen/protobuf/cpp/core_model/package_info.pb.h
+        ${PROJECT_BINARY_DIR}/gen/protobuf/cpp/core_model/package_info.pb.cc
+        COMMAND protobuf::protoc -I ${ADSERVER_ROOT_DIR}/protocols/proto
+        --cpp_out ${PROJECT_BINARY_DIR}/gen/protobuf/cpp/
+        ${ADSERVER_ROOT_DIR}/protocols/proto/core_model/package_info.proto
+        DEPENDS ${ADSERVER_ROOT_DIR}/protocols/proto/core_model/package_info.proto)
+
+add_custom_target(core_model_supply_context_pb ALL
+        BYPRODUCTS ${PROJECT_BINARY_DIR}/gen/protobuf/cpp/core_model/supply_context.pb.h
+        ${PROJECT_BINARY_DIR}/gen/protobuf/cpp/core_model/supply_context.pb.cc
+        COMMAND protobuf::protoc -I ${ADSERVER_ROOT_DIR}/protocols/proto
+        --cpp_out ${PROJECT_BINARY_DIR}/gen/protobuf/cpp/
+        ${ADSERVER_ROOT_DIR}/protocols/proto/core_model/supply_context.proto
+        DEPENDS ${ADSERVER_ROOT_DIR}/protocols/proto/core_model/supply_context.proto)
+
+
+set(PB_TARGETS
+        core_model_device_context_info_pb
+        core_model_demand_context_pb
+        core_model_package_info_pb
+        core_model_supply_context_pb
+        )
+add_custom_target(meta_sample_proto ALL
+        BYPRODUCTS ${PROJECT_BINARY_DIR}/gen/protobuf/cpp/saas_ranker/meta_sample.pb.h
+        ${PROJECT_BINARY_DIR}/gen/protobuf/cpp/saas_ranker/meta_sample.pb.cc
+        ${PROJECT_BINARY_DIR}/gen/protobuf/cpp/saas_ranker/copy_package_info.pb.h
+        ${PROJECT_BINARY_DIR}/gen/protobuf/cpp/saas_ranker/copy_package_info.pb.cc
+        ${PROJECT_BINARY_DIR}/gen/protobuf/cpp/saas_ranker/copy_device_context_info.pb.h
+        ${PROJECT_BINARY_DIR}/gen/protobuf/cpp/saas_ranker/copy_device_context_info.pb.cc
+        ${PROJECT_BINARY_DIR}/gen/protobuf/cpp/saas_ranker/copy_demand_context.pb.h
+        ${PROJECT_BINARY_DIR}/gen/protobuf/cpp/saas_ranker/copy_demand_context.pb.cc
+        COMMAND protobuf::protoc -I ${ADSERVER_ROOT_DIR}/protocols/proto/
+        --cpp_out ${PROJECT_BINARY_DIR}/gen/protobuf/cpp/
+        ${ADSERVER_ROOT_DIR}/protocols/proto/saas_ranker/meta_sample.proto
+        ${ADSERVER_ROOT_DIR}/protocols/proto/saas_ranker/copy_device_context_info.proto
+        ${ADSERVER_ROOT_DIR}/protocols/proto/saas_ranker/copy_demand_context.proto
+        ${ADSERVER_ROOT_DIR}/protocols/proto/saas_ranker/copy_package_info.proto
+        DEPENDS ${ADSERVER_ROOT_DIR}/protocols/proto/saas_ranker/meta_sample.proto
+        ${ADSERVER_ROOT_DIR}/protocols/proto/saas_ranker/copy_device_context_info.proto
+        ${ADSERVER_ROOT_DIR}/protocols/proto/saas_ranker/copy_demand_context.proto
+        ${ADSERVER_ROOT_DIR}/protocols/proto/saas_ranker/copy_package_info.proto)
+
+
+add_custom_target(algo_trace_info ALL
+        BYPRODUCTS ${PROJECT_BINARY_DIR}/gen/protobuf/cpp/saas_ranker/trace_info.pb.h
+        ${PROJECT_BINARY_DIR}/gen/protobuf/cpp/saas_ranker/trace_info.pb.cc
+        COMMAND protobuf::protoc -I ${ADSERVER_ROOT_DIR}/protocols/proto/
+        --cpp_out ${PROJECT_BINARY_DIR}/gen/protobuf/cpp/
+        ${ADSERVER_ROOT_DIR}/protocols/proto/saas_ranker/trace_info.proto
+        DEPENDS ${ADSERVER_ROOT_DIR}/protocols/proto/saas_ranker/trace_info.proto
+        ${ADSERVER_ROOT_DIR}/protocols/proto/saas_ranker/meta_sample.proto)
+
+add_custom_target(unify_feature ALL
+        BYPRODUCTS ${PROJECT_BINARY_DIR}/gen/protobuf/cpp/saas_ranker/saas_rs_feature_flowback.pb.h
+        ${PROJECT_BINARY_DIR}/gen/protobuf/cpp/saas_ranker/saas_rs_feature_flowback.pb.cc
+        COMMAND protobuf::protoc -I ${ADSERVER_ROOT_DIR}/protocols/proto/
+        --cpp_out ${PROJECT_BINARY_DIR}/gen/protobuf/cpp/
+        ${ADSERVER_ROOT_DIR}/protocols/proto/saas_ranker/saas_rs_feature_flowback.proto
+        DEPENDS ${ADSERVER_ROOT_DIR}/protocols/proto/saas_ranker/saas_rs_feature_flowback.proto)
+
+#https://google.github.io/flatbuffers/flatbuffers_guide_use_cpp.html
+macro(add_flatbuffers_target target_name fb_outdir fbs_file fbs_prefix)
+    set(outfile ${fb_outdir}/${fbs_prefix}_generated.h)
+    set(binary_outfile ${fb_outdir}/${fbs_prefix}.bfbs)
+    add_custom_target(${target_name} ALL
+            BYPRODUCTS ${outfile} ${binary_outfile}
+            COMMAND flatbuffers::flatc --cpp --scoped-enums --reflect-names --gen-object-api
+            -o ${fb_outdir}
+            ${fbs_file}
+            COMMAND flatbuffers::flatc --binary --schema
+            -o ${fb_outdir}
+            ${fbs_file}
+            DEPENDS ${fbs_file})
+endmacro(add_flatbuffers_target)
+
+set(ns saas)
+execute_process(COMMAND mkdir -p ${PROJECT_BINARY_DIR}/gen/flatbuffers/cpp/${ns})
+message("flatbuffers out directory : ${PROJECT_BINARY_DIR}/gen/flatbuffers/cpp/${ns}")
+set(fb_outdir ${PROJECT_BINARY_DIR}/gen/flatbuffers/cpp/${ns})
+
+add_flatbuffers_target(flatbuffers_reflection_cpp ${fb_outdir}
+        ${PROJECT_SOURCE_DIR}/proto/creative.fbs creative)
+
+add_flatbuffers_target(flatbuffers_adv_offer_cpp ${fb_outdir}
+        ${PROJECT_SOURCE_DIR}/proto/adv_offer.fbs adv_offer)
+
+INCLUDE_DIRECTORIES(
+        ${PROJECT_SOURCE_DIR}/include
+        ${PROJECT_SOURCE_DIR}/include/consul
+        ${PROJECT_SOURCE_DIR}/include/maxcache
+        ${PROJECT_SOURCE_DIR}/features
+        ${ADSERVER_ROOT_DIR}/common/include
+        ${PROJECT_BINARY_DIR}/gen/thrift/cpp/enum
+        ${PROJECT_BINARY_DIR}/gen/thrift/cpp/rs
+        ${PROJECT_BINARY_DIR}/gen/protobuf/cpp
+        ${fb_outdir}
+        ${PROJECT_SOURCE_DIR}/abtest
+        ${PROJECT_SOURCE_DIR}/features/extractor/include
+        ${PROJECT_SOURCE_DIR}/features/generator/include
+)
+
+ADD_DEFINITIONS(
+        -DRANKER_TAG_VERSION="${RANKER_TAG_VERSION}"
+        -DVERSION_REVISION="${VERSION_REVISION}"
+        -DCOMMON_TAG_VERSION="${COMMON_TAG_VERSION}"
+        -DPROTOCOLS_TAG_VERSION="${PROTOCOLS_TAG_VERSION}"
+        -DBOOST_STACKTRACE_USE_ADDR2LINE
+)
+
+set(DIR_RANKER_SRCS)
+aux_source_directory(abtest DIR_RANKER_SRCS)
+aux_source_directory(src DIR_RANKER_SRCS)
+aux_source_directory(src/eagle DIR_RANKER_SRCS)
+aux_source_directory(src/layer DIR_RANKER_SRCS)
+aux_source_directory(src/data DIR_RANKER_SRCS)
+aux_source_directory(src/utils DIR_RANKER_SRCS)
+aux_source_directory(src/abtest DIR_RANKER_SRCS)
+aux_source_directory(src/biz DIR_RANKER_SRCS)
+aux_source_directory(src/feature DIR_RANKER_SRCS)
+aux_source_directory(src/model DIR_RANKER_SRCS)
+aux_source_directory(src/pipeline DIR_RANKER_SRCS)
+aux_source_directory(src/maxcache DIR_RANKER_SRCS)
+aux_source_directory(src/consul DIR_RANKER_SRCS)
+aux_source_directory(src/helper DIR_RANKER_SRCS)
+aux_source_directory(src/exp DIR_RANKER_SRCS)
+aux_source_directory(src/exp/base DIR_RANKER_SRCS)
+aux_source_directory(src/exp/bidprice DIR_RANKER_SRCS)
+aux_source_directory(src/exp/creative DIR_RANKER_SRCS)
+aux_source_directory(src/exp/deepconv DIR_RANKER_SRCS)
+aux_source_directory(src/exp/prerank DIR_RANKER_SRCS)
+aux_source_directory(src/exp/rank DIR_RANKER_SRCS)
+aux_source_directory(src/exp/rerank DIR_RANKER_SRCS)
+aux_source_directory(src/exp/roas DIR_RANKER_SRCS)
+aux_source_directory(src/exp/cpe DIR_RANKER_SRCS)
+aux_source_directory(src/exp/trynew DIR_RANKER_SRCS)
+aux_source_directory(src/module/experiment DIR_RANKER_SRCS)
+aux_source_directory(src/module/model DIR_RANKER_SRCS)
+aux_source_directory(features/extractor/src DIR_RANKER_SRCS)
+aux_source_directory(features/extractor/src/extractor DIR_RANKER_SRCS)
+aux_source_directory(features/extractor/src/extractor/demand DIR_RANKER_SRCS)
+aux_source_directory(features/extractor/src/helper DIR_RANKER_SRCS)
+aux_source_directory(features/extractor/src/utils DIR_RANKER_SRCS)
+aux_source_directory(features/generator/src DIR_RANKER_SRCS)
+
+set(COMMON_SRCS
+        ${ADSERVER_ROOT_DIR}/common/src/Global.cpp
+        ${ADSERVER_ROOT_DIR}/common/src/LocalDict.cpp)
+set(PROTOCOLS
+        ${PROJECT_BINARY_DIR}/gen/thrift/cpp/enum/enum_types.h
+        ${PROJECT_BINARY_DIR}/gen/thrift/cpp/enum/enum_types.cpp
+        ${PROJECT_BINARY_DIR}/gen/thrift/cpp/enum/enum_constants.h
+        ${PROJECT_BINARY_DIR}/gen/thrift/cpp/enum/enum_constants.cpp
+        ${PROJECT_BINARY_DIR}/gen/thrift/cpp/rs/rs_package_info_types.h
+        ${PROJECT_BINARY_DIR}/gen/thrift/cpp/rs/rs_package_info_types.cpp
+        ${PROJECT_BINARY_DIR}/gen/thrift/cpp/rs/rs_package_info_constants.h
+        ${PROJECT_BINARY_DIR}/gen/thrift/cpp/rs/rs_package_info_constants.cpp
+        ${PROJECT_BINARY_DIR}/gen/thrift/cpp/rs/rs_demand_context_types.h
+        ${PROJECT_BINARY_DIR}/gen/thrift/cpp/rs/rs_demand_context_types.cpp
+        ${PROJECT_BINARY_DIR}/gen/thrift/cpp/rs/rs_demand_context_constants.h
+        ${PROJECT_BINARY_DIR}/gen/thrift/cpp/rs/rs_demand_context_constants.cpp
+        ${PROJECT_BINARY_DIR}/gen/thrift/cpp/rs/rs_supply_context_types.h
+        ${PROJECT_BINARY_DIR}/gen/thrift/cpp/rs/rs_supply_context_types.cpp
+        ${PROJECT_BINARY_DIR}/gen/thrift/cpp/rs/rs_supply_context_constants.h
+        ${PROJECT_BINARY_DIR}/gen/thrift/cpp/rs/rs_supply_context_constants.cpp
+        ${PROJECT_BINARY_DIR}/gen/thrift/cpp/rs/rs_types.h
+        ${PROJECT_BINARY_DIR}/gen/thrift/cpp/rs/rs_types.cpp
+        ${PROJECT_BINARY_DIR}/gen/thrift/cpp/rs/rs_constants.h
+        ${PROJECT_BINARY_DIR}/gen/thrift/cpp/rs/rs_constants.cpp
+        ${PROJECT_BINARY_DIR}/gen/thrift/cpp/rs/RankerSrv.h
+        ${PROJECT_BINARY_DIR}/gen/thrift/cpp/rs/RankerSrv.cpp
+        ${PROJECT_BINARY_DIR}/gen/protobuf/cpp/saas_rs_feature.pb.cc
+        ${PROJECT_BINARY_DIR}/gen/protobuf/cpp/saas_rs_sdk_feature.pb.cc
+        ${PROJECT_BINARY_DIR}/gen/protobuf/cpp/algo/feature_extractor.pb.cc
+        ${PROJECT_BINARY_DIR}/gen/protobuf/cpp/algo/feature_generator_server.pb.cc
+        ${PROJECT_BINARY_DIR}/gen/protobuf/cpp/algo/model_inference.pb.cc
+        ${PROJECT_BINARY_DIR}/gen/protobuf/cpp/core_model/demand_context.pb.cc
+        ${PROJECT_BINARY_DIR}/gen/protobuf/cpp/core_model/device_context_info.pb.cc
+        ${PROJECT_BINARY_DIR}/gen/protobuf/cpp/core_model/package_info.pb.cc
+        ${PROJECT_BINARY_DIR}/gen/protobuf/cpp/core_model/supply_context.pb.cc
+        ${PROJECT_BINARY_DIR}/gen/protobuf/cpp/standard_rs/stdrank.pb.cc
+        ${PROJECT_BINARY_DIR}/gen/protobuf/cpp/saas_ranker/trace_info.pb.h
+        ${PROJECT_BINARY_DIR}/gen/protobuf/cpp/saas_ranker/trace_info.pb.cc
+        ${PROJECT_BINARY_DIR}/gen/protobuf/cpp/saas_ranker/saas_rs_feature_flowback.pb.h
+        ${PROJECT_BINARY_DIR}/gen/protobuf/cpp/saas_ranker/saas_rs_feature_flowback.pb.cc
+        ${PROJECT_BINARY_DIR}/gen/protobuf/cpp/saas_ranker/copy_package_info.pb.h
+        ${PROJECT_BINARY_DIR}/gen/protobuf/cpp/saas_ranker/copy_package_info.pb.cc
+        ${PROJECT_BINARY_DIR}/gen/protobuf/cpp/saas_ranker/copy_device_context_info.pb.h
+        ${PROJECT_BINARY_DIR}/gen/protobuf/cpp/saas_ranker/copy_device_context_info.pb.cc
+        ${PROJECT_BINARY_DIR}/gen/protobuf/cpp/saas_ranker/copy_demand_context.pb.h
+        ${PROJECT_BINARY_DIR}/gen/protobuf/cpp/saas_ranker/copy_demand_context.pb.cc
+        ${PROJECT_BINARY_DIR}/gen/protobuf/cpp/saas_ranker/meta_sample.pb.h
+        ${PROJECT_BINARY_DIR}/gen/protobuf/cpp/saas_ranker/meta_sample.pb.cc
+        )
+
+add_custom_target(
+        THRIFT_CODEGEN
+        DEPENDS ${PROTOCOLS}
+)
+
+set(RANKER_LIBRARIES tsl::robin_map
+        spdlog::spdlog
+        rapidjson::rapidjson
+        fmt::fmt
+        Seastar::seastar
+        ml::deviceinfo_cpp
+        ml::networking
+        ml::eagle
+        flatbuffers::flatbuffers
+        -Wl,--whole-archive
+        ml::model_service_client
+        ml::mapping_service_protocol
+        ml::predict_service_protocol
+        ml::ranking
+        ml::reflection
+        -Wl,--no-whole-archive
+        libcuckoo
+        gflags::gflags
+        leveldb::leveldb
+        libconfig::libconfig
+        libconfig::libconfig++
+        log4cplus::log4cplus
+        protobuf::protobuf
+        thrift::libthriftnb
+        pthread
+        dl
+        z
+        bde::bsl
+        ml::stream
+        ppconsul::ppconsul
+        feature-generation-lib
+        online_debug_lib_cc::online_debug_lib_cc
+        elasticlient::elasticlient
+        cpr::cpr
+        )
+
+# close ranker_service ranker_bench compile
+option(BUILD_RANKER_SERVICE "Build ranker programs" ON)
+if (${BUILD_RANKER_SERVICE})
+    ADD_EXECUTABLE(ranker_service src/main.cpp ${PROTOCOLS} ${DIR_RANKER_SRCS} ${COMMON_SRCS})
+    add_dependencies(ranker_service THRIFT_CODEGEN
+            flatbuffers_reflection_cpp
+            flatbuffers_adv_offer_cpp
+            saas_rs_feature_proto
+            saas_rs_sdk_feature_proto
+            stdrank_pb
+            feature_extractor_pb
+            feature_generator_server_pb
+            model_inference_pb
+            ${PB_TARGETS}
+            meta_sample_proto
+            algo_trace_info
+            unify_feature)
+
+    target_compile_options(ranker_service PRIVATE -funroll-loops -march=skylake)
+
+    TARGET_INCLUDE_DIRECTORIES(ranker_service PRIVATE
+            ${ML_UNITY_INCLUDE_DIR}
+            ${DBG_MACRO_INCLUDE_DIR}
+            ${BDE_INCLUDE_DIR}/bsl)
+
+    if (DEFINED SPDLOG_ACTIVE_LEVEL)
+        target_compile_definitions(ranker_service PRIVATE -DSPDLOG_ACTIVE_LEVEL=${SPDLOG_ACTIVE_LEVEL})
+    endif ()
+
+    if (NOT CMAKE_BUILD_TYPE STREQUAL "Asan")
+        TARGET_LINK_LIBRARIES(
+                ranker_service
+                jemalloc::jemalloc
+        )
+    endif ()
+
+    TARGET_LINK_LIBRARIES(ranker_service ${RANKER_LIBRARIES})
+    ADD_CUSTOM_COMMAND(
+            TARGET ranker_service
+            POST_BUILD
+            COMMAND mkdir -p ${RANKER_BINARY_DIR}/conf
+            COMMAND mkdir -p ${RANKER_BINARY_DIR}/log
+            COMMAND cp -rf ${RANKER_SOURCE_DIR}/conf/*.conf ${RANKER_BINARY_DIR}/conf/
+            COMMAND cp -rf ${RANKER_SOURCE_DIR}/conf/gflags/ ${RANKER_BINARY_DIR}/conf/gflags
+            COMMAND cp -rf ${RANKER_SOURCE_DIR}/conf/*.ini ${RANKER_BINARY_DIR}/conf/
+            COMMAND cp -rf ${RANKER_SOURCE_DIR}/conf/*.json ${RANKER_BINARY_DIR}/conf/
+            COMMAND rm -rf ${RANKER_BINARY_DIR}/output
+            COMMAND mkdir -p ${RANKER_BINARY_DIR}/output
+            COMMAND mkdir -p ${RANKER_BINARY_DIR}/output/bin
+            COMMAND mkdir -p ${RANKER_BINARY_DIR}/output/conf
+            COMMAND mkdir -p ${RANKER_BINARY_DIR}/output/log
+            COMMAND mkdir -p ${RANKER_BINARY_DIR}/output/lib
+            COMMAND mkdir -p ${RANKER_BINARY_DIR}/output/script
+            COMMAND mkdir -p ${RANKER_BINARY_DIR}/output/fbs_data
+            COMMAND cp -rf ${RANKER_BINARY_DIR}/ranker_service ${RANKER_BINARY_DIR}/output/bin
+            COMMAND cp -rf ${fb_outdir}/* ${RANKER_BINARY_DIR}/output/conf
+            COMMAND cp -rf ${RANKER_SOURCE_DIR}/conf/*.conf ${RANKER_BINARY_DIR}/output/conf/
+            COMMAND cp -rf ${RANKER_SOURCE_DIR}/conf/gflags/ ${RANKER_BINARY_DIR}/output/conf/gflags
+            COMMAND cp -rf ${RANKER_SOURCE_DIR}/conf/exps/ ${RANKER_BINARY_DIR}/output/conf/exps
+            COMMAND cp -rf ${RANKER_SOURCE_DIR}/conf/log.ini ${RANKER_BINARY_DIR}/output/conf/log.ini
+            COMMAND cp -rf ${RANKER_SOURCE_DIR}/conf/*.json ${RANKER_BINARY_DIR}/output/conf/
+            COMMAND cp -rf ${RANKER_SOURCE_DIR}/conf/*.yaml ${RANKER_BINARY_DIR}/output/conf/
+            COMMAND cp -rf ${RANKER_SOURCE_DIR}/script/* ${RANKER_BINARY_DIR}/output/script/
+            COMMAND cp -rf ${ADSERVER_ROOT_DIR}/tools/supervise ${RANKER_BINARY_DIR}/output/supervise.ranker_service
+            COMMAND cp -rf ${RANKER_SOURCE_DIR}/script/Makefile ${RANKER_BINARY_DIR}/output/Makefile
+            COMMAND cp -rf ${RANKER_SOURCE_DIR}/run ${RANKER_BINARY_DIR}/output/run
+            COMMAND cp -rf ${RANKER_SOURCE_DIR}/op_ranker_service.sh ${RANKER_BINARY_DIR}/output/op_ranker_service.sh
+            COMMAND python ${RANKER_SOURCE_DIR}/script/copy_depends.py ${RANKER_BINARY_DIR}/ranker_service -E -I libresolv.so:libpthread.so:libdl.so:librt.so:libm.so:libc.so:ld-linux-x86-64.so -o ${RANKER_BINARY_DIR}/output/lib
+            COMMAND python ${RANKER_SOURCE_DIR}/script/patchelf.py ${RANKER_BINARY_DIR}/output/bin/ranker_service
+    )
+endif ()
+
+option(BUILD_TOOLS "Build tools" OFF)
+if (BUILD_TOOLS)
+    include(cmakes/tools.cmake)
+endif ()
+
+option(BUILD_TEST "Build tests" OFF)
+if (BUILD_TEST)
+    include(cmakes/gtest_main_code_coverage.cmake)
+    include(cmakes/test_proto_feature_dumper.cmake)
+    include(cmakes/test_cassandra_client.cmake)
+    include(cmakes/gtest_main.cmake)
+    include(cmakes/gtest_eagle.cmake)
+    include(cmakes/gtest_pipeline.cmake)
+    include(cmakes/gtest_maxcache.cmake)
+endif ()
+
+
