@@ -9,7 +9,7 @@
 DEFINE_int32(dmp_timeout_ms, 13,  "dmp cass request timeout(ms)");
 DEFINE_string(dmp_addrs, "list://172.31.16.245:9042",  "dmp address list");
 
-bool GetDmpDataFromCassandra(const butil::StringPiece& query) {
+bool GetDmpDataFromCassandra(const butil::StringPiece& query, brpc::Channel& m_dmp_channel_) {
     brpc::CassandraRequest creq;
     creq.ExecuteCql3Query(query);
 
@@ -17,21 +17,6 @@ bool GetDmpDataFromCassandra(const butil::StringPiece& query) {
     brpc::CassandraResponse resp;
 
     butil::Timer tm(butil::Timer::STARTED);
-    
-    
-
-    brpc::policy::CassandraAuthenticator* m_dmp_auth_ = new brpc::policy::CassandraAuthenticator("cassandra", "cassandra", "rs_test_space");
-
-    brpc::ChannelOptions options;
-    options.protocol = brpc::PROTOCOL_CQL;
-    options.timeout_ms = FLAGS_dmp_timeout_ms;
-    options.auth = static_cast<brpc::Authenticator*>(m_dmp_auth_);
-
-    brpc::Channel m_dmp_channel_;
-    if (m_dmp_channel_.Init(FLAGS_dmp_addrs.c_str(), "rr", &options) != 0) {
-            return false;
-        }
-
 
     m_dmp_channel_.CallMethod(NULL, &cntl, &creq, &resp, NULL);
 
@@ -44,51 +29,90 @@ bool GetDmpDataFromCassandra(const butil::StringPiece& query) {
         return false;
     }
 
-    LOG(INFO) << "test dmp sql `" << query << "`, row count is " << resp.GetRowsCount() << ", remote = " << cntl.remote_side();
+    LOG(INFO) << "test dmp sql `" << query  << std::endl;
+    // << "`, row count is " << resp.GetRowsCount() << ", remote = " << cntl.remote_side();
     if (const int row_count = resp.GetRowsCount(); row_count > 0) {
         for (int r = 0; r < row_count; ++r) {
-            std::string pkg_data;
-            if (const int row_status = resp.GetColumnValueOfRow("top_tag", r, &pkg_data); row_status != 0) {
-                LOG(WARNING) << "row=" << r << ", col = pkg, status = " << row_status;
+            int emp_id;
+            if (const int row_status = resp.GetColumnValueOfRow<int>("emp_id", r, &emp_id); row_status != 0) {
+                LOG(WARNING) << "row=" << r << ", col = emp_id, status = " << row_status;
             } else {
-                LOG(INFO) << "pkg_data:" << pkg_data;
+                // LOG(INFO) << "emp_id:" << emp_id;
             }
 
-            std::string adtype_pkg_data;
-            if (const int row_status = resp.GetColumnValueOfRow("dev_install_pkg", r, &adtype_pkg_data); row_status != 0) {
-                LOG(WARNING) << "row=" << r << ", col = adtype_pkg, status = " << row_status;
+            std::string emp_name;
+            if (const int row_status = resp.GetColumnValueOfRow("emp_name", r, &emp_name); row_status != 0) {
+                LOG(WARNING) << "row=" << r << ", col = emp_name, status = " << row_status;
             } else {
-                LOG(INFO) << "dev_install_pkg:" << adtype_pkg_data;
+                // LOG(INFO) << "emp_name:" << emp_name;
             }
 
-            std::string install_pkg_info_by_tw;
-            if (const int row_status = resp.GetColumnValueOfRow("install_pkg_info_by_tw", r, &install_pkg_info_by_tw); row_status != 0) {
-                LOG(WARNING) << "row=" << r << ", col = adtype_pkg, status = " << row_status;
+            std::string emp_city;
+            if (const int row_status = resp.GetColumnValueOfRow("emp_city", r, &emp_city); row_status != 0) {
+                LOG(WARNING) << "row=" << r << ", col = emp_city, status = " << row_status;
             } else {
-                LOG(INFO) << "install_pkg_info_by_tw:" << install_pkg_info_by_tw;
+                // LOG(INFO) << "emp_city:" << emp_city;
             }
 
+            std::cout << "length:" << row_count
+                                << ", emp_name:" << emp_name
+                                << ", id:" << emp_id
+                                << ", emp_city:" << emp_city
+                                << std::endl;
 
+            // double emp_phone;
+            // if (const int row_status = resp.GetColumnValueOfRow<double>("emp_phone", r, &emp_phone); row_status != 0) {
+            //     LOG(WARNING) << "row=" << r << ", col = emp_phone, status = " << row_status;
+            // } else {
+            //     LOG(INFO) << "emp_phone:" << emp_phone;
+            // }
+            // int emp_sal;
+            // if (const int row_status = resp.GetColumnValueOfRow<int>("emp_sal", r, &emp_sal); row_status != 0) {
+            //     LOG(WARNING) << "row=" << r << ", col = emp_phone, status = " << row_status;
+            // } else {
+            //     LOG(INFO) << "emp_sal:" << emp_sal;
+            // }
         }
     }
 
     return true;
 }
 
-int main() {
-    std::string query = "SELECT emp_id,emp_name,emp_city,emp_phone,emp_sal FROM rs_test_space.emp WHERE oneid = '";
-    for(int i = 0; i < 1000000; i++) {
+int main(int argc, char* argv[]) {
+    brpc::Channel m_dmp_channel_;
+
+     brpc::policy::CassandraAuthenticator* m_dmp_auth_ = new brpc::policy::CassandraAuthenticator("cassandra", "cassandra", "rs_test_space");
+
+    brpc::ChannelOptions options;
+    options.protocol = brpc::PROTOCOL_CQL;
+    options.timeout_ms = FLAGS_dmp_timeout_ms;
+    options.auth = static_cast<brpc::Authenticator*>(m_dmp_auth_);
+
+    if (m_dmp_channel_.Init(FLAGS_dmp_addrs.c_str(), "rr", &options) != 0) {
+            return false;
+    }
+    std::string query = "SELECT emp_id,emp_name,emp_city,emp_phone,emp_sal FROM rs_test_space.emp WHERE emp_id = ";
+    auto startTime = std::chrono::high_resolution_clock::now();
+    int total_req_count = 1000;
+    if (argc > 1) {
+        total_req_count = std::stoi(argv[1]);
+    }
+
+    for(int i = 0; i < total_req_count; i++) {
         int j = (i % 11);
         std::string query_tmp = query;
-        query_tmp.append(std::to_string(j)).append("';");
+        query_tmp.append(std::to_string(j)).append(";");
 
-        bool result = GetDmpDataFromCassandra(query);
+        std::cout << query_tmp << std::endl;
+
+        bool result = GetDmpDataFromCassandra(query_tmp, m_dmp_channel_);
     }
+    if (m_dmp_auth_ != nullptr) delete m_dmp_auth_;
+    // 结束计时并计算耗时
+    auto endTime = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime);
+    
+    // 输出耗时结果
+    std::cout << "brpc total_req_count:" << total_req_count << ",Execution time: " << duration.count() << " microseconds" << std::endl;
     
 }
-
-
-
-
-
-
