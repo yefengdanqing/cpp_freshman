@@ -29,7 +29,6 @@ include(${PROJECT_SOURCE_DIR}/external/base.cmake)
 
 
 
-
 option(WITH_PROFILER "Compile PaddlePaddle with GPU profiler and gperftools"
        OFF)
 # find_package (OpenSSL)
@@ -87,9 +86,10 @@ elseif(EXEC_NAME STREQUAL openssl)
 elseif(EXEC_NAME STREQUAL cassandra_driver)
     include(${PROJECT_SOURCE_DIR}/cmakes/cassandra_driver.cmake)
 elseif(EXEC_NAME STREQUAL empty)
-    message("build empty finish")
+    include(${PROJECT_SOURCE_DIR}/cmakes/googletest.cmake)
+    include(${PROJECT_SOURCE_DIR}/cmakes/brpc.cmake)
+    message("build default googltest and brcp finish")
 endif()
 
 message("finish build ${EXEC_NAME}")
-
 
