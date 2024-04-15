@@ -3,6 +3,9 @@
 #include <vector>
 
 #include "fmt/format.h"
+
+
+
 void test_fmt() {
     std::string f1 = "{{\"status\": {}}}"; // ok
     std::string f2 = "{\"status\": {}}";   // not ok

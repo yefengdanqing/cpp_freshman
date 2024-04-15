@@ -12,4 +12,6 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib/seastar)
 add_executable(seastar_main ${source_dir})
 
 target_link_libraries(seastar_main seastar)
+add_dependencies(openssl_main ${LIB_DEPENDS})
+target_link_libraries(openssl_main ${LIB_BIBRARY})
 

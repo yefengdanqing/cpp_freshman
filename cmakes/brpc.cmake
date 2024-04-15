@@ -1,4 +1,3 @@
-include(${PROJECT_SOURCE_DIR}/third_party/brpc/config.cmake)
 #抽象成一个函数
 
 aux_source_directory(${PROJECT_SOURCE_DIR}/example/brpc source_dir)
@@ -16,24 +15,30 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib/brpc)
 
 
 add_custom_target(
-    compile_all_protos
+    compile_all_protos_brpc
     DEPENDS ${PBUF_SRCS} ${PBUF_HDRS}
 )
-set(rpc_libs brpc protobuf protobuf-lite protoc gflags glog dl leveldb ssl crypto z)
 
 
-add_executable(brpc_client_main example/brpc/brpc_client.cpp ${PBUF_SRCS} ${PBUF_HDRS})
-add_dependencies(brpc_client_main compile_all_protos)
-target_link_libraries(brpc_client_main ${rpc_libs})
+
+# add_executable(brpc_client_main example/brpc/brpc_client.cpp ${PBUF_SRCS} ${PBUF_HDRS})
+# add_dependencies(brpc_client_main compile_all_protos_brpc ${LIB_DEPENDS})
+# target_link_libraries(brpc_client_main ${LIB_BIBRARY} dl)
 
 
 add_executable(brpc_server_main example/brpc/brpc_server.cpp ${PBUF_SRCS} ${PBUF_HDRS})
-add_dependencies(brpc_server_main compile_all_protos)
-target_link_libraries(brpc_server_main ${rpc_libs})
+add_dependencies(brpc_server_main compile_all_protos_brpc ${LIB_DEPENDS})
+target_link_libraries(brpc_server_main ${LIB_BIBRARY} dl)
 
-add_executable(cassandra_test_main example/brpc/cassandra_test.cpp ${PBUF_SRCS} ${PBUF_HDRS})
-add_dependencies(cassandra_test_main compile_all_protos)
-target_link_libraries(cassandra_test_main ${rpc_libs})
+# add_executable(cassandra_test_main example/brpc/cassandra_test.cpp ${PBUF_SRCS} ${PBUF_HDRS})
+# add_dependencies(cassandra_test_main compile_all_protos_brpc)
+# target_link_libraries(cassandra_test_main ${LIB_BIBRARY})
+
+# add_executable(brpc_test_main example/brpc/main.cpp ${PBUF_SRCS} ${PBUF_HDRS})
+# message("xxxxxx LIB_DEPENDS:${LIB_DEPENDS}")
+# add_dependencies(brpc_test_main ${LIB_DEPENDS})
+# target_link_libraries(brpc_test_main ${LIB_BIBRARY} dl)
+
 
 
 

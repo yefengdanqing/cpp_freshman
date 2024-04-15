@@ -1,5 +1,3 @@
-#include(${PROJECT_SOURCE_DIR}/third_party/fmt/config.cmake)
-
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin/design_model)
 set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib/design_model)
 

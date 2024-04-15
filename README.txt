@@ -10,6 +10,8 @@ build
     ...
     ...
 4 make
+5 other
+	openssl:perl -MIPC::Cmd -e1-------yum install perl-IPC-Cmd
 
 
 

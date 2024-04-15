@@ -1,5 +1,3 @@
-include(${PROJECT_SOURCE_DIR}/third_party/gflags/config.cmake)
-
 aux_source_directory(${PROJECT_SOURCE_DIR}/example/gflags source_dir)
 
 message(STATUS "This is SOURCE dir " ${source_dir})

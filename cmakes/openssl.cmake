@@ -11,5 +11,6 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib/openssl)
 
 add_executable(openssl_main ${source_dir})
 
-target_link_libraries(openssl_main openssl)
+add_dependencies(openssl_main ${LIB_DEPENDS})
+target_link_libraries(openssl_main ${LIB_BIBRARY})
 

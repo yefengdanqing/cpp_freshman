@@ -8,8 +8,11 @@
 #include <boost/property_map/property_map.hpp>
 #include "gtest/gtest.h"
 
+// #define STRINGVALUE(value) #(value)
+
 //邻接表或者邻接矩阵
 typedef boost::adjacency_list<boost::listS, boost::vecS, boost::directedS> mygraph;
+
 
 int graph_test() {
     mygraph g;
@@ -39,4 +42,6 @@ int graph_test() {
 }
 TEST(MYGRAPHTEST, GRAPHTEST) {
     graph_test();
+    // const std::string str = STRINGVALUE(43);
+    // std::cout << str << std::endl;
 }
