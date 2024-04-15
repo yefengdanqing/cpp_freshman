@@ -20,7 +20,7 @@ link_directories(${GLOG_LIB_DIR})
 
 
 
-set(GLOG_CONFIGURE    cd ${EXTERNAL_GLOG_ROOT}/src/GLOG && rm -fr build && mkdir build && cmake -S . -DCMAKE_INSTALL_PREFIX=${EXTERNAL_GLOG_ROOT} -DBUILD_TESTING=OFF -DBUILD_GMOCK=OFF -DCMAKE_INSTALL_LIBDIR=lib -B build
+set(GLOG_CONFIGURE    cd ${EXTERNAL_GLOG_ROOT}/src/GLOG && rm -fr build && mkdir build && cmake -S . -DCMAKE_INSTALL_PREFIX=${EXTERNAL_GLOG_ROOT} -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER} -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS} -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS} -DBUILD_TESTING=OFF -DBUILD_GMOCK=OFF -DCMAKE_INSTALL_LIBDIR=lib -B build
 )  # 指定配置指令（注意此处修改了安装目录，否则默认情况下回安装到系统目录)
 
 set(GLOG_MAKE         cd ${EXTERNAL_GLOG_ROOT}/src/GLOG && cmake --build build)  # 指定编译指令（需要覆盖默认指令，进入我们指定的GLOG_ROOT目录下）

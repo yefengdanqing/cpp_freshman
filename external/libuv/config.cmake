@@ -8,7 +8,7 @@ set(LIBUV_GIT_TAG v1.x)  # 指定版本
 set(LIBUV_GIT_URL https://github.com/libuv/libuv.git)  # 指定git仓库地址
 
 
-set(LIBUV_CONFIGURE    cd ${LIBUV_ROOT}/src/LIBUV && rm -fr build && mkdir build && cd build && CXXFLAGS=-fPIC cmake .. -DCMAKE_INSTALL_PREFIX=${LIBUV_ROOT} -DBUILD_SHARED_LIBS=ON -DBUILD_TESTING=OFF -DCMAKE_INSTALL_LIBDIR=lib)  # 指定配置指令（注意此处修改了安装目录，否则默认情况下回安装到系统目录）
+set(LIBUV_CONFIGURE    cd ${LIBUV_ROOT}/src/LIBUV && rm -fr build && mkdir build && cd build && CXXFLAGS=-fPIC cmake .. -DCMAKE_INSTALL_PREFIX=${LIBUV_ROOT} -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER} -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS} -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS}-DBUILD_SHARED_LIBS=ON -DBUILD_TESTING=OFF -DCMAKE_INSTALL_LIBDIR=lib)  # 指定配置指令（注意此处修改了安装目录，否则默认情况下回安装到系统目录）
 set(LIBUV_MAKE         cd ${LIBUV_ROOT}/src/LIBUV/build && CC=gcc CXX=g++ CXXFLAGS=-fPIC make)  # 指定编译指令（需要覆盖默认指令，进入我们指定的LIBUV_ROOT目录下）
 set(LIBUV_INSTALL      cd ${LIBUV_ROOT}/src/LIBUV && cd build && make install)  # 指定安装指令（需要覆盖默认指令，进入我们指定的LIBUV_ROOT目录下,可以copy 出来
 

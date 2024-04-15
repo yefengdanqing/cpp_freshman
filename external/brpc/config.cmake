@@ -2,7 +2,7 @@ include(ExternalProject)
 
 # set(EXTERNAL_PREFIX ${CMAKE_BINARY_DIR}/external)
 set(BRPC_ROOT ${EXTERNAL_PREFIX}/brpc)
-set(BRPC_GIT_TAG master)
+set(BRPC_GIT_TAG 1.8.0)
 set(BRPC_GIT_URL https://github.com/apache/incubator-brpc.git)
 
 
@@ -18,9 +18,9 @@ link_directories(${BRPC_LIB_DIR})
 # set(GFLAGS_INCLUDE_DIRS "${GFLAGS_INCLUDE_DIR}" CACHE PATH "Path to gflags include files")
 # set(GFLAGS_LIBRARY "${GFLAGS_LIB_DIR}" CACHE PATH "Path to gflags library files")
 
-list(FIND CMAKE_PREFIX_PATH ${BRPC_LIB_DIR} _DEP_INDEX)
+list(FIND CMAKE_PREFIX_PATH ${BRPC_ROOT} _DEP_INDEX)
 if (_DEP_INDEX EQUAL -1)
-    list(APPEND CMAKE_PREFIX_PATH ${BRPC_LIB_DIR})
+    list(APPEND CMAKE_PREFIX_PATH ${BRPC_ROOT})
 endif ()
 # find_package(brpc QUIET)
 string(REPLACE ";" "|" TBRPC_CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH}")
@@ -36,11 +36,15 @@ if (NOT brpc_FOUND)
         # PATCH_COMMAND     
         #     COMMAND   bash -c "set -ex && git apply --check ${PROJECT_SOURCE_DIR}/external/brpc/922.patch.new && git apply ${PROJECT_SOURCE_DIR}/external/brpc/922.patch.new"
         CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${BRPC_ROOT}
-               -DCMAKE_INSTALL_LIBDIR=${BRPC_ROOT}/lib
-               -DCMAKE_PREFIX_PATH=${TBRPC_CMAKE_PREFIX_PATH}
-               -DWITH_GLOG=OFF
-               -DBUILD_BRPC_TOOLS=OFF
-               -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+                -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+                -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
+                -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS}
+                -DCMAKE_INSTALL_LIBDIR=${BRPC_ROOT}/lib
+                -DCMAKE_PREFIX_PATH=${TBRPC_CMAKE_PREFIX_PATH}
+                -DWITH_GLOG=OFF
+                -DBUILD_BRPC_TOOLS=OFF
+                -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
             #    -DGFLAGS_INCLUDE_PATH=${GFLAGS_INCLUDE_DIR}
             #    -DGFLAGS_LIBRARY=${GFLAGS_LIB_DIR}
             #    -DProtobuf_INCLUDE_DIR=${PROTOBUF_INCLUDE_DIR}
