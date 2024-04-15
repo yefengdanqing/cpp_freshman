@@ -1,0 +1,54 @@
+#include(${CMAKE_CURRENT_LIST_DIR}/../base.cmake)
+set(CMAKE_CXX_STANDARD 17)
+
+include(ExternalProject)
+set(THIRD_PARTY_PREFIX ${CMAKE_BINARY_DIR}/third_party)
+set(PROTOBUF_ROOT ${THIRD_PARTY_PREFIX}/protobuf)
+file(MAKE_DIRECTORY ${THIRD_PARTY_PREFIX}/protobuf)
+set(PROTOBUF_LIB_DIR       ${PROTOBUF_ROOT}/lib)
+set(PROTOBUF_INCLUDE_DIR   ${PROTOBUF_ROOT}/include)
+set(PROTOBUF_BIN_DIR       ${PROTOBUF_ROOT}/bin)
+set(PROTOBUF_LIBRARIES "${PROTOBUF_LIB_DIR}/libprotobuf-lite.a"
+                        "${PROTOBUF_LIB_DIR}/libprotobuf.a"
+                        "${PROTOBUF_LIB_DIR}/libprotoc.a" CACHE FILEPATH "PROTOBUF_LIBRARIES" FORCE)
+set(PBUF_PROTOC            ${PROTOBUF_BIN_DIR}/protoc)
+
+message("skt lib64: ${PROTOBUF_LIB_DIR}")
+include_directories(${PROTOBUF_INCLUDE_DIR})
+link_directories(${PROTOBUF_LIB_DIR})
+
+#set(PROTOBUF_GIT_TAG  v3.21.3)  # 指定版本
+set(PROTOBUF_GIT_TAG  v3.5.1)  # 指定版本
+set(PROTOBUF_VERSION "protobuf-3.5.1")
+set(PROTOBUF_GIT_URL  https://github.com/protocolbuffers/protobuf.git) 
+
+
+
+ExternalProject_Add(PROTOBUF
+        SOURCE_DIR                  ${PROTOBUF_ROOT}
+        GIT_REPOSITORY          ${PROTOBUF_GIT_URL}
+        GIT_TAG                 ${PROTOBUF_GIT_TAG}
+        SOURCE_DIR              "${PROTOBUF_ROOT}/${PROTOBUF_VERSION}"
+        CONFIGURE_COMMAND       cd ${PROTOBUF_ROOT}/src/PROTOBUF && cmake 
+                                -D CMAKE_INSTALL_PREFIX=${PROTOBUF_ROOT} -DBUILD_SHARED_LIBS=ON 
+                                -DCMAKE_INSTALL_LIBDIR=lib .
+        BUILD_COMMAND           cd ${PROTOBUF_ROOT}/src/PROTOBUF && ./autogen.sh && ./configure --prefix=${PROTOBUF_ROOT} && make -j8
+        INSTALL_COMMAND         cd ${PROTOBUF_ROOT}/src/PROTOBUF && make install
+)
+
+
+#需要编译成静态库,protoc也需要依赖
+add_library(protobuf_protobuf STATIC IMPORTED GLOBAL)
+set_property(TARGET protobuf_protobuf PROPERTY IMPORTED_LOCATION ${PROTOBUF_LIBRARIES})
+add_dependencies(protobuf_protobuf PROTOBUF)
+
+
+set(LIB_BIBRARY
+    ${LIB_BIBRARY}
+    ${PROTOBUF_LIBRARIES})
+set(LIB_DEPENDS
+        ${LIB_DEPENDS}
+        "protobuf_protobuf")
+set(PBUF_PROTOC            ${PROTOBUF_BIN_DIR}/protoc)
+set(PROTOBUF_INCLUDE_DIRS "${PROTOBUF_INCLUDE_DIR}" CACHE PATH "Path to gflags include files")
+set(PROTOBUF_LIBRARY "${PROTOBUF_LIB_DIR}" CACHE PATH "Path to gflags library files")

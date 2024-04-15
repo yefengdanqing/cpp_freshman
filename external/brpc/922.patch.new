@@ -1,0 +1,4150 @@
+diff --git a/src/brpc/cassandra.cpp b/src/brpc/cassandra.cpp
+new file mode 100755
+index 00000000..1ba123f2
+--- /dev/null
++++ b/src/brpc/cassandra.cpp
+@@ -0,0 +1,508 @@
++// Copyright (c) 2019 Baidu, Inc.
++// 
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++// 
++//     http://www.apache.org/licenses/LICENSE-2.0
++// 
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++
++// Authors: Daojin, Cai (caidaojin@qiyi.com)
++
++#define INTERNAL_SUPPRESS_PROTOBUF_FIELD_DEPRECATION
++#include <algorithm>
++
++#include <gflags/gflags.h>
++#include <google/protobuf/stubs/once.h>
++#include <google/protobuf/io/coded_stream.h>
++#include <google/protobuf/wire_format_lite_inl.h>
++#include <google/protobuf/descriptor.h>
++#include <google/protobuf/reflection_ops.h>
++#include <google/protobuf/wire_format.h>
++
++#include "brpc/cassandra.h"
++#include "butil/logging.h"
++#include "butil/strings/string_piece.h"
++#include "butil/string_printf.h"    // string_appendf()
++
++namespace brpc {
++
++DECLARE_bool(enable_cql_prepare);
++
++// Internal implementation detail -- do not call these.
++void protobuf_AddDesc_baidu_2frpc_2fcassandra_5fbase_2eproto_impl();
++void protobuf_AddDesc_baidu_2frpc_2fcassandra_5fbase_2eproto();
++void protobuf_AssignDesc_baidu_2frpc_2fcassandra_5fbase_2eproto();
++void protobuf_ShutdownFile_baidu_2frpc_2fcassandra_5fbase_2eproto();
++
++namespace {
++
++const ::google::protobuf::Descriptor* CassandraRequest_descriptor_ = NULL;
++const ::google::protobuf::Descriptor* CassandraResponse_descriptor_ = NULL;
++
++}  // namespace
++
++void protobuf_AssignDesc_baidu_2frpc_2fcassandra_5fbase_2eproto() {
++    protobuf_AddDesc_baidu_2frpc_2fcassandra_5fbase_2eproto();
++    const ::google::protobuf::FileDescriptor* file =
++        ::google::protobuf::DescriptorPool::generated_pool()->FindFileByName(
++            "baidu/rpc/cassandra_base.proto");
++    GOOGLE_CHECK(file != NULL);
++    CassandraRequest_descriptor_ = file->message_type(0);
++    CassandraResponse_descriptor_ = file->message_type(1);
++}
++
++namespace {
++
++GOOGLE_PROTOBUF_DECLARE_ONCE(protobuf_AssignDescriptors_once_);
++inline void protobuf_AssignDescriptorsOnce() {
++    ::google::protobuf::GoogleOnceInit(&protobuf_AssignDescriptors_once_,
++                                       &protobuf_AssignDesc_baidu_2frpc_2fcassandra_5fbase_2eproto);
++}
++
++void protobuf_RegisterTypes(const ::std::string&) {
++    protobuf_AssignDescriptorsOnce();
++    ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
++        CassandraRequest_descriptor_, &CassandraRequest::default_instance());
++    ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
++        CassandraResponse_descriptor_, &CassandraResponse::default_instance());
++}
++
++}  // namespace
++
++void protobuf_ShutdownFile_baidu_2frpc_2fcassandra_5fbase_2eproto() {
++    delete CassandraRequest::default_instance_;
++    delete CassandraResponse::default_instance_;
++}
++
++void protobuf_AddDesc_baidu_2frpc_2fcassandra_5fbase_2eproto_impl() {
++  GOOGLE_PROTOBUF_VERIFY_VERSION;
++
++#if GOOGLE_PROTOBUF_VERSION >= 3002000
++    ::google::protobuf::internal::InitProtobufDefaults();
++#else
++    ::google::protobuf::protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
++#endif
++  ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
++    "\n\036baidu/rpc/cassandra_base.proto\022\tbaidu."
++    "rpc\032 google/protobuf/descriptor.proto\"\022\n"
++    "\020CassandraRequest\"\023\n\021CassandraResponse", 118);
++  ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
++    "baidu/rpc/cassandra_base.proto", &protobuf_RegisterTypes);
++   CassandraRequest::default_instance_ = new CassandraRequest();
++   CassandraRequest::default_instance_ -> InitAsDefaultInstance();
++   CassandraResponse::default_instance_ = new CassandraResponse();
++   CassandraResponse::default_instance_ -> InitAsDefaultInstance();
++  ::google::protobuf::internal::OnShutdown(&protobuf_ShutdownFile_baidu_2frpc_2fcassandra_5fbase_2eproto);
++}
++
++GOOGLE_PROTOBUF_DECLARE_ONCE(protobuf_AddDesc_baidu_2frpc_2fcassandra_5fbase_2eproto_once);
++void protobuf_AddDesc_baidu_2frpc_2fcassandra_5fbase_2eproto() {
++    ::google::protobuf::GoogleOnceInit(
++        &protobuf_AddDesc_baidu_2frpc_2fcassandra_5fbase_2eproto_once,
++        &protobuf_AddDesc_baidu_2frpc_2fcassandra_5fbase_2eproto_impl);
++}
++
++// Force AddDescriptors() to be called at static initialization time.
++struct StaticDescriptorInitializer_baidu_2frpc_2fcassandra_5fbase_2eproto {
++    StaticDescriptorInitializer_baidu_2frpc_2fcassandra_5fbase_2eproto() {
++        protobuf_AddDesc_baidu_2frpc_2fcassandra_5fbase_2eproto();
++    }
++} static_descriptor_initializer_baidu_2frpc_2fcassandra_5fbase_2eproto_;
++
++// ===================================================================
++
++#ifndef _MSC_VER
++#endif  // !_MSC_VER
++
++CassandraRequest* CassandraRequest::default_instance_ = nullptr;
++
++CassandraRequest::CassandraRequest() {
++    SharedCtor();
++}
++
++CassandraRequest::CassandraRequest(CqlConsistencyLevel consistency) {
++    SharedCtor();
++    set_consistency(CQL_CONSISTENCY_LOCAL_ONE);
++}
++
++void CassandraRequest::SharedCtor() {
++    Clear();
++}
++
++CassandraRequest::~CassandraRequest() {
++    SharedDtor();
++}
++
++void CassandraRequest::SharedDtor() {
++    if (this != default_instance_) {
++    }
++}
++
++void CassandraRequest::SetCachedSize(int size) const {
++    GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
++    _cached_size_ = size;
++    GOOGLE_SAFE_CONCURRENT_WRITES_END();
++}
++
++const ::google::protobuf::Descriptor* CassandraRequest::descriptor() {
++	protobuf_AssignDescriptorsOnce();
++	return CassandraRequest_descriptor_;
++}
++
++const CassandraRequest& CassandraRequest::default_instance() {
++    if (default_instance_ == nullptr) {
++        protobuf_AddDesc_baidu_2frpc_2fcassandra_5fbase_2eproto();
++    }
++    return *default_instance_;
++}
++
++::google::protobuf::Metadata CassandraRequest::GetMetadata() const {
++    protobuf_AssignDescriptorsOnce();
++    ::google::protobuf::Metadata metadata;
++    metadata.descriptor = CassandraRequest_descriptor_;
++    metadata.reflection = nullptr;
++    return metadata;
++}
++
++void CassandraRequest::InitAsDefaultInstance() {
++}
++
++int CassandraRequest::ByteSize() const {
++    int total_size = _query.size() + CqlFrameHead::SerializedSize();
++    GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
++    _cached_size_ = total_size;
++    GOOGLE_SAFE_CONCURRENT_WRITES_END();
++    return total_size;
++}
++
++bool CassandraRequest::MergePartialFromCodedStream(
++    ::google::protobuf::io::CodedInputStream* input) {
++    LOG(WARNING) << "You're not supposed to parse a CassandraRequest";
++    return true;
++}
++
++void CassandraRequest::SerializeWithCachedSizes(
++    ::google::protobuf::io::CodedOutputStream* output) const {
++    LOG(WARNING) << "You're not supposed to serialize a CassandraRequest";
++}
++
++::google::protobuf::uint8* CassandraRequest::SerializeWithCachedSizesToArray(
++    ::google::protobuf::uint8* target) const {
++    return target;
++}
++
++// Protobuf methods.
++CassandraRequest* CassandraRequest::New() const {
++    return new (std::nothrow) CassandraRequest();
++}
++
++void CassandraRequest::CopyFrom(const ::google::protobuf::Message& from) {
++    if (&from == this) return;
++    Clear();
++    const CassandraRequest* source =
++        ::google::protobuf::internal::dynamic_cast_if_available<const CassandraRequest*>(&from);
++    if (source == NULL) {
++        ::google::protobuf::internal::ReflectionOps::Merge(from, this);
++    } else {
++        CopyFrom(*source);
++    }
++}
++
++void CassandraRequest::MergeFrom(const ::google::protobuf::Message& from) {
++    GOOGLE_CHECK_NE(&from, this);
++    const CassandraRequest* source =
++        ::google::protobuf::internal::dynamic_cast_if_available<const CassandraRequest*>(&from);
++    if (source == NULL) {
++        ::google::protobuf::internal::ReflectionOps::Merge(from, this);
++    } else {
++        MergeFrom(*source);
++    }
++}
++
++void CassandraRequest::CopyFrom(const CassandraRequest& from) {
++    if (&from == this) {
++        return;
++    }
++    _cached_size_ = from._cached_size_;
++    _opcode = from._opcode;
++    _batch_parameter = from._batch_parameter;
++    _query = from._query;
++    _query_parameter = from._query_parameter;
++}
++
++void CassandraRequest::MergeFrom(const CassandraRequest& from) {
++    LOG(WARNING) << "CassandraRequest does not support merge from another.";
++}
++
++inline void CassandraRequest::EncodeValuesNumberOfLastBatchedQuery() {
++    if (_batch_parameter.curr_query_values > 0) {
++        CHECK(_batch_parameter.curr_query_values_area != butil::IOBuf::INVALID_AREA)
++            << "Invalid cql batch query values IOBuf area";
++        const uint16_t len = butil::HostToNet16(_batch_parameter.curr_query_values);
++        CHECK(0 == _query.unsafe_assign(_batch_parameter.curr_query_values_area, &len));
++        _batch_parameter.curr_query_values = 0;
++    }
++    _batch_parameter.curr_query_values_area = butil::IOBuf::INVALID_AREA;
++}
++
++void CassandraRequest::HandleBatchQueryAtBeginningIfNeeded() {
++    if (_batch_parameter.count == 0) {
++        _opcode = CQL_OPCODE_QUERY;
++    } else {
++        if (_batch_parameter.count == 1) {			
++            _opcode = CQL_OPCODE_BATCH;
++            // Append query values for first batched query.	
++            _query_parameter.MoveValuesTo(&_query);
++        } else {
++            EncodeValuesNumberOfLastBatchedQuery();
++        }
++        // Set query kind for current query.
++        _query.push_back(_batch_parameter.kind);
++    }
++
++    ++_batch_parameter.count;
++}
++
++// The batch body must be:
++// <type><n><query_1>...<query_n><consistency><flags>[<serial_consistency>][<timestamp>]
++// Where a <query_i> must be of the form:
++// <kind><string_or_id><n>[<name_1>]<value_1>...[<name_n>]<value_n>
++void CassandraRequest::EncodeBatchQueries(butil::IOBuf* buf) {
++    buf->push_back(_batch_parameter.type);
++    CqlEncodeInt16(_batch_parameter.count, buf);
++    // Set query kind for the first query.
++    buf->push_back(_batch_parameter.kind);
++    EncodeValuesNumberOfLastBatchedQuery();		
++}
++
++void CassandraRequest::Encode(butil::IOBuf* buf) {
++    if (_query.empty()) {
++        return;
++    }
++    if (is_batch_mode()) {
++        EncodeBatchQueries(buf);
++    }
++    buf->append(_query);
++    CqlEncodeQueryParameter(_query_parameter, buf);
++}
++
++void CassandraRequest::Clear() {
++    _opcode = CQL_OPCODE_LAST_DUMMY;
++    _cached_size_ = 0;
++    _batch_parameter.clear();
++    _query.clear();
++    _query_parameter.Reset();
++}
++
++bool CassandraRequest::IsInitialized() const {
++    return opcode() != CQL_OPCODE_LAST_DUMMY;
++}
++
++void CassandraRequest::Print(std::ostream& os) const {
++    os << "Cassandra request: [\r\n" 
++       << "  opcode=" << GetCqlOpcodeName(opcode()) << "\r\n";
++    if (is_batch_mode()) {
++        os << "  batch_size=" << _batch_parameter.count << "\r\n";
++    }
++    os << "]";
++}
++
++std::ostream& operator<<(std::ostream& os, const CassandraRequest& r) {
++    r.Print(os);
++    return os;
++}
++
++CassandraResponse::CassandraResponse() {
++    SharedCtor();
++}
++
++void CassandraResponse::SharedCtor() {
++    Clear();
++}
++
++CassandraResponse::~CassandraResponse() {
++    SharedDtor();
++}
++
++void CassandraResponse::SharedDtor() {
++    if (this != default_instance_) {
++    }
++}
++
++void CassandraResponse::SetCachedSize(int size) const {
++    GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
++    _cached_size_ = size;
++    GOOGLE_SAFE_CONCURRENT_WRITES_END();
++}
++
++CassandraResponse* CassandraResponse::default_instance_ = nullptr;
++
++::google::protobuf::Metadata CassandraResponse::GetMetadata() const {
++    protobuf_AssignDescriptorsOnce();
++    ::google::protobuf::Metadata metadata;
++    metadata.descriptor = CassandraResponse_descriptor_;
++    metadata.reflection = nullptr;
++    return metadata;
++}
++
++CqlRowsResultDecoder* CassandraResponse::GetRowsResult() {
++    if (opcode() != CQL_OPCODE_RESULT) {
++        return nullptr;
++    }
++    return dynamic_cast<CqlRowsResultDecoder*>(_decoder.get());
++}
++
++
++const std::vector<CqlColumnSpec>* CassandraResponse::GetColumnSpecs() {
++    CqlRowsResultDecoder* rows_result = GetRowsResult();
++    if (rows_result != nullptr) {
++        return &(rows_result->GetColumnSpecs());
++    }
++    return nullptr;
++}
++
++void CassandraResponse::Print(std::ostream& os) const {
++    os << "Cassandra response: [\r\n";
++    os << head();
++}
++
++std::ostream& operator<<(std::ostream& os, const CassandraResponse& response) {
++    response.Print(os);
++    return os;
++}
++
++bool CassandraResponse::Decode() {
++    if (_error_code != CASS_UNDECODED) {
++        return _error_code != CASS_SUCCESS;
++    }
++    _error_code = CASS_SUCCESS;
++    switch (opcode()) {
++    case CQL_OPCODE_RESULT:
++        if (NewAndDecodeCqlResult(body(), &_decoder)) {
++            return true;
++        }
++        break;
++    case CQL_OPCODE_ERROR:
++        if (NewAndDecodeCqlError(body(), &_decoder)) {
++            _error = _decoder->error();
++            _error_code = 
++                static_cast<CqlErrorDecoder*>(_decoder.get())->error_code();
++            return true;
++        }
++        break;
++    case CQL_OPCODE_LAST_DUMMY:        
++        _error = "Decode a dummy response.";
++        break;
++    default:
++        butil::string_appendf(
++            &_error, "Unknown response opcode=`%d`.", opcode());
++        break;
++    }
++    if (_decoder != nullptr) {
++        _error = _decoder->error();
++    }
++    _error_code = CASS_DECODED_FAULT;
++    return false;
++}
++
++const CassandraResponse& CassandraResponse::default_instance() {
++    if (default_instance_ == nullptr) {
++        protobuf_AddDesc_baidu_2frpc_2fcassandra_5fbase_2eproto();
++    }
++    return *default_instance_;
++}
++
++void CassandraResponse::InitAsDefaultInstance() {
++}
++
++const ::google::protobuf::Descriptor* CassandraResponse::descriptor() {
++	protobuf_AssignDescriptorsOnce();
++	return CassandraResponse_descriptor_;
++}
++
++int CassandraResponse::ByteSize() const {
++    int total_size = _cql_response.ByteSize();
++    GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
++    _cached_size_ = total_size;
++    GOOGLE_SAFE_CONCURRENT_WRITES_END();
++    return total_size;
++}
++
++bool CassandraResponse::MergePartialFromCodedStream(
++    ::google::protobuf::io::CodedInputStream* input) {
++    LOG(WARNING) << "You're not supposed to parse a CassandraResponse";
++    return true;
++}
++
++void CassandraResponse::SerializeWithCachedSizes(
++    ::google::protobuf::io::CodedOutputStream* output) const {
++    LOG(WARNING) << "You're not supposed to serialize a CassandraResponse";
++}
++
++::google::protobuf::uint8* CassandraResponse::SerializeWithCachedSizesToArray(
++    ::google::protobuf::uint8* target) const {
++    return target;
++}
++
++// Protobuf methods.
++CassandraResponse* CassandraResponse::New() const {
++    return new (std::nothrow) CassandraResponse();
++}
++
++void CassandraResponse::CopyFrom(const ::google::protobuf::Message& from) {
++    if (&from == this) return;
++    Clear();
++    const CassandraResponse* source =
++        ::google::protobuf::internal::dynamic_cast_if_available<const CassandraResponse*>(&from);
++    if (source == NULL) {
++        ::google::protobuf::internal::ReflectionOps::Merge(from, this);
++    } else {
++        CopyFrom(*source);
++    }
++}
++
++void CassandraResponse::MergeFrom(const ::google::protobuf::Message& from) {
++    GOOGLE_CHECK_NE(&from, this);
++    const CassandraResponse* source =
++        ::google::protobuf::internal::dynamic_cast_if_available<const CassandraResponse*>(&from);
++    if (source == NULL) {
++        ::google::protobuf::internal::ReflectionOps::Merge(from, this);
++    } else {
++        MergeFrom(*source);
++    }
++}
++
++void CassandraResponse::CopyFrom(const CassandraResponse& from) {
++    if (&from == this) {
++        return;
++    }
++    _cached_size_ = from._cached_size_;
++    _error = from._error;
++    _cql_response = from._cql_response;
++    Decode(); 
++}
++
++void CassandraResponse::MergeFrom(const CassandraResponse& from) {
++    LOG(WARNING) << "CassandraResponse does not support merge from another.";
++}
++
++void CassandraResponse::Clear() {
++    _cached_size_ = 0;
++    _error_code = CASS_UNDECODED;
++    _error.clear();
++    _cql_response.head.Reset();
++    _cql_response.body.clear();
++    _decoder.reset();
++}
++
++bool CassandraResponse::IsInitialized() const {
++    return opcode() != CQL_OPCODE_LAST_DUMMY;
++}
++
++} // namespace brpc
+diff --git a/src/brpc/cassandra.h b/src/brpc/cassandra.h
+new file mode 100755
+index 00000000..5d422042
+--- /dev/null
++++ b/src/brpc/cassandra.h
+@@ -0,0 +1,510 @@
++// Copyright (c) 2019 Baidu, Inc.
++// 
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++// 
++//     http://www.apache.org/licenses/LICENSE-2.0
++// 
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++
++// Authors: Daojin, Cai (caidaojin@qiyi.com)
++
++#ifndef BRPC_CASSANDRA_H
++#define BRPC_CASSANDRA_H
++
++#include <cmath>              // std::abs()
++#include <string>
++
++#include <google/protobuf/stubs/common.h>
++#include <google/protobuf/generated_message_util.h>
++#include <google/protobuf/repeated_field.h>
++#include <google/protobuf/extension_set.h>
++#include <google/protobuf/generated_message_reflection.h>
++#include "google/protobuf/descriptor.pb.h"
++
++#include "brpc/cql_messages.h"
++#include "butil/iobuf.h"
++#include "butil/logging.h"
++#include "butil/strings/string_piece.h"
++#include "butil/sys_byteorder.h"
++
++namespace brpc {
++
++class Controller;
++class InputMessageBase;
++
++namespace policy {
++class CqlParsingContext;
++void SerializeCqlRequest(butil::IOBuf* buf, brpc::Controller* cntl,
++                         const google::protobuf::Message* request);
++void ProcessCqlResponse(InputMessageBase* msg_base);
++} // namespace policy
++
++class CassandraRequest : public ::google::protobuf::Message {
++public:
++    CassandraRequest();
++    CassandraRequest(CqlConsistencyLevel consistency);
++	
++    ~CassandraRequest();   
++
++    template<typename TKey>
++    void Get(const butil::StringPiece key_name, const TKey& key,
++             const std::string& column_name, const butil::StringPiece table) {
++        _opcode = CQL_OPCODE_QUERY;
++        uint32_t query_len = 0;
++        const butil::IOBuf::Area area = _query.reserve(sizeof(query_len));
++        if (area == butil::IOBuf::INVALID_AREA) {
++            LOG(FATAL) << "Fail to reserve IOBuf::Area for cql query length.";
++            return;
++        }
++        const size_t begin_size = _query.size();
++			  // SELECT column_name FROM table WHERE key_name=?	
++        _query.append("SELECT ", sizeof("SELECT ") - 1);
++        _query.append(column_name.data(), column_name.size());
++        _query.append(" FROM ", sizeof(" FROM ") - 1);
++        _query.append(table.data(), table.size());
++        _query.append(" WHERE ", sizeof(" WHERE ") - 1);
++        _query.append(key_name.data(), key_name.size());
++        _query.append("=?", sizeof("=?") - 1);
++
++        query_len = butil::HostToNet32(_query.size() - begin_size);
++        CHECK(0 == _query.unsafe_assign(area, &query_len));
++
++        _query_parameter.add_flag(CqlQueryParameter::WITH_VALUES);
++        _query_parameter.AppendValue(key);
++    }
++ 
++    template<typename TKey>
++    void Get(const butil::StringPiece key_name, const TKey& key,
++             const butil::StringPiece table) {
++        Get(key_name, key, '*', table);
++    }
++
++    template<typename TKey, typename TValue>
++    void Insert(const butil::StringPiece key_name, const TKey& key, 
++                const std::string& column_name, const TValue& column_value,
++                const butil::StringPiece table, int32_t ttl = -1) {
++        HandleBatchQueryAtBeginningIfNeeded();
++        uint32_t query_len = 0;
++        const butil::IOBuf::Area area = _query.reserve(sizeof(query_len));
++        if (area == butil::IOBuf::INVALID_AREA) {
++            LOG(FATAL) << "Fail to reserve IOBuf::Area for cql query length.";
++            return;
++        }
++        const size_t begin_size = _query.size();
++
++        // INSERT INTO table (key_name, column_name) VALUES (?, ?) USING TTL ttl
++        _query.append("INSERT INTO ", sizeof("INSERT INTO ") - 1);
++        _query.append(table.data(), table.size());
++        _query.append(" (", sizeof(" (") - 1);
++        _query.append(key_name.data(), key_name.size());
++        _query.append(", ", sizeof(", ") - 1);
++        _query.append(column_name.data(), column_name.size());
++        _query.append(") VALUES (?, ?)", sizeof(") VALUES (?, ?)") - 1);
++        if (ttl > 0) {
++            _query.append("USING TTL ", sizeof("USING TTL ") - 1);
++            _query.append(std::to_string(ttl));
++        }
++        query_len = butil::HostToNet32(_query.size() - begin_size);
++        CHECK(0 == _query.unsafe_assign(area, &query_len));
++
++        if (!is_batch_mode()) {
++            _query_parameter.add_flag(CqlQueryParameter::WITH_VALUES);
++            _query_parameter.AppendValue(key);
++            _query_parameter.AppendValue(column_value);
++        } else {
++            CqlEncodeUint16(2, &_query);
++            CqlEncodeBytes(key, &_query);
++            CqlEncodeBytes(column_value, &_query);
++        }
++    }
++
++    // Increase and decrease a counter.
++    template<typename TKey>
++    void Add(const butil::StringPiece key_name, const TKey& key,
++             const butil::StringPiece counter_name, int count,
++             const butil::StringPiece table) {
++        HandleBatchQueryAtBeginningIfNeeded();
++        uint32_t query_len = 0;
++        const butil::IOBuf::Area area = _query.reserve(sizeof(query_len));
++        if (area == butil::IOBuf::INVALID_AREA) {
++            LOG(FATAL) << "Fail to reserve IOBuf::Area for cql query length.";
++            return;
++        }
++        const size_t begin_size = _query.size();
++		
++        // UPDATE table set counter_name = counter_name + count WHERE key_name = ?.
++        _query.append("UPDATE ", sizeof("UPDATE ") - 1);
++        _query.append(table.data(), table.size());
++        _query.append(" set ", sizeof(" set ") - 1);
++        _query.append(counter_name.data(), counter_name.size());
++        _query.push_back('=');
++        _query.append(counter_name.data(), counter_name.size());
++        _query.push_back(count > 0 ? '+' : '-');
++        _query.append(std::to_string(std::abs(count)));
++        _query.append(" WHERE ", sizeof(" WHERE ") - 1);
++        _query.append(key_name.data(), key_name.size());
++        _query.append("=?", sizeof("=?") - 1);
++
++        query_len = butil::HostToNet32(_query.size() - begin_size);
++        CHECK(0 == _query.unsafe_assign(area, &query_len));
++				
++        if (!is_batch_mode()) {
++            _query_parameter.add_flag(CqlQueryParameter::WITH_VALUES);
++            _query_parameter.AppendValue(key);
++        } else {
++            CqlEncodeUint16(1, &_query);
++            CqlEncodeBytes(key, &_query);
++            set_batch_type(CQL_BATCH_COUNTER);
++        }
++    }
++
++    template<typename TKey>
++    void Delete(const butil::StringPiece key_name, const TKey& key,
++                const std::string& column_name, const butil::StringPiece table) {
++        HandleBatchQueryAtBeginningIfNeeded();
++        uint32_t query_len = 0;
++        const butil::IOBuf::Area area = _query.reserve(sizeof(query_len));
++        if (area == butil::IOBuf::INVALID_AREA) {
++            LOG(FATAL) << "Fail to reserve IOBuf::Area for cql query length.";
++            return;
++        }
++        const size_t begin_size = _query.size();
++
++        // Delete column_name FROM table where key_name=?.
++        _query.append("Delete ", sizeof("Delete ") - 1);
++        _query.append(column_name.data(), column_name.size());
++        _query.append(" FROM ", sizeof(" FROM ") - 1);
++        _query.append(table.data(), table.size());
++        _query.append(" WHERE ", sizeof(" WHERE ") - 1);
++        _query.append(key_name.data(), key_name.size());
++        _query.append("=?", sizeof("=?") - 1);
++
++        query_len = butil::HostToNet32(_query.size() - begin_size);
++        CHECK(0 == _query.unsafe_assign(area, &query_len));
++
++        if (!is_batch_mode()) {
++            _query_parameter.add_flag(CqlQueryParameter::WITH_VALUES);
++            _query_parameter.AppendValue(key);
++        } else {
++            CqlEncodeUint16(1, &_query);
++            CqlEncodeBytes(key, &_query);
++        }
++    }
++
++    template<typename TKey>
++    void Delete(const butil::StringPiece key_name, const TKey& key,
++                const butil::StringPiece table) {
++        Delete(key_name, key, "", table);
++    }
++
++    void ExecuteCql3Query(const butil::StringPiece query) {
++        HandleBatchQueryAtBeginningIfNeeded();
++        CqlEncodeUint32(query.size(), &_query);
++        _query.append(query.data(), query.size());
++        // Batch query is always need a value number even if no values followed.
++        if (is_batch_mode()) {
++            CHECK(_batch_parameter.curr_query_values == 0)
++                << "Invalid cql batched query values number. "
++                   "Most likely reason: you did not call methods in the right way.";
++            _batch_parameter.curr_query_values_area = _query.reserve(
++                sizeof(_batch_parameter.curr_query_values));  
++            CHECK(0 == _query.unsafe_assign(_batch_parameter.curr_query_values_area,
++                                            &_batch_parameter.curr_query_values));
++        }
++    }
++
++    template<typename TValue>
++    void AppendQueryParameterValue(const TValue& value) {
++        if (!is_batch_mode()) {
++            _query_parameter.add_flag(CqlQueryParameter::WITH_VALUES);
++            _query_parameter.AppendValue(value);
++            return;
++        }
++        CqlEncodeBytes(value, &_query);
++        ++_batch_parameter.curr_query_values;
++    }
++
++    void set_consistency(CqlConsistencyLevel consistency) {
++        _query_parameter._consistency = consistency;
++    }
++
++    void set_serial_consistency(CqlConsistencyLevel consistency) {
++        _query_parameter.add_flag(CqlQueryParameter::SERIAL_CONSISTENCY);
++        _query_parameter.set_serial_consistency(consistency);
++    }
++
++    void set_timestamp(int64_t timestamp) {
++        _query_parameter.add_flag(CqlQueryParameter::DEFAULT_TIMESTAMP);
++        _query_parameter.set_timestamp(timestamp);
++    }
++
++    void set_batch_type(CqlBatchType type) {
++        _batch_parameter.type = type;
++    }
++
++    CassOpCode opcode() const { return _opcode; } 
++
++    void Print(std::ostream& os) const;
++
++    // Protobuf methods.
++    CassandraRequest* New() const;
++    void CopyFrom(const ::google::protobuf::Message& from);
++    void MergeFrom(const ::google::protobuf::Message& from);
++    void CopyFrom(const CassandraRequest& from);
++    void MergeFrom(const CassandraRequest& from);
++    void Clear();
++    bool IsInitialized() const;
++
++    int ByteSize() const;
++    bool MergePartialFromCodedStream(
++        ::google::protobuf::io::CodedInputStream* input);
++    void SerializeWithCachedSizes(
++        ::google::protobuf::io::CodedOutputStream* output) const;
++    ::google::protobuf::uint8* SerializeWithCachedSizesToArray(
++        ::google::protobuf::uint8* target) const;
++    int GetCachedSize() const { return _cached_size_; }
++
++    static const ::google::protobuf::Descriptor* descriptor();
++    static const CassandraRequest& default_instance();
++    ::google::protobuf::Metadata GetMetadata() const;
++
++private:
++    void SharedCtor();
++    void SharedDtor();
++    void SetCachedSize(int size) const;
++
++friend void protobuf_AddDesc_baidu_2frpc_2fcassandra_5fbase_2eproto_impl();
++friend void protobuf_AddDesc_baidu_2frpc_2fcassandra_5fbase_2eproto();
++friend void protobuf_AssignDesc_baidu_2frpc_2fcassandra_5fbase_2eproto();
++friend void protobuf_ShutdownFile_baidu_2frpc_2fcassandra_5fbase_2eproto();
++  
++    void InitAsDefaultInstance();
++    static CassandraRequest* default_instance_;
++
++private:
++friend void policy::SerializeCqlRequest(
++    butil::IOBuf* buf, brpc::Controller* cntl,
++    const google::protobuf::Message* request);
++
++    struct BatchParameter {
++        // Batch query kind. '0' is normal query and '1' is prepare query.
++        // Now we only support normal query for batch request.
++        uint8_t kind = 0;
++        // The type of batch to use.
++        uint8_t type = CQL_BATCH_LOGGED;		
++        // Number of batched queries. If count > 1, it is batch query.		
++        uint16_t count = 0;
++        uint16_t curr_query_values = 0;
++        butil::IOBuf::Area curr_query_values_area = butil::IOBuf::INVALID_AREA;
++
++        void clear() {
++            count = curr_query_values = kind = 0;
++            type = CQL_BATCH_LOGGED;
++            curr_query_values_area = butil::IOBuf::INVALID_AREA;
++        }
++    };
++
++    CqlConsistencyLevel consistency() const {
++        return _query_parameter._consistency;
++    }
++
++    const CqlQueryParameter& query_parameter() const {
++        return _query_parameter;
++    }
++
++    bool is_batch_mode() const {
++        return _batch_parameter.count > 1;
++    }
++
++    bool IsValidOpcode() const {
++        return _opcode == CQL_OPCODE_QUERY 
++            || _opcode == CQL_OPCODE_PREPARE
++            || _opcode == CQL_OPCODE_BATCH;
++    }
++
++    uint8_t flags() const { return _query_parameter._flags; }
++
++    const butil::IOBuf& query() const { return _query; }
++
++    void EncodeBatchQueries(butil::IOBuf* buf);
++
++    void Encode(butil::IOBuf* buf);
++
++    void HandleBatchQueryAtBeginningIfNeeded();
++
++    void EncodeValuesNumberOfLastBatchedQuery();
++
++    CassOpCode _opcode;
++    mutable int _cached_size_;
++    BatchParameter _batch_parameter;
++    butil::IOBuf _query;
++    CqlQueryParameter _query_parameter;
++};
++
++class CassandraResponse : public ::google::protobuf::Message {
++public:
++    // The response error code. If response is CQL ERROR. The error code
++    // is the ERROR result.
++    enum ErrorCode {
++        CASS_UNDECODED = 0xF000,
++        CASS_DECODED_FAULT = 0xF001,
++        CASS_SUCCESS = 0xFFFF
++    };
++
++    CassandraResponse();
++    virtual ~CassandraResponse();
++
++    // If response is replied by server and not a ERROR.
++    bool Failed() const {
++        return error_code() != CASS_SUCCESS;
++    }
++
++    int error_code() const {
++        return _error_code;
++    }
++
++    // Get value of the column. 
++    // row_index is the index of rows in query content.
++    // Return 0 if success, 1 if the column is null and -1 if failure.
++    template<typename TValue>    
++    int GetColumnValueOfRow(const std::string& column_name,
++                            size_t row_index,
++                            TValue* column_value) {
++        CqlRowsResultDecoder* rows_result = GetRowsResult();
++        if (rows_result == nullptr) {
++            _error = "Null cql rows result.";
++            return -1;
++        }
++        if (rows_result->rows_count() == 0 || rows_result->columns_count() == 0) {
++            _error = "No rows in cql rows result.";
++            return -1;
++        }
++        const int ret = rows_result->DecodeColumnValueOfRow(
++            column_name, row_index, column_value);
++        if (ret == -1) {
++            rows_result->MoveErrorTo(&_error);
++        }
++        return ret;
++    }
++
++    // Get value of column of the first row.
++    template<typename TValue>
++    int GetColumnValue(const std::string& column_name,
++                       TValue* column_value) {  
++        return GetColumnValueOfRow(column_name, 0, column_value);
++    }
++
++    // Return the number of row in the query rows result.
++    // Return -1 if the response is the default dummy value.
++    int GetRowsCount() {
++        CqlRowsResultDecoder* rows_result = GetRowsResult();
++        if (rows_result != nullptr) {
++            return rows_result->rows_count();
++        }
++        return -1;
++    }
++
++    // Get column specs of cql rows result.
++    // Return valid pointer if success. Otherwise, return nullptr.
++    const std::vector<CqlColumnSpec>* GetColumnSpecs();
++
++    const std::string& LastError() const {
++        return _error;
++    }
++
++    const CqlFrameHead& head() const {
++        return _cql_response.head;
++    }
++
++    const butil::IOBuf& body() const {
++        return _cql_response.body;
++    }
++
++    void Print(std::ostream& os) const;
++
++    void MoveFrom(CqlResponse& response) {
++        _cql_response.head = response.head;
++        _cql_response.body.swap(response.body);
++    }
++
++    void Swap(CassandraResponse* response) {
++        if (response != this) {
++            CqlFrameHead head = _cql_response.head;
++            _cql_response.head = response->_cql_response.head;
++            response->_cql_response.head = head;
++            _cql_response.body.swap(response->_cql_response.body);
++        }
++    }
++
++    // Protobuf methods.
++    CassandraResponse* New() const;
++    void CopyFrom(const ::google::protobuf::Message& from);
++    void MergeFrom(const ::google::protobuf::Message& from);
++    void CopyFrom(const CassandraResponse& from);
++    void MergeFrom(const CassandraResponse& from);
++    void Clear();
++    bool IsInitialized() const;
++
++    int ByteSize() const;
++    bool MergePartialFromCodedStream(
++        ::google::protobuf::io::CodedInputStream* input);
++    void SerializeWithCachedSizes(
++        ::google::protobuf::io::CodedOutputStream* output) const;
++    ::google::protobuf::uint8* SerializeWithCachedSizesToArray(
++        ::google::protobuf::uint8* target) const;
++    int GetCachedSize() const { return _cached_size_; }
++
++    static const ::google::protobuf::Descriptor* descriptor();
++    static const CassandraResponse& default_instance();
++    ::google::protobuf::Metadata GetMetadata() const;
++
++private:
++    void SharedCtor();
++    void SharedDtor();
++    void SetCachedSize(int size) const;
++
++friend void protobuf_AddDesc_baidu_2frpc_2fcassandra_5fbase_2eproto_impl();
++friend void protobuf_AddDesc_baidu_2frpc_2fcassandra_5fbase_2eproto();
++friend void protobuf_AssignDesc_baidu_2frpc_2fcassandra_5fbase_2eproto();
++friend void protobuf_ShutdownFile_baidu_2frpc_2fcassandra_5fbase_2eproto();
++  
++    void InitAsDefaultInstance();
++    static CassandraResponse* default_instance_;
++
++private:
++friend policy::CqlParsingContext;
++friend void policy::ProcessCqlResponse(InputMessageBase* msg_base);
++
++    CassOpCode opcode() const {
++        return (CassOpCode)_cql_response.head.opcode;
++    }
++
++    const CqlResponse& cql_response() const {
++        return _cql_response;
++    }
++
++    CqlRowsResultDecoder* GetRowsResult();
++
++    bool Decode();
++
++    mutable int _cached_size_;
++
++    int _error_code = CASS_UNDECODED;
++    std::string _error;
++
++    CqlResponse _cql_response;
++    std::unique_ptr<CqlResponseDecoder> _decoder;
++};
++
++std::ostream& operator<<(std::ostream& os, const CassandraRequest& r);
++std::ostream& operator<<(std::ostream& os, const CassandraResponse& r);
++
++} // namespace brpc
++
++#endif  // BRPC_CASSANDRA_H
+diff --git a/src/brpc/cql_messages.cpp b/src/brpc/cql_messages.cpp
+new file mode 100755
+index 00000000..1dd6fab6
+--- /dev/null
++++ b/src/brpc/cql_messages.cpp
+@@ -0,0 +1,770 @@
++// Copyright (c) 2019 Baidu, Inc.
++// 
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++// 
++//     http://www.apache.org/licenses/LICENSE-2.0
++// 
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++
++// Authors: Daojin, Cai (caidaojin@qiyi.com)
++
++#include "brpc/cql_messages.h"
++
++#include <array>
++#include <iomanip>
++
++#include "butil/logging.h"
++#include "butil/string_printf.h"    // string_appendf()
++
++namespace brpc {
++
++namespace {
++
++union FloatIntCast {
++    float f;
++    int32_t i;
++};
++
++union DoubleIntCast {
++    double d;
++    int64_t i;
++};
++
++std::array<const char*, CQL_OPCODE_LAST_DUMMY> kCqlOpcodeNames = 
++    {"'Error response'", "'Startup request'", "'Ready response'",
++     "'Authenticate response'", "Not existing message", "'Options request'",
++     "'Supported request'", "'Query request'", "'Result response'",
++     "'Prepare request'", "'Exexute request'", "'Register request'",
++     "'Event response'", "'Batch request'", "'Auth_challenge response'",
++     "'Auth_response request'", "'Auth_success response'"};
++
++} // namespace
++
++
++void CqlEncodeBytes(float value, butil::IOBuf* buf) {
++    FloatIntCast fi;
++    fi.f = value;
++    CqlEncodeBytes(fi.i, buf);
++}
++
++void CqlEncodeBytes(double value, butil::IOBuf* buf) {
++    DoubleIntCast di;
++    di.d = value;
++    CqlEncodeBytes(di.i, buf);
++}
++
++inline void CqlEncodeString(const std::string& s, butil::IOBuf* buf) {
++    if (!s.empty()) {
++        CqlEncodeUint16(s.size(), buf);
++        buf->append(s);
++    }
++}
++
++// Encode CQL [string map] to buf.
++// Return bytes encoded into buf.
++void CqlEncodeStringMap(
++    const std::map<std::string, std::string>& pairs, 
++    butil::IOBuf* buf) {
++    if (pairs.empty()) {
++        return;
++    }
++    CqlEncodeUint16(pairs.size(), buf);
++    for (const std::pair<std::string, std::string>& pair : pairs) {
++        CqlEncodeString(pair.first, buf);
++        CqlEncodeString(pair.second, buf);
++    }
++}
++
++// Encode cql [long string] type to buffer.
++// [long string]: An [int] n, followed by n bytes representing an UTF-8 string.
++inline void CqlEncodeLongStringTo(const butil::StringPiece s, butil::IOBuf* buf) {
++    CqlEncodeUint32(s.size(), buf);
++    buf->append(s.data(), s.size());
++}
++
++inline void CqlEncodeConsistency(CqlConsistencyLevel consistency, butil::IOBuf* buf) {
++    return CqlEncodeUint16(consistency, buf);
++}
++
++void CqlEncodeQueryParameter(const CqlQueryParameter& parameter, butil::IOBuf* buf) {
++    CqlEncodeConsistency(parameter._consistency, buf);
++    buf->push_back(parameter._flags);
++    if (parameter.has_flag(CqlQueryParameter::WITH_VALUES)) {
++        if (parameter._num_name_value > 0) {
++            CqlEncodeUint16(parameter._num_name_value, buf);
++            buf->append(parameter._name_value);
++        }
++    }
++    if (parameter.has_flag(CqlQueryParameter::SERIAL_CONSISTENCY)) {
++        CqlEncodeConsistency(parameter._serial_consistency, buf);
++    }
++    if (parameter.has_flag(CqlQueryParameter::DEFAULT_TIMESTAMP)) {
++        CqlEncodeInt64(parameter._timestamp, buf);
++    }
++    // TODO(caidaojin): Process other flags if needed.
++}
++
++void CqlEncodeQuery(const std::string& query,
++                    const CqlQueryParameter& query_parameter,
++                    butil::IOBuf* buf) {
++    if (query.empty()) {
++        return;
++    }
++    CqlEncodeUint32(query.size(), buf);
++    buf->append(query);
++    CqlEncodeQueryParameter(query_parameter, buf);
++}
++
++void CqlEncodeQuery(const butil::IOBuf& query,
++                    const CqlQueryParameter& query_parameter,
++                    butil::IOBuf* buf) {
++    if (query.empty()) {
++        return;
++    }
++    CqlEncodeUint32(query.size(), buf);
++    buf->append(query);
++    CqlEncodeQueryParameter(query_parameter, buf);
++}
++
++void CqlEncodeHead(const CqlFrameHead& header, butil::IOBuf* buf) {
++    buf->push_back(header.version);
++    buf->push_back(header.flag);
++    CqlEncodeInt16(header.stream_id, buf);
++    buf->push_back(header.opcode);
++    CqlEncodeUint32(header.length, buf);
++}
++
++void CqlEncodeStartup(CqlFrameHead& head,
++                      const std::map<std::string, std::string>& options,
++                      butil::IOBuf* buf) {
++    butil::IOBuf body;
++    CqlEncodeStringMap(options, &body);
++    head.length = body.size();
++    CqlEncodeHead(head, buf);
++    buf->append(body);
++}
++
++// CQL [string] : A [short] n, followed by n bytes representing an UTF-8 string.
++bool CqlDecodeString(butil::IOBufBytesIterator& iter, std::string* out) {
++    if (iter.bytes_left() < 3) {
++        return false;
++    } 
++    uint16_t ssize = CqlDecodeUint16(iter);
++    if (iter.bytes_left() >= ssize) {
++        if (out != nullptr) {
++            if (static_cast<int>(out->capacity()) < ssize) {
++                out->reserve(ssize);
++            }
++            iter.copy_and_forward(out, ssize);
++        } else {
++            iter.forward(ssize);
++        }
++        return true;
++    }
++    return false;
++}
++
++// Just forword IOBufBytesIterator number of CQL [string].
++// CQL [string]: A [short] n, followed by n bytes representing an UTF-8 string.
++inline bool CqlForwardStrings(butil::IOBufBytesIterator& iter, size_t num) {
++    for (size_t i = 0; i != num; ++i) {
++        if (!CqlDecodeString(iter, nullptr)) {
++            return false;
++        }
++    }
++    return true;
++}
++
++int CqlDecodeBytes(butil::IOBufBytesIterator& iter, std::string* out) {
++    if (iter.bytes_left() < sizeof(int32_t)) {
++        return -1;
++    }
++    int32_t nbytes = CqlDecodeInt32(iter);
++    if (nbytes <= 0) {
++        return 1;
++    }
++    if ((int)iter.bytes_left() < nbytes) {
++        return -1;
++    }
++    if (out != nullptr) {
++        if (static_cast<int>(out->capacity()) < nbytes) {
++            out->reserve(nbytes);
++        }		
++        iter.copy_and_forward(out, nbytes);
++    } else {
++        iter.forward(nbytes);
++    }
++
++    return 0;
++}
++
++int CqlDecodeBytes(butil::IOBufBytesIterator& iter, bool* out) {
++    if (iter.bytes_left() < sizeof(int32_t)) {
++        return -1;
++    }
++    int32_t nbytes = CqlDecodeInt32(iter);
++    if (nbytes == 1) {
++        if (iter.bytes_left() < 1) {
++            return -1;
++        } 
++        *out = *iter == 0x01;
++        return 0;
++    } else if (nbytes <= 0) {
++        return 1;
++    }
++    return -1;
++}
++
++int CqlDecodeBytes(butil::IOBufBytesIterator& iter, int32_t* out) {
++    if (iter.bytes_left() < sizeof(int32_t)) {
++        return -1;
++    }
++    int32_t nbytes = CqlDecodeInt32(iter);
++    if (nbytes == 4) {
++        if (iter.bytes_left() < 4) {
++            return -1;
++        } 
++        *out = CqlDecodeInt32(iter);
++        return 0;
++    } else if (nbytes <= 0) {
++        return 1;
++    }
++    return -1;
++}
++
++int CqlDecodeBytes(butil::IOBufBytesIterator& iter, int64_t* out) {
++    if (iter.bytes_left() < sizeof(int32_t)) {
++        return -1;
++    }
++    int32_t nbytes = CqlDecodeInt32(iter);
++    if (nbytes == 8) {
++        if (iter.bytes_left() < 8) {
++            return -1;
++        } 
++        *out = CqlDecodeInt64(iter);
++        return 0;
++    } else if (nbytes <= 0) {
++        return 1;
++    }
++    return -1;
++}
++
++int CqlDecodeBytes(butil::IOBufBytesIterator& iter, float* out) {
++    if (iter.bytes_left() < sizeof(int32_t)) {
++        return -1;
++    }
++    int32_t nbytes = CqlDecodeInt32(iter);
++    if (nbytes == sizeof(float)) {
++        if (iter.bytes_left() < sizeof(float)) {
++            return -1;
++        }
++        FloatIntCast fi;
++        fi.i = CqlDecodeInt32(iter);
++        *out = fi.f;
++        return 0;
++    } else if (nbytes <= 0) {
++        return 1;
++    }
++    return -1;
++}
++
++int CqlDecodeBytes(butil::IOBufBytesIterator& iter, double* out) {
++    if (iter.bytes_left() < sizeof(int32_t)) {
++        return -1;
++    }
++    int32_t nbytes = CqlDecodeInt32(iter);
++    if (nbytes == sizeof(double)) {
++        if (iter.bytes_left() < sizeof(double)) {
++            return -1;
++        }
++        DoubleIntCast di;
++        di.i = CqlDecodeInt64(iter);
++        *out = di.d;
++        return 0;
++    } else if (nbytes <= 0) {
++        return 1;
++    }
++    return -1;
++}
++
++bool CqlDecodeHead(butil::IOBufBytesIterator& iter, CqlFrameHead* head) {
++    if (iter.bytes_left() < head->SerializedSize()) {
++        return false;
++    }
++    head->version = *iter; ++iter;
++    head->flag = *iter; ++iter;
++    head->stream_id = CqlDecodeInt16(iter);
++    head->opcode = *iter; ++iter;
++    head->length = CqlDecodeInt32(iter);
++    return true;
++}
++
++const size_t CqlFrameHead::kCqlFrameHeadSize = 9;
++
++void CqlQueryParameter::MoveValuesTo(butil::IOBuf* buf) {
++    remove_flag(WITH_VALUES);
++    CqlEncodeUint16(_num_name_value, buf);
++    if (_num_name_value > 0) {
++        buf->append(_name_value.movable());
++    }
++    _num_name_value = 0;
++}
++
++const std::string& CqlErrorDecoder::GetErrorDetails() {
++    if (!has_decoded()) {
++        return _error_details;
++    }
++    if (_error_details.empty()) {
++        CqlDecodeString(_decoded_body, &_error_details);
++    }
++    return _error_details;
++}
++
++bool CqlErrorDecoder::Decode() {
++    if (has_decoded()) {
++        return has_decoded_success();
++    }
++    if (!DecodeErrorCode()) {
++        return false;
++    }
++    return CqlDecodeString(_decoded_body, nullptr);
++}
++
++bool CqlErrorDecoder::DecodeErrorCode() {
++    if (_decoded_body.bytes_left() <= 4) {
++        _error = "No enough buffer to parse cql ERROR.";
++        return false;
++    }
++    _error_code = CqlDecodeInt32(_decoded_body);
++
++    const char* e = GetErrorBrief();
++    if(e != nullptr) {
++        _error = e;
++        return true;
++    }
++    return false;
++}
++
++const char* CqlErrorDecoder::GetErrorBrief() {
++    switch (_error_code) {
++    case 0x0000:
++        return "Server error";
++    case 0x000A:
++        return "Protocol error";
++    case 0x0100:
++        return "Authentication error";
++    case 0x1000:
++        return "Unavailable exception";
++    case 0x1001:
++        return "Overloaded";
++    case 0x1002:
++        return "Is_bootstrapping";
++    case 0x1003:
++        return "Truncate_error";
++    case 0x1100:
++        return "Write_timeout";
++    case 0x1200:
++        return "Read_timeout";
++    case 0x1300:
++        return "Read_failure";
++    case 0x1400:
++        return "Function_failure";
++    case 0x1500:
++        return "Write_failure";
++    case 0x2000:
++        return "Syntax_error";
++    case 0x2100:
++        return "Unauthorized";
++    case 0x2200:
++        return "Invalid";
++    case 0x2300:
++        return "Config_error";
++    case 0x2400:
++        return "Already_exists";
++    case 0x2500:
++        return "Unprepared";
++    default:
++        break;
++    }
++
++    return nullptr;
++}
++
++bool CqlAuthenticateDecoder::Decode() {
++    if (has_decoded()) {
++        return has_decoded_success();
++    }
++    butil::IOBufBytesIterator iter(_body_iter);
++    if (!CqlDecodeString(iter, &_authenticator)) {
++        _error = "Fail to decode cql authenticate response.";
++        return false;
++    }
++    if (iter.bytes_left() != 0) {
++        _error = "Invalid body length of cql authenticate response.";
++        return false;
++    }
++    return true;
++}
++
++bool CqlAuthSuccessDecoder::Decode() {
++    if (has_decoded()) {
++        return has_decoded_success();
++    }
++
++    butil::IOBufBytesIterator iter(_body_iter);
++    if (CqlDecodeBytes(iter, reinterpret_cast<std::string*>(0)) != -1
++        && iter.bytes_left() == 0) {
++        return true;
++    }
++    _error = "Invalid cql auth success body.";
++    return false;
++}
++
++bool CqlAuthSuccessDecoder::DecodeAuthToken(std::string* out) {
++    butil::IOBufBytesIterator iter(_body_iter);
++    if (CqlDecodeBytes(iter, out) != -1) {
++        return true;
++    }
++    return false;
++}
++
++bool CqlResultDecoder::Decode() {
++    butil::IOBufBytesIterator iter(_body_iter);
++    _type = CqlDecodeResultType(iter);
++    return _type != CQL_RESULT_LAST_DUMMY && DecodeCqlResult(iter);
++}
++
++bool CqlSetKeyspaceResultDecoder::DecodeCqlResult(
++    butil::IOBufBytesIterator& iter) {
++    if (!CqlDecodeString(iter, &_keyspace)) {
++        _error = "Fail to parse keyspace from cql result body.";
++        return false;
++    }
++    if (iter.bytes_left() != 0) {
++        _error = "Invalid body length of cql use keyspace result.";
++        return false;
++    }
++    return true;
++}
++
++// The meta data is composed of :
++// <flags><columns_count>[<paging_state>][<global_table_spec>?<col_spec_1>...<col_spec_n>]
++bool CqlMetaData::Decode(butil::IOBufBytesIterator& iter) {
++    if (!DecodeFlags(iter) || !DecodeColumnsCount(iter)) {
++        return false;
++    }
++    if (has_paging_state()) {
++        CHECK(false) << "TODO(caidaojin): Now not support paging_state.";
++    }
++
++    if (has_meta_data()) {
++        // Handle global_table_spec. 
++        if (has_global_tables_spec() && !DecodeGlobalTabelSpec(iter)) {
++            return false;
++        }
++        return DecodeColumnsSpec(iter);
++    }
++
++    return true;
++}
++
++// Flags are composed following bit mask: 0x0001, 0x0002 and 0x0004.
++bool CqlMetaData::DecodeFlags(butil::IOBufBytesIterator& iter) {
++    if (iter.bytes_left() >= sizeof(_flags)) {
++        _flags = CqlDecodeInt32(iter);
++    }
++    bool ret = _flags & ~(0x0007);
++    if (ret) {
++       butil::string_appendf(
++           &_error, "Invalid flags(0x%02X\n) in meta data of cql rows result", _flags);
++    }
++    return !ret;
++}
++
++bool CqlMetaData::DecodeColumnsCount(butil::IOBufBytesIterator& iter) {
++    if (iter.bytes_left() >= sizeof(_columns_count)) {
++        _columns_count = CqlDecodeInt32(iter);
++        if (_columns_count >= 0) {
++            return true;
++        }
++        _error = "Negative columns count in meta data of cql rows result.";
++        return false;
++    }
++    _error = "Fail to parse columns count due to be short of remain bytes";
++    return false;
++}
++
++// It is composed of two [string] representing the
++// (unique) keyspace name and table name the columns belong to.
++bool CqlMetaData::DecodeGlobalTabelSpec(butil::IOBufBytesIterator& iter) {
++    if (CqlDecodeString(iter, &_keyspace)
++        && CqlDecodeString(iter, &_table)) {
++        return true;
++    }
++    _error = "Fail to parse global table spec of cql rows result.";
++    return false;
++}
++
++inline CqlValueTypeId CqlMetaData::CqlDecodeCqlOption(butil::IOBufBytesIterator& iter) {
++    if (iter.bytes_left() < 2) {
++        return CQL_DUMMY_TYPE;
++    }
++    CqlValueTypeId id = static_cast<CqlValueTypeId>(CqlDecodeUint16(iter));
++    CHECK(id != CQL_CUSTOM && id != CQL_UDT)
++        << "Do not support cql UDT and custom type now!";
++    return id;
++}
++
++bool CqlMetaData::CqlDecodeColumnType(butil::IOBufBytesIterator& iter) {
++    CqlColumnSpec& column_spec = _column_specs.back();
++    CHECK(!column_spec.IsValid());
++    CqlValueTypeId type_id = CqlDecodeCqlOption(iter);
++    if (type_id == CQL_DUMMY_TYPE) {
++        return false;
++    }
++    column_spec.type_id = type_id;
++    CqlValueTypeId element_type_id;
++    switch (type_id) {
++    case CQL_LIST:
++    case CQL_SET:
++        element_type_id = CqlDecodeCqlOption(iter);
++        if(element_type_id != CQL_DUMMY_TYPE) {
++            column_spec.elements_type_id.emplace_back(element_type_id);
++            return true;
++        }
++        return false;
++    case CQL_MAP:
++        for (int i = 0; i != 2; ++i) {
++            element_type_id = CqlDecodeCqlOption(iter);
++            if(element_type_id == CQL_DUMMY_TYPE) {
++                return false;
++            }
++            column_spec.elements_type_id.emplace_back(element_type_id);
++        }
++        return true;
++    case CQL_TUPLE: 
++        if (iter.bytes_left() > 2) {
++            const size_t n = CqlDecodeUint16(iter);
++            for (size_t i = 0; i != n; ++i) {
++                element_type_id = CqlDecodeCqlOption(iter);
++                if (element_type_id == CQL_DUMMY_TYPE) {
++                    return false;
++                }
++                column_spec.elements_type_id.emplace_back(element_type_id);
++            }
++            return true;
++        }
++        return false;
++    case CQL_CUSTOM:
++    case CQL_UDT:
++        return false;
++    default:
++        return true;
++    }
++    return false;
++}
++
++// <col_spec_i> specifies the columns returned in the query. There are
++// <column_count> such column specifications that are composed of:
++// (<ksname><tablename>)?<name><type>
++bool CqlMetaData::DecodeColumnsSpec(butil::IOBufBytesIterator& iter) {
++    const bool global_spec = has_global_tables_spec();
++    for (int i = 0; i != _columns_count; ++i) {
++        if (!global_spec) {
++            if (_keyspace.empty() && _table.empty()) {
++                if (!DecodeGlobalTabelSpec(iter)) {
++                    butil::string_appendf(
++                        &_error, 
++                        "Fail to decode keyspace and table name of the %dth column spec.",
++                        i + 1);
++                    return false;
++                }
++            } else if (!CqlForwardStrings(iter, 2)) {
++                butil::string_appendf(
++                    &_error, 
++                    "Fail to skip keyspace and table name of the %dth column spec.",
++                    i + 1);
++                return false;
++            }
++        }
++        _column_specs.emplace_back();
++        if (!CqlDecodeString(iter, &_column_specs.back().name)) {
++            butil::string_appendf(
++                &_error,
++                "Fail to decode column name of the %dth column spec.",
++                i + 1);
++            return false;
++        }
++        if (!CqlDecodeColumnType(iter)) {
++            butil::string_appendf(
++                &_error,
++                "Fail to decode column type of the %dth column spec.",
++                i + 1);
++            return false;
++        }
++        _column_specs_map.insert(std::make_pair(_column_specs.back().name, _column_specs.size() - 1));
++    }
++    return true;
++}
++
++int CqlRowsResultDecoder::GetColumnValueSpecOffset(
++    const std::string& name) {
++    auto iter = _meta_data._column_specs_map.find(name);
++    if (iter != _meta_data._column_specs_map.end()) {
++        return iter->second;
++    }
++    return -1;
++}
++
++bool CqlRowsResultDecoder::DecodeCqlResult(butil::IOBufBytesIterator& iter) {
++    if (!_meta_data.Decode(iter)) {
++        set_error(_meta_data.error());
++        return false;
++    }
++
++    if (!DecodeRowsCount(iter)) {
++        set_error("Fail to decode cql result rows count.");
++        return false;
++    }
++
++    _rows_iter.emplace_back(iter);
++
++    return true;
++}
++
++bool CqlRowsResultDecoder::DecodeRowsCount(butil::IOBufBytesIterator& iter) {
++    if (iter.bytes_left() >= 4) {
++        _rows_count = CqlDecodeInt32(iter);
++        return true;
++    }
++    return false;
++}
++
++bool CqlRowsResultDecoder::ForwardToColumnOfRow(
++    const std::string& column_name, butil::IOBufBytesIterator& row_iter) {
++    int offset = GetColumnValueSpecOffset(column_name);
++    if (offset < 0) {
++        return false;
++    }
++    return ForwardToColumnOfRow((size_t)offset, row_iter);
++}
++
++bool CqlRowsResultDecoder::ForwardToColumnOfRow(
++    size_t offset, butil::IOBufBytesIterator& row_iter) {
++    for (size_t i = 0; i != offset; ++i) {
++        if (-1 == CqlDecodeBytes(row_iter, reinterpret_cast<std::string*>(0))) {
++            set_error("Fail to find cql column position in response");
++            return false;
++        }
++    }
++    return true;
++}
++
++const butil::IOBufBytesIterator* CqlRowsResultDecoder::GetRowIter(size_t index) {
++    if (rows_count() <= index) {
++        set_error("Invalid cql row index");
++        return nullptr;
++    }
++    while (_rows_iter.size() <= index) {
++        if (!BuildNextRowIter()) {
++            set_error("Fail to find cql row buf");
++            return nullptr;
++        }
++    }
++    return &_rows_iter[index];
++}
++
++bool CqlRowsResultDecoder::BuildNextRowIter() {
++    butil::IOBufBytesIterator last_iter = _rows_iter.back();
++    for (size_t i = 0; i != columns_count(); ++i) {
++        if (-1 == CqlDecodeBytes(last_iter, reinterpret_cast<std::string*>(0))) {
++            return false;
++        }
++    }
++    _rows_iter.emplace_back(last_iter);
++    return true;
++}
++
++const char* GetCqlOpcodeName(uint8_t opcode) {
++    return opcode < kCqlOpcodeNames.size() ? kCqlOpcodeNames[opcode] : "Unknow cql opcode";
++}
++
++int32_t CqlDecodeResultType(butil::IOBufBytesIterator& iter) {
++    if (iter.bytes_left() >= 4) {
++        return CqlDecodeInt32(iter);
++    }
++    return CQL_RESULT_LAST_DUMMY;
++}
++
++bool NewAndDecodeCqlResult(const butil::IOBuf& result_body,
++                           std::unique_ptr<CqlResponseDecoder>* decoder) {
++    butil::IOBufBytesIterator iter(result_body);
++    switch (CqlDecodeResultType(iter)) {
++    case CQL_RESULT_ROWS: {
++        CqlRowsResultDecoder* rows_result =
++            new (std::nothrow) CqlRowsResultDecoder(result_body);
++        if (rows_result != nullptr && rows_result->DecodeResponse()) {
++            decoder->reset(rows_result);
++            return true;
++        }
++        break;
++    }
++    case CQL_RESULT_VOID: {
++        CqlVoidResultDecoder* void_result =
++            new (std::nothrow) CqlVoidResultDecoder(result_body);
++        if (void_result != nullptr && void_result->DecodeResponse()) {
++            decoder->reset(void_result);
++            return true;
++        }
++        break;
++    }
++    case CQL_RESULT_SET_KEYSPACE:
++    case CQL_RESULT_PREPARED:
++    case CQL_RESULT_SCHEMA_CHANGE:
++    default:
++        break;
++    }
++    return false;
++}
++  
++bool NewAndDecodeCqlError(const butil::IOBuf& error_body,
++    std::unique_ptr<CqlResponseDecoder>* decoder) {
++    decoder->reset(new (std::nothrow) CqlErrorDecoder(error_body));
++    return *decoder != nullptr && (*decoder)->DecodeResponse();
++}
++
++std::ostream& operator<<(std::ostream& os, const CqlFrameHead& head) {
++    os << "CqlFrameHead: [" << GetCqlOpcodeName(head.opcode)
++			 << " version=" << (int)(head.version & ~0x80)
++       << " flag=" << (int)head.flag
++       << " opcode=" << (int)head.opcode 
++       << " stream_id=" << (int)head.stream_id 
++       << " length=" << (int)head.length << ']';
++    return os;
++}
++
++std::ostream& operator<<(std::ostream& os,
++                        const CqlMessageOsWrapper& cql_msg_wrapper) {
++    const butil::IOBuf& body = cql_msg_wrapper.body;
++    os << cql_msg_wrapper.head << "\nCqlFrameBody: size=" << body.size() 
++       <<"\n[ASSIC:" << body << "]";
++    
++    if (cql_msg_wrapper.verbose) {
++        os << "\n[HEX:";
++        butil::IOBufBytesIterator it(body);
++        for (size_t i = 0; i != body.size(); ++i) {
++            os << ' ' << std::setw(2) << std::setfill('0') << std::hex << (int)*it;
++            it++;
++        }
++        os << ']';
++    }
++    return os;
++}
++
++} // namespace brpc
+diff --git a/src/brpc/cql_messages.h b/src/brpc/cql_messages.h
+new file mode 100755
+index 00000000..9cd65b70
+--- /dev/null
++++ b/src/brpc/cql_messages.h
+@@ -0,0 +1,971 @@
++// Copyright (c) 2019 Baidu, Inc.
++// 
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++// 
++//     http://www.apache.org/licenses/LICENSE-2.0
++// 
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++
++// Authors: Daojin, Cai (caidaojin@qiyi.com)
++
++#ifndef BRPC_CQL_MESSAGES_H
++#define BRPC_CQL_MESSAGES_H
++
++#include <map>
++#include <memory>
++#include <set>
++#include <string>
++#include <type_traits>              // std::is_same
++#include <unordered_map>
++#include <vector>
++
++#include "butil/iobuf.h"
++#include "butil/logging.h"
++#include "butil/strings/string_piece.h"
++#include "butil/sys_byteorder.h"
++
++namespace brpc {
++
++class CassandraRequest;
++
++inline void CqlEncodeInt16(int16_t v, butil::IOBuf* buf) {
++    buf->push_back((v >> 8) & 0xff);
++    buf->push_back(v & 0xff);    
++}
++
++inline void CqlEncodeUint16(uint16_t v, butil::IOBuf* buf) {
++    buf->push_back((v >> 8) & 0xff);
++    buf->push_back(v & 0xff);
++}
++
++inline void CqlEncodeInt32(int32_t v, butil::IOBuf* buf) {
++    buf->push_back((v >> 24) & 0xff);
++    buf->push_back((v >> 16) & 0xff);
++    buf->push_back((v >> 8) & 0xff);
++    buf->push_back(v & 0xff);
++}
++
++inline void CqlEncodeUint32(uint32_t v, butil::IOBuf* buf) {
++    buf->push_back((v >> 24) & 0xff);
++    buf->push_back((v >> 16) & 0xff);
++    buf->push_back((v >> 8) & 0xff);
++    buf->push_back(v & 0xff);
++}
++
++inline void CqlEncodeInt64(int64_t v, butil::IOBuf* buf) {
++    CqlEncodeInt32((v >> 32) & 0xffffffff, buf);
++    CqlEncodeInt32(v & 0xffffffff, buf);
++}
++
++inline int16_t CqlDecodeInt16(butil::IOBufBytesIterator& iter) {
++    int16_t v = *iter; ++iter;
++    v = ((v << 8) | *iter); ++iter;
++    return v;
++}
++
++inline uint16_t CqlDecodeUint16(butil::IOBufBytesIterator& iter) {
++    uint16_t v = *iter; ++iter;
++    v = ((v << 8) | *iter); ++iter;
++    return v;
++}
++
++inline int32_t CqlDecodeInt32(butil::IOBufBytesIterator& iter) {
++    int32_t v = *iter; ++iter;
++    v = ((v << 8) | *iter); ++iter;
++    v = ((v << 8) | *iter); ++iter;
++    v = ((v << 8) | *iter); ++iter;
++    return v;
++}
++
++inline int64_t CqlDecodeInt64(butil::IOBufBytesIterator& iter) {
++    int64_t v = *iter; ++iter;
++    v = ((v << 8) | *iter); ++iter;
++    v = ((v << 8) | *iter); ++iter;
++    v = ((v << 8) | *iter); ++iter;
++    v = ((v << 8) | *iter); ++iter;
++    v = ((v << 8) | *iter); ++iter;
++    v = ((v << 8) | *iter); ++iter;
++    v = ((v << 8) | *iter); ++iter;
++    return v;
++}
++
++// Encode value to buf as [bytes].
++// Where [bytes] is: A [int] n, followed by n bytes if n >= 0. If n < 0,
++// no byte should follow and the value represented is `null`.
++inline void CqlEncodeBytes(bool value, butil::IOBuf* buf) {
++    CqlEncodeInt32(1, buf);
++    buf->push_back(value ? 0x01 : 0x00);
++}
++
++inline void CqlEncodeBytes(int32_t value, butil::IOBuf* buf) {
++    CqlEncodeInt32(sizeof(value), buf);
++    CqlEncodeInt32(value, buf);
++}
++
++inline void CqlEncodeBytes(int64_t value, butil::IOBuf* buf) {
++    CqlEncodeInt32(sizeof(value), buf);
++    CqlEncodeInt64(value, buf);
++}
++
++void CqlEncodeBytes(float value, butil::IOBuf* buf);
++
++void CqlEncodeBytes(double value, butil::IOBuf* buf);
++
++inline void CqlEncodeBytes(const butil::StringPiece& bytes, butil::IOBuf* buf) {
++    const int n = bytes.size();
++    CqlEncodeInt32(n, buf);
++    if (n > 0) {
++        buf->append(bytes.data(), n);
++    }
++}
++
++inline void CqlEncodeBytes(const char* value, butil::IOBuf* buf) {
++    CqlEncodeBytes(butil::StringPiece(value), buf);
++}
++
++inline void CqlEncodeBytes(const std::string& value, butil::IOBuf* buf) {
++    CqlEncodeBytes(butil::StringPiece(value), buf);
++}
++
++// Encode cql list and set to buf.
++template <typename TValue>
++void CqlEncodeBytes(const std::vector<TValue>& value, butil::IOBuf* buf) {
++    int32_t len = 0;
++    const butil::IOBuf::Area area = buf->reserve(sizeof(len));
++    if (area == butil::IOBuf::INVALID_AREA) {
++        LOG(FATAL) << "Fail to reserve IOBuf::Area for cql bytes buf.";
++        return;
++    }
++    const size_t begin_size = buf->size();
++    if (!value.empty()) {
++        CqlEncodeInt32(value.size(), buf);
++        for (const auto& e : value) {
++            CqlEncodeBytes(e, buf);
++        }
++    }
++    len = butil::HostToNet32(buf->size() - begin_size);
++    CHECK(0 == buf->unsafe_assign(area, &len));
++}
++
++template <typename TValue>
++void CqlEncodeBytes(const std::set<TValue>& value, butil::IOBuf* buf) {
++    int32_t len = 0;
++    const butil::IOBuf::Area area = buf->reserve(sizeof(len));
++    if (area == butil::IOBuf::INVALID_AREA) {
++        LOG(FATAL) << "Fail to reserve IOBuf::Area for cql bytes buf.";
++        return;
++    }
++    const size_t begin_size = buf->size();
++    if (!value.empty()) {
++        CqlEncodeInt32(value.size(), buf);
++        for (const auto& e : value) {
++            CqlEncodeBytes(e, buf);
++        }
++    }
++    len = butil::HostToNet32(buf->size() - begin_size);
++    CHECK(0 == buf->unsafe_assign(area, &len));
++}
++
++template <typename TKey, typename TValue>
++void CqlEncodeBytes(const std::map<TKey, TValue>& value, butil::IOBuf* buf) {
++    int32_t len = 0;
++    const butil::IOBuf::Area area = buf->reserve(sizeof(len));
++    if (area == butil::IOBuf::INVALID_AREA) {
++        LOG(FATAL) << "Fail to reserve IOBuf::Area for cql bytes buf.";
++        return;
++    }
++    const size_t begin_size = buf->size();
++    if (!value.empty()) {
++        CqlEncodeInt32(value.size(), buf);
++        for (const auto& e : value) {
++            CqlEncodeBytes(e.first, buf);
++            CqlEncodeBytes(e.second, buf);
++        }
++    }
++    len = butil::HostToNet32(buf->size() - begin_size);
++    CHECK(0 == buf->unsafe_assign(area, &len));
++}
++
++// Decode CQL [bytes] to out.
++// Return 0 if success and out is set. 
++// Return 1 if success but value is null.
++// Return -1 if failure.
++int CqlDecodeBytes(butil::IOBufBytesIterator& iter, bool* out);
++int CqlDecodeBytes(butil::IOBufBytesIterator& iter, int32_t* out);
++int CqlDecodeBytes(butil::IOBufBytesIterator& iter, int64_t* out);
++int CqlDecodeBytes(butil::IOBufBytesIterator& iter, float* out);
++int CqlDecodeBytes(butil::IOBufBytesIterator& iter, double* out);
++int CqlDecodeBytes(butil::IOBufBytesIterator& iter, std::string* out);
++
++template<typename TValue>
++int CqlDecodeBytes(butil::IOBufBytesIterator& iter, std::vector<TValue>* value) {
++    if (iter.bytes_left() < 4) {
++        return -1;
++    }
++    const int32_t size = CqlDecodeInt32(iter);
++    if (size <= 0) {
++        return 1;
++    }
++
++    if (iter.bytes_left() < 4) {
++        return -1;
++    }
++    const int32_t list_size = CqlDecodeInt32(iter);
++    if (value->capacity() < list_size * sizeof(TValue)) {
++        value->reserve(list_size * sizeof(TValue));
++    }
++    for (size_t i = 0; i != list_size; ++i) {
++        value->emplace_back();
++        if (-1 == CqlDecodeBytes(iter, &value->back())) {
++            return -1;
++        }
++    }
++    return 0;
++}
++
++template<typename TValue>
++int CqlDecodeBytes(butil::IOBufBytesIterator& iter, std::set<TValue>* value) {
++    if (iter.bytes_left() < 4) {
++        return -1;
++    }
++    const int32_t size = CqlDecodeInt32(iter);
++    if (size <= 0) {
++        return 1;
++    }
++
++    if (iter.bytes_left() < 4) {
++        return -1;
++    }
++    const int32_t set_size = CqlDecodeInt32(iter);
++    for (size_t i = 0; i != set_size; ++i) {
++        TValue e;
++        if (-1 == CqlDecodeBytes(iter, &e)) {
++            return -1;
++        }
++        value->emplace(std::move(e));
++    }
++    return 0;
++}
++
++template<typename TKey, typename TValue>
++int CqlDecodeBytes(butil::IOBufBytesIterator& iter, std::map<TKey, TValue>* value) {
++    if (iter.bytes_left() < 4) {
++        return -1;
++    }
++    int32_t size = CqlDecodeInt32(iter);
++    if (size <= 0) {
++        return 1;
++    }
++    if (iter.bytes_left() < 4) {
++        return -1;
++    }
++    const int32_t map_size = CqlDecodeInt32(iter);
++    for (size_t i = 0; i != map_size; ++i) {
++        TKey k;
++        TValue v;
++        if (-1 == CqlDecodeBytes(iter, &k) || -1 == CqlDecodeBytes(iter, &v)) {
++            return -1;
++        }
++        value->emplace(std::move(k), std::move(v));
++    }
++    return 0;
++}
++
++class CqlQueryParameter;
++void CqlEncodeQueryParameter(const CqlQueryParameter& parameter, butil::IOBuf* buf);
++
++enum CqlBatchType {
++    CQL_BATCH_LOGGED = 0x00,
++    CQL_BATCH_UNLOGGED = 0x01,
++    CQL_BATCH_COUNTER = 0x02
++};
++
++enum CqlConsistencyLevel {
++    CQL_CONSISTENCY_UNKNOWN      = 0xFFFF,
++    CQL_CONSISTENCY_ANY          = 0x0000,
++    CQL_CONSISTENCY_ONE          = 0x0001,
++    CQL_CONSISTENCY_TWO          = 0x0002,
++    CQL_CONSISTENCY_THREE        = 0x0003,
++    CQL_CONSISTENCY_QUORUM       = 0x0004,
++    CQL_CONSISTENCY_ALL          = 0x0005,
++    CQL_CONSISTENCY_LOCAL_QUORUM = 0x0006,
++    CQL_CONSISTENCY_EACH_QUORUM  = 0x0007,
++    CQL_CONSISTENCY_SERIAL       = 0x0008,
++    CQL_CONSISTENCY_LOCAL_SERIAL = 0x0009,
++    CQL_CONSISTENCY_LOCAL_ONE    = 0x000A
++};
++
++enum CassOpCode {
++    CQL_OPCODE_ERROR          = 0x00,
++    CQL_OPCODE_STARTUP        = 0x01,
++    CQL_OPCODE_READY          = 0x02,
++    CQL_OPCODE_AUTHENTICATE   = 0x03,
++    CQL_OPCODE_DUMMY_WHY      = 0x04,
++    CQL_OPCODE_OPTIONS        = 0x05,
++    CQL_OPCODE_SUPPORTED      = 0x06,
++    CQL_OPCODE_QUERY          = 0x07,
++    CQL_OPCODE_RESULT         = 0x08,
++    CQL_OPCODE_PREPARE        = 0x09,
++    CQL_OPCODE_EXECUTE        = 0x0A,
++    CQL_OPCODE_REGISTER       = 0x0B,
++    CQL_OPCODE_EVENT          = 0x0C,
++    CQL_OPCODE_BATCH          = 0x0D,
++    CQL_OPCODE_AUTH_CHALLENGE = 0x0E,
++    CQL_OPCODE_AUTH_RESPONSE  = 0x0F,
++    CQL_OPCODE_AUTH_SUCCESS   = 0x10,
++    CQL_OPCODE_LAST_DUMMY
++};
++
++/* The CQL binary protocol is a frame based protocol. Frames are defined as:
++  0         8        16         24       32        40
++  +---------+---------+---------+---------+---------+
++  | version |  flags  |      stream       |  opcode |
++  +---------+---------+---------+---------+---------+
++  |                 length                |
++  +---------+---------+---------+---------+
++  |                                       |
++  .            ...  body ...              .
++  .                                       .
++  .                                       .
++  +----------------------------------------
++*/
++struct CqlFrameHead {
++    CqlFrameHead() {
++        Reset();
++    }
++
++    CqlFrameHead(uint8_t v, uint8_t op, int16_t id, 
++                 uint32_t len, uint8_t f = 0x00)
++        : version(v), flag(f), opcode(op), stream_id(id), length(len) {}
++
++    uint8_t version;
++    uint8_t flag;
++    uint8_t opcode;
++    int16_t stream_id;
++    uint32_t length;
++
++    void Reset() {
++        version = 0;
++        flag = 0x00;
++        opcode = CQL_OPCODE_LAST_DUMMY;
++        stream_id = 0xFFFF;
++        length = 0;
++    }
++   
++    int GetBodyLength() const {
++        return length;
++    }
++
++    static const size_t kCqlFrameHeadSize;
++
++    // The actual size serialized to buffer as head of cql protocol frame.
++    static size_t SerializedSize() {
++        return kCqlFrameHeadSize;
++    }
++
++};
++
++// <query_parameters> must be
++// <consistency><flags>[<n>[name_1]<value_1>...[name_n]<value_n>]
++// [<result_page_size>][<paging_state>][<serial_consistency>][<timestamp>]
++class CqlQueryParameter {
++public:
++    enum FLAG_BIT_MASK {
++        WITH_VALUES        = 0x01,
++        SKIP_META_DATA     = 0x02,
++        PAGE_SIZE          = 0x04,
++        PAGING_STATE       = 0x08,
++        SERIAL_CONSISTENCY = 0x10,
++        DEFAULT_TIMESTAMP  = 0x20,
++        WITH_NAMES_VALUES  = 0x40
++    };
++
++    template<typename TValue>
++    void AppendValue(const TValue& value) {
++        CqlEncodeBytes(value, &_name_value);
++        ++_num_name_value;
++    }
++
++    void set_serial_consistency(CqlConsistencyLevel consistency) {
++        _serial_consistency = consistency;
++    }
++
++    void set_timestamp(int64_t ts) {
++        _timestamp = ts;
++    }
++
++    void add_flag(uint8_t flag) {
++        _flags |= flag;
++    }
++
++    void remove_flag(uint8_t flag) {
++        _flags &= ~flag;
++    }
++
++    bool has_flag(uint8_t flag) const {
++        return _flags & flag;
++    }
++
++    void Encode(butil::IOBuf* buf) {
++        CqlEncodeQueryParameter(*this, buf);
++    }
++
++    void MoveValuesTo(butil::IOBuf* buf);
++
++    void Reset() {
++        _flags = 0x00;
++        _num_name_value = 0;
++        _page_size = -1;
++        _consistency = CQL_CONSISTENCY_LOCAL_ONE;
++        _serial_consistency = CQL_CONSISTENCY_SERIAL;
++        _timestamp = 0;
++        _name_value.clear();
++    }
++
++private:
++friend void CqlEncodeQueryParameter(const CqlQueryParameter& parameter,
++                                    butil::IOBuf* buf);
++friend class CassandraRequest;
++
++    uint8_t _flags = 0x00;
++    uint16_t _num_name_value = 0;
++    uint32_t _page_size = -1;
++    CqlConsistencyLevel _consistency = CQL_CONSISTENCY_LOCAL_ONE;
++    CqlConsistencyLevel _serial_consistency = CQL_CONSISTENCY_SERIAL;
++    int64_t _timestamp = 0;
++    butil::IOBuf _name_value;
++};
++
++enum CqlResultType {
++    CQL_RESULT_VOID          = 0x0001,
++    CQL_RESULT_ROWS          = 0x0002,
++    CQL_RESULT_SET_KEYSPACE  = 0x0003,
++    CQL_RESULT_PREPARED      = 0x0004,
++    CQL_RESULT_SCHEMA_CHANGE = 0x0005,
++    CQL_RESULT_LAST_DUMMY    = 0x0006
++};
++
++struct CqlResponse {
++    size_t ByteSize() const {
++        return head.SerializedSize() + body.length();
++    }
++	
++    CqlFrameHead head;
++    butil::IOBuf body;  
++};
++
++class CqlResponseDecoder {
++public:
++    CqlResponseDecoder(const butil::IOBuf& buf) : _body_iter(buf) {}
++    CqlResponseDecoder(const butil::IOBufBytesIterator& iter) : _body_iter(iter) {}
++    virtual ~CqlResponseDecoder() = default;
++
++    bool DecodeResponse() {
++        if (has_decoded()) {
++            return has_decoded_success();        
++        }
++        if (Decode()) {
++            set_decoded_success();
++        } else {
++            set_decoded_failure();
++        }
++        return has_decoded_success();
++    }
++
++    bool has_decoded() const {
++        return _decode_result >= 0;
++    }
++
++    bool has_decoded_success() const {
++        return _decode_result == 0;
++    }
++
++    const std::string& error() const {
++        return _error;
++    }
++
++protected:
++    virtual bool Decode() = 0;
++
++    void set_decoded_success() { _decode_result = 0; }
++    void set_decoded_failure() { _decode_result = 1; }
++
++    int _decode_result = -1;
++    // Save decode errors. 
++    std::string _error;
++    // The butil::IOBuf to decode.
++    // The butil::IOBuf MUST be available and can not be changed.  
++    const butil::IOBufBytesIterator _body_iter;
++
++    DISALLOW_COPY_AND_ASSIGN(CqlResponseDecoder);
++};
++
++class CqlReadyDecoder final : public CqlResponseDecoder {
++public:
++    CqlReadyDecoder(const butil::IOBuf& body) : CqlResponseDecoder(body) {}
++
++private:
++    virtual bool Decode() {
++        return _body_iter.bytes_left() == 0;
++    }
++};
++
++// CQL ERROR response: Indicates an error processing a request.
++// The body of the message will be an error code ([int]) followed 
++// by a [string] error message.
++class CqlErrorDecoder final : public CqlResponseDecoder {
++public:
++    CqlErrorDecoder(const butil::IOBuf& body)
++        : CqlResponseDecoder(body), _decoded_body(body) {}
++
++    // Get a brief comments about this cql error response. 
++    const char* GetErrorBrief();
++
++    // Get error detail description in the message body.
++    const std::string& GetErrorDetails();
++
++    int error_code() const {
++        return _error_code;
++    }
++
++private:
++    virtual bool Decode();
++
++    // Decode error code([int]) and set to '_error_code'.  
++    bool DecodeErrorCode();
++
++    int _error_code = -1;
++    std::string _error_details;
++    butil::IOBufBytesIterator _decoded_body; 
++};
++
++// Indicates that the server requires authentication, and which authentication
++// mechanism to use. The body consists of a single [string] indicating the full 
++// class name of the IAuthenticator in use.
++class CqlAuthenticateDecoder final : public CqlResponseDecoder {
++public:
++    CqlAuthenticateDecoder(const butil::IOBuf& body) : CqlResponseDecoder(body) {}
++
++    const std::string& authenticator() const {
++        return _authenticator;
++    }
++
++private:
++    virtual bool Decode();
++
++    std::string _authenticator;
++};
++
++class CqlAuthSuccessDecoder final : public CqlResponseDecoder {
++public:
++    CqlAuthSuccessDecoder(const butil::IOBuf& body) : CqlResponseDecoder(body) {}
++
++    bool DecodeAuthToken(std::string* out);
++
++private:
++    virtual bool Decode();
++};
++
++// The result to a query (QUERY, PREPARE, EXECUTE or BATCH messages).
++class CqlResultDecoder : public CqlResponseDecoder {
++public:
++    CqlResultDecoder(const butil::IOBuf& body) : CqlResponseDecoder(body) {}
++    virtual ~CqlResultDecoder() = default;
++
++    const std::string& LastError() {
++        return _error;
++    }
++
++protected:
++     // @CqlResponseDecoder
++    virtual bool Decode() final;
++
++    virtual bool DecodeCqlResult(butil::IOBufBytesIterator& it) = 0;
++
++    int32_t _type;
++};
++
++// CQL VOID result: The rest of the body for a Void result is empty. 
++// It indicates that a query was successful without providing more information.
++class CqlVoidResultDecoder final : public CqlResultDecoder {
++public:
++    CqlVoidResultDecoder(const butil::IOBuf& body) : CqlResultDecoder(body) {}
++
++private:
++    virtual bool DecodeCqlResult(butil::IOBufBytesIterator& it) {
++        if (it.bytes_left() == 0) {
++            return true;
++        }
++        _error = "Cql void result body should be NULL.";
++        return false;
++    }
++};
++
++// CQL use keyspace result: The result to a `use` query. 
++// The body (after the kind [int]) is a single [string] indicating 
++// the name of the keyspace that has been set.
++class CqlSetKeyspaceResultDecoder final : public CqlResultDecoder {
++public:
++    CqlSetKeyspaceResultDecoder(const butil::IOBuf& body)
++        : CqlResultDecoder(body) {}
++
++    const std::string& keyspace() const {
++        return _keyspace;
++    }
++
++private:
++    virtual bool DecodeCqlResult(butil::IOBufBytesIterator& iter);
++
++    std::string _keyspace;
++};
++
++class CqlRowsResultDecoder;
++
++enum CqlValueTypeId {
++    CQL_CUSTOM    = 0x00000000,
++    CQL_ASCII     = 0x00000001,
++    CQL_BIGINT    = 0x00000002,
++    CQL_BLOB      = 0x00000003,
++    CQL_BOOLEAN   = 0x00000004,
++    CQL_COUNTER   = 0x00000005,
++    CQL_DECIMAL   = 0x00000006,
++    CQL_DOUBLE    = 0x00000007,
++    CQL_FLOAT     = 0x00000008,
++    CQL_INT       = 0x00000009,
++    CQL_TIMESTAMP = 0x0000000B,
++    CQL_UUID      = 0x0000000C,
++    CQL_VARCHAR   = 0x0000000D,
++    CQL_VAEINT    = 0x0000000E,
++    CQL_TIMEUUID  = 0x0000000F,
++    CQL_INET      = 0x00000010,
++    CQL_LIST      = 0x00000020,
++    CQL_MAP       = 0x00000021,
++    CQL_SET       = 0x00000022,
++    CQL_UDT       = 0x00000030,
++    CQL_TUPLE     = 0x00000031,
++    CQL_DUMMY_TYPE = 0x0000FFFF
++};
++
++template<typename TValue>
++bool CheckCppTypeCategories(CqlValueTypeId type_id, TValue*) {
++    if (std::is_same<TValue, std::string>::value) {
++        return true;
++    }
++    switch (type_id) {
++    case CQL_BOOLEAN:
++        return std::is_same<TValue, bool>::value;
++    case CQL_INT:
++        return std::is_same<TValue, int32_t>::value;
++    case CQL_BIGINT:
++        return std::is_same<TValue, int64_t>::value;
++    case CQL_FLOAT:
++        return std::is_same<TValue, float>::value;
++    case CQL_DOUBLE:
++        return std::is_same<TValue, double>::value;
++    default:
++        break; 
++    }
++    return false;
++}
++
++struct CqlColumnSpec {
++    CqlValueTypeId type_id = CQL_DUMMY_TYPE;
++    std::vector<CqlValueTypeId> elements_type_id;
++    std::string name;
++
++    bool IsValid() const {
++        return type_id != CQL_DUMMY_TYPE;
++    }    
++};
++
++// The meta data is composed of :
++// <flags><columns_count>[<paging_state>][<global_table_spec>?<col_spec_1>...<col_spec_n>]
++class CqlMetaData {
++public:
++    virtual bool Decode(butil::IOBufBytesIterator& iter);
++
++    bool DecodeFlags(butil::IOBufBytesIterator& iter);
++    bool DecodeColumnsCount(butil::IOBufBytesIterator& iter);
++    bool DecodeGlobalTabelSpec(butil::IOBufBytesIterator& iter);
++    bool CqlDecodeColumnType(butil::IOBufBytesIterator& iter);
++    bool DecodeColumnsSpec(butil::IOBufBytesIterator& iter);
++
++    const std::string& error() const { 
++        return _error;
++    }
++
++private:
++friend class CqlRowsResultDecoder;
++
++    bool has_paging_state() const { return _flags & 0x0002; }
++    bool has_meta_data() const { return ~_flags & 0x0004; }
++    bool has_global_tables_spec() const { return _flags & 0x0001; }
++
++    CqlValueTypeId CqlDecodeCqlOption(butil::IOBufBytesIterator& iter);
++
++    std::string _error;
++		
++    int32_t _flags = 0;
++    int32_t _columns_count = 0;
++    int32_t _paging_state = 0;
++    std::string _keyspace;
++    std::string _table;
++
++    std::vector<CqlColumnSpec> _column_specs;
++    std::unordered_map<std::string, size_t> _column_specs_map;
++};
++
++// Indicates a set of rows. The rest of body of a Rows result is:
++// <metadata><rows_count><rows_content>
++class CqlRowsResultDecoder final : public CqlResultDecoder {
++public:
++    CqlRowsResultDecoder(const butil::IOBuf& body) : CqlResultDecoder(body) {}
++
++    // Get value of column column_name in the row_index row.
++    template<typename TValue>
++    int DecodeColumnValueOfRow(const std::string& column_name,
++                             size_t row_index, TValue* column_value) {
++        const butil::IOBufBytesIterator* p_iter = GetRowIter(row_index);
++        if (p_iter == nullptr) {
++            return -1;
++        }
++        butil::IOBufBytesIterator iter = *p_iter;
++        const int offset = GetColumnValueSpecOffset(column_name);
++        if (offset < 0) {
++            return -1;
++        }  
++        if (!CheckCppTypeCategories(
++            _meta_data._column_specs.at(offset).type_id, column_value)) {
++            set_error("Invalid value type");
++            return -1;
++        }
++
++        // LOG(ERROR) << "debug column_name=" << column_name << " offset=" << offset;
++        if (ForwardToColumnOfRow(offset, iter)) {
++            const int ret = CqlDecodeBytes(iter, column_value);
++            if (ret == -1) {
++                set_error("Fail to decode cql value.");
++            }
++            return ret;
++        }
++        return -1;
++    }
++
++    template<typename TValue>
++    int DecodeColumnValueOfRow(const std::string& column_name,
++                               size_t row_index, std::vector<TValue>* column_value) {
++        const butil::IOBufBytesIterator* p_iter = GetRowIter(row_index);
++        if (p_iter == nullptr) {
++            return -1;
++        }
++        butil::IOBufBytesIterator iter = *p_iter;
++        const int offset = GetColumnValueSpecOffset(column_name);
++        if (offset < 0) {
++            return -1;
++        }
++				const CqlColumnSpec& column_spec = _meta_data._column_specs.at(offset);
++				if (column_spec.type_id != CQL_LIST) {
++            set_error("Not a cql list type");
++            return -1;
++        }
++        if (!CheckCppTypeCategories(column_spec.elements_type_id.at(0), (TValue*)0)) {
++            set_error("Invalid cql list element type");
++            return -1;
++        }
++        if (ForwardToColumnOfRow(offset, iter)) {
++            const int ret = CqlDecodeBytes(iter, column_value);
++            if (ret == -1) {
++                set_error("Fail to decode cql list.");
++            }
++            return ret;
++        }
++        return -1;
++    }
++
++    template<typename TValue>
++    int DecodeColumnValueOfRow(const std::string& column_name,
++                               size_t row_index, std::set<TValue>* column_value) {
++        const butil::IOBufBytesIterator* p_iter = GetRowIter(row_index);
++        if (p_iter == nullptr) {
++            return -1;
++        }
++        butil::IOBufBytesIterator iter = *p_iter;
++        const int offset = GetColumnValueSpecOffset(column_name);
++        if (offset < 0) {
++            return -1;
++        }
++				const CqlColumnSpec& column_spec = _meta_data._column_specs.at(offset);
++				if (column_spec.type_id != CQL_SET) {
++            set_error("Not a cql set type");
++            return -1;
++        }
++        if (!CheckCppTypeCategories(column_spec.elements_type_id.at(0), (TValue*)0)) {
++            set_error("Invalid cql set element type");
++            return -1;
++        }
++        if (ForwardToColumnOfRow(offset, iter)) {
++            const int ret = CqlDecodeBytes(iter, column_value);
++            if (ret == -1) {
++                set_error("Fail to decode cql set.");
++            }
++            return ret;
++        }
++        return -1;
++    }
++
++    template<typename TKey, typename TValue>
++    int DecodeColumnValueOfRow(const std::string& column_name,
++                               size_t row_index, std::map<TKey, TValue>* column_value) {
++        const butil::IOBufBytesIterator* p_iter = GetRowIter(row_index);
++        if (p_iter == nullptr) {
++            return -1;
++        }
++        butil::IOBufBytesIterator iter = *p_iter;
++        const int offset = GetColumnValueSpecOffset(column_name);
++        if (offset < 0) {
++            return -1;
++        }
++				const CqlColumnSpec& column_spec = _meta_data._column_specs.at(offset);
++				if (column_spec.type_id != CQL_MAP) {
++            set_error("Not a cql map type");
++            return -1;
++        }
++        if (!CheckCppTypeCategories(column_spec.elements_type_id.at(0), (TKey*)0)) {
++            set_error("Invalid cql map key type");
++            return -1;
++        }
++        if (!CheckCppTypeCategories(column_spec.elements_type_id.at(1), (TValue*)0)) {
++            set_error("Invalid cql map value type");
++            return -1;
++        }				
++        if (ForwardToColumnOfRow(offset, iter)) {
++            const int ret = CqlDecodeBytes(iter, column_value);
++            if (ret == -1) {
++                set_error("Fail to decode cql map.");
++            }
++            return ret;
++        }
++        return -1;
++    }
++
++    size_t columns_count() const {
++        return _meta_data._columns_count;    
++    }
++
++    size_t rows_count() const {
++        return _rows_count;
++    }
++
++    const std::vector<CqlColumnSpec>& GetColumnSpecs() const {
++        return _meta_data._column_specs;
++    }
++
++    void set_error(const butil::StringPiece e) {
++        _error.assign(e.data(), e.size());
++    }
++
++    void MoveErrorTo(std::string* error) {
++        error->swap(_error);
++        _error.clear();
++    }
++
++private:
++    virtual bool DecodeCqlResult(butil::IOBufBytesIterator& iter);
++
++    bool DecodeRowsCount(butil::IOBufBytesIterator& iter);
++
++    const butil::IOBufBytesIterator* GetRowIter(size_t index);
++
++    int GetColumnValueSpecOffset(const std::string& column_name);
++
++    bool ForwardToColumnOfRow(const std::string& column_name,
++                              butil::IOBufBytesIterator& row_iter);
++    bool ForwardToColumnOfRow(size_t offset, butil::IOBufBytesIterator& row_iter);
++
++    bool BuildNextRowIter();
++
++    // The number of rows present in this result.
++    int32_t _rows_count = 0;
++    CqlMetaData _meta_data;
++    // Point to iobuf of <rows_content>.
++    std::vector<butil::IOBufBytesIterator> _rows_iter;
++};
++
++bool CqlDecodeHead(butil::IOBufBytesIterator& iter, CqlFrameHead* head);
++
++inline bool IsResponseOpcode(uint8_t opcode) {
++    return opcode == CQL_OPCODE_RESULT ||
++           opcode == CQL_OPCODE_ERROR ||
++           opcode == CQL_OPCODE_READY ||
++           opcode == CQL_OPCODE_AUTHENTICATE ||
++           opcode == CQL_OPCODE_SUPPORTED ||
++           opcode == CQL_OPCODE_EVENT ||
++           opcode == CQL_OPCODE_AUTH_CHALLENGE ||
++           opcode == CQL_OPCODE_AUTH_SUCCESS;
++}
++
++void CqlEncodeHead(const CqlFrameHead& header, butil::IOBuf* buf);
++
++void CqlEncodeStartup(CqlFrameHead& head,
++                      const std::map<std::string, std::string>& options,
++                      butil::IOBuf* buf);
++
++inline void CqlEncodePlainTextAuthenticate(
++    const std::string& user_name,
++    const std::string& password,
++    butil::IOBuf* buf) {
++    buf->push_back(0);
++    buf->append(user_name);
++    buf->push_back(0);
++    buf->append(password);
++}
++
++void CqlEncodeConsistency(CqlConsistencyLevel consistency, butil::IOBuf* buf);
++
++void CqlEncodeQuery(const std::string& query,
++                    const CqlQueryParameter& query_paramter,
++                    butil::IOBuf* buf);
++
++void CqlEncodeQuery(const butil::IOBuf& query,
++                    const CqlQueryParameter& query_paramter,
++                    butil::IOBuf* buf);
++
++inline void CqlEncodeUseKeyspace(
++    const std::string& query, butil::IOBuf* buf) {
++    CqlEncodeQuery(query, CqlQueryParameter(), buf);   
++}
++
++const char* GetCqlOpcodeName(uint8_t opcode);
++
++int32_t CqlDecodeResultType(butil::IOBufBytesIterator& iter);
++
++bool NewAndDecodeCqlResult(const butil::IOBuf& cql_body,
++                           std::unique_ptr<CqlResponseDecoder>* decoder);
++bool NewAndDecodeCqlError(const butil::IOBuf& cql_body,
++                          std::unique_ptr<CqlResponseDecoder>* decoder);
++
++struct CqlMessageOsWrapper {
++    CqlMessageOsWrapper(
++        const CqlFrameHead& h, const butil::IOBuf& b, bool vbs = false)
++        : verbose(vbs), head(h), body(b) {}
++
++    CqlMessageOsWrapper(const CqlResponse& response, bool vbs = false)
++        : CqlMessageOsWrapper(response.head, response.body, vbs) {}
++
++    bool verbose = false;
++    const CqlFrameHead& head;
++    const butil::IOBuf& body;
++};
++
++std::ostream& operator<<(std::ostream& os, const CqlFrameHead& head);
++std::ostream& operator<<(std::ostream& os, const CqlMessageOsWrapper& msg);
++
++} // namespace brpc
++
++#endif  // BRPC_CQL_MESSAGES_H
+diff --git a/src/brpc/details/controller_private_accessor.h b/src/brpc/details/controller_private_accessor.h
+index 990efc91..ac01ad3b 100644
+--- a/src/brpc/details/controller_private_accessor.h
++++ b/src/brpc/details/controller_private_accessor.h
+@@ -154,6 +154,18 @@ public:
+         return *this;
+     }
+ 
++    const Authenticator* auth() const {
++        return _cntl->_auth;
++    }
++
++    StreamCreator* stream_creator() const {
++        return _cntl->_stream_creator;
++    }
++
++    Socket* sending_sock() const {
++        return _cntl->_current_call.sending_sock.get();
++    }
++
+ private:
+     Controller* _cntl;
+ };
+diff --git a/src/brpc/global.cpp b/src/brpc/global.cpp
+index ced8a11c..2f25750f 100755
+--- a/src/brpc/global.cpp
++++ b/src/brpc/global.cpp
+@@ -74,6 +74,7 @@
+ #ifdef ENABLE_THRIFT_FRAMED_PROTOCOL
+ # include "brpc/policy/thrift_protocol.h"
+ #endif
++#include "brpc/policy/cassandra_query_language_protocol.h"
+ 
+ // Concurrency Limiters
+ #include "brpc/concurrency_limiter.h"
+@@ -577,6 +578,17 @@ static void GlobalInitializeOrDieImpl() {
+         exit(1);
+     }
+ 
++    Protocol cql_protocol = {
++        ParseCqlMessage,
++        SerializeCqlRequest, PackCqlRequest,
++        NULL, ProcessCqlResponse,
++        NULL, NULL, GetCqlMethodName,
++        (ConnectionType)(CONNECTION_TYPE_SINGLE | CONNECTION_TYPE_SHORT),
++        "cql"};
++    if (RegisterProtocol(PROTOCOL_CQL, cql_protocol) != 0) {
++        exit(1);
++    }
++
+     std::vector<Protocol> protocols;
+     ListProtocols(&protocols);
+     for (size_t i = 0; i < protocols.size(); ++i) {
+diff --git a/src/brpc/options.proto b/src/brpc/options.proto
+index 3e34b5f6..e7424301 100644
+--- a/src/brpc/options.proto
++++ b/src/brpc/options.proto
+@@ -64,6 +64,7 @@ enum ProtocolType {
+     PROTOCOL_CDS_AGENT = 24;           // Client side only
+     PROTOCOL_ESP = 25;                 // Client side only
+     PROTOCOL_H2 = 26;
++    PROTOCOL_CQL = 27;                 // Client side only
+ }
+ 
+ enum CompressType {
+diff --git a/src/brpc/policy/cassandra_authenticator.h b/src/brpc/policy/cassandra_authenticator.h
+new file mode 100755
+index 00000000..5714a72f
+--- /dev/null
++++ b/src/brpc/policy/cassandra_authenticator.h
+@@ -0,0 +1,83 @@
++// Copyright (c) 2019 Baidu, Inc.
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++//      http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++//
++// Author(s): Daojin, Cai <caidaojin@qiyi.com>
++
++#ifndef BRPC_POLICY_CASSANDRA_AUTHENTICATOR_H
++#define BRPC_POLICY_CASSANDRA_AUTHENTICATOR_H
++
++#include "brpc/authenticator.h"
++
++namespace brpc {
++namespace policy {
++
++class CassandraAuthenticator : public Authenticator {
++public:
++    CassandraAuthenticator(const std::string& username,
++                           const std::string& password,
++                           const std::string& keyspace) 
++        : _user_name(username), _password(password), _key_space(keyspace) {}
++
++    CassandraAuthenticator(const std::string& username,
++                           const std::string& password) 
++        : _user_name(username), _password(password) {}
++
++    CassandraAuthenticator(const std::string& keyspace)
++        : _key_space(keyspace){}
++
++    void set_cql_protocol_version(uint8_t version) {
++        _cql_protocol_version = version;
++    }
++
++    bool has_set_cql_protocol_version() const {
++        return _cql_protocol_version != 0x00;
++    }
++
++    uint8_t cql_protocol_version() const {
++        return _cql_protocol_version;
++    }
++
++    const std::string& user_name() const {
++        return _user_name;
++    }
++
++    const std::string& password() const {
++        return _password;
++    }
++
++    const std::string& key_space() const {
++        return _key_space;
++    }
++
++    int GenerateCredential(std::string*) const override {
++        return 0;
++    }
++
++    int VerifyCredential(const std::string&, const butil::EndPoint&, brpc::AuthContext*) const override {
++        return 0;
++    }
++
++private:
++    // CQL version.
++    uint8_t _cql_protocol_version = 0x00;
++
++    std::string _user_name;
++    std::string _password;
++    std::string _key_space;
++};
++
++}  // namespace policy
++}  // namespace brpc
++
++#endif  // BRPC_POLICY_CASSANDRA_AUTHENTICATOR_H
+diff --git a/src/brpc/policy/cassandra_query_language_protocol.cpp b/src/brpc/policy/cassandra_query_language_protocol.cpp
+new file mode 100755
+index 00000000..c4466c8d
+--- /dev/null
++++ b/src/brpc/policy/cassandra_query_language_protocol.cpp
+@@ -0,0 +1,1148 @@
++// Copyright (c) 2019 Iqiyi, Inc.
++// 
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++// 
++//     http://www.apache.org/licenses/LICENSE-2.0
++// 
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++
++// Authors: Daojin, Cai (caidaojin@qiyi.com)
++
++#include "brpc/policy/cassandra_query_language_protocol.h"
++
++#include <mutex>                                // std::once_flag
++
++#include <gflags/gflags.h>
++#include <google/protobuf/descriptor.h>         // MethodDescriptor
++#include <google/protobuf/message.h>            // Message
++
++#include "brpc/cassandra.h"
++#include "brpc/controller.h"
++#include "brpc/describable.h"
++#include "brpc/details/controller_private_accessor.h"
++#include "brpc/input_messenger.h"
++#include "brpc/log.h"
++#include "brpc/policy/cassandra_authenticator.h"
++#include "brpc/reloadable_flags.h"              // BRPC_VALIDATE_GFLAG
++#include "brpc/socket.h"
++#include "brpc/span.h"
++#include "bthread/bthread.h"
++#include "butil/iobuf.h"
++#include "butil/logging.h"
++#include "butil/strings/string_piece.h"
++#include "butil/string_printf.h"                // string_appendf()
++#include "butil/time.h"
++
++namespace brpc {
++
++DECLARE_bool(enable_rpcz);
++
++namespace policy {
++
++static bool CheckMaxCqlStreams(const char* flagname, int value) {
++    if (value >= 64 && value <= 32640) {
++        return true;
++    }
++    LOG(ERROR) << flagname << " should be range of [64, 32640].";
++    return false;
++}
++
++DEFINE_bool(enable_cql_prepare, false,
++            "Enable cql prepare and excute for query atomatically.");
++DEFINE_bool(cql_verbose, false,
++            "[DEBUG] Print EVERY cql request/response");
++BRPC_VALIDATE_GFLAG(cql_verbose, PassValidate);
++DEFINE_int32(max_cql_streams_per_connection, 32640,
++             "CQL can only be 32768 different simultaneous streams, it is up to "
++             "the client to reuse stream id. We reserve 32640 ~ 32678 for internal "
++             "use. Users' requests can use id from 0 to 32639.");
++BRPC_VALIDATE_GFLAG(max_cql_streams_per_connection, CheckMaxCqlStreams);
++DEFINE_bool(enable_cql_stream_allocation_monitor, true,
++            "Enable cql stream allocation performance monitor.");
++DEFINE_int32(pending_cql_streams_overload_threshold, 10000,
++             "If pending streams on a cql connection meet this threshold,"
++             "we should not allocate stream on this connention ever.");
++BRPC_VALIDATE_GFLAG(pending_cql_streams_overload_threshold, PassValidate);
++DEFINE_int32(cql_streams_allocation_cost_overload_threshold, 100,
++             "If a cql stream allocation cost on a connection meet this threshold,"
++             "we should not allocate stream on this connention ever.");
++BRPC_VALIDATE_GFLAG(cql_streams_allocation_cost_overload_threshold, PassValidate);
++
++namespace {
++
++#if defined(_MSC_VER) && defined(_M_AMD64)
++    using CqlStreamBucket = uint64_t;
++#else
++    using CqlStreamBucket = unsigned long;
++#endif
++
++constexpr int16_t kCqlDummyStreamId = -1;
++constexpr int16_t kMaxCqlStreamsPerConnection = 32640;
++constexpr int16_t kCqlStartupStreamId = kMaxCqlStreamsPerConnection;
++constexpr int16_t kCqlAuthResponseStreamId = kCqlStartupStreamId + 1;
++constexpr int16_t kCqlSetKeyspceStreamId = kCqlAuthResponseStreamId + 1;
++constexpr int16_t kCqlOptionsStreamId = kCqlSetKeyspceStreamId + 1;
++
++constexpr size_t kBitsOfCqlStreamBucket = sizeof(CqlStreamBucket) * 8;
++
++// Round robin cql stream buckets by this step.
++// 7 * 11 * 17 > 32640 / 32
++const int g_stream_bucket_rr_strides[3] = {7, 11, 17};
++ 
++inline size_t GetNumOfCqlStreamBucket() {
++    return FLAGS_max_cql_streams_per_connection / kBitsOfCqlStreamBucket; 
++}
++
++inline int GetCqlStreamBucketRrStride(size_t bucket_size) {
++    for (size_t i = 0;
++         i != sizeof(g_stream_bucket_rr_strides) / sizeof(g_stream_bucket_rr_strides[0]); 
++         ++i) {
++        if (bucket_size % g_stream_bucket_rr_strides[i] != 0) {
++            return g_stream_bucket_rr_strides[i];
++        }
++    }
++    return -1;
++}
++
++constexpr uint8_t kDefaultCqlProtocolVersion = 0x03;
++
++} // namespace
++
++struct CqlProtocolVersion {
++    CqlProtocolVersion() {
++        Set(kDefaultCqlProtocolVersion);
++    }
++
++    CqlProtocolVersion(uint8_t version) {
++        Set(version);
++    }
++
++    uint8_t version() const {
++        return _version;
++    }
++
++    const std::string& version_str() const {
++        return _version_str;
++    }
++
++    void Set(uint8_t version) {
++        _version = version;
++        _version_str.clear();
++        butil::string_appendf(&_version_str, "%d.0.0", _version);
++    }
++
++private:
++    uint8_t _version = kDefaultCqlProtocolVersion;
++    std::string _version_str;
++};
++
++// Status for cql connection.
++enum CqlStatus {
++    // Cql connection is set up.
++    CQL_CONNECTED              = 0x00,
++    // Cql startup message is sent. 
++    CQL_STARTUP                = 0x01,
++    // Cql authenticate is received and auth response is sent.
++    CQL_AUTHENTICATE           = 0x02,
++    // Cql auth success is received.
++    CQL_AUTH_SUCCESS           = 0x03,
++    // Cql set keyspace is sent.
++    CQL_SET_KEYSPACE           = 0x04,
++    // Cql connection is ready. But there are pending 
++    // requests accumulated during connection initializtion to send. 
++    CQL_READY_WITH_PENDING_REQ = 0x05,
++    // Cql connection is ready.
++    CQL_READY                  = 0x06
++};
++
++const char* cql_status_str(CqlStatus st) {
++    switch(st) {
++    case CQL_CONNECTED: 
++        return "CQL_CONNECTED";
++    case CQL_STARTUP: 
++        return "CQL_STARTUP";
++    case CQL_AUTHENTICATE: 
++        return "CQL_AUTHENTICATE";
++    case CQL_AUTH_SUCCESS:
++        return "CQL_AUTH_SUCCESS";
++    case CQL_SET_KEYSPACE:
++        return "CQL_SET_KEYSPACE";
++    case CQL_READY_WITH_PENDING_REQ:
++        return "CQL_READY_WITH_PENDING_REQ";
++    case CQL_READY:
++        return "CQL_READY";  
++    default:
++        break;
++    }
++    return "Unknow";
++}
++
++class GlobalCqlStreamMonitor;
++
++namespace {
++
++GlobalCqlStreamMonitor* g_global_monitor = nullptr;
++std::once_flag g_global_monitor_once_flag;
++
++int cast_int(void* arg) { return *reinterpret_cast<int*>(arg); }
++
++} // namespace
++
++class GlobalCqlStreamMonitor {
++public:
++    ~GlobalCqlStreamMonitor() {
++        if (FLAGS_enable_cql_stream_allocation_monitor) {
++            _parsing_ctx_objects_bvar.hide();
++            _inflight_streams_window.hide();
++            _max_inflight_streams_window.hide();
++            _max_stream_cost_window.hide();
++        } 
++    }
++
++    static void RecordStreamAllocation(int cost, int inflight_streams) {
++        if (FLAGS_enable_cql_stream_allocation_monitor) {
++            GlobalCqlStreamMonitor* monitor = Instance();
++            monitor->_max_stream_cost << cost;
++            monitor->_inflight_streams << inflight_streams;
++            monitor->_max_inflight_streams << inflight_streams;
++        }
++    }
++
++    static void AddParsingContextCount() {
++        if (FLAGS_enable_cql_stream_allocation_monitor) {
++            Instance()->_parsing_ctx_objects.fetch_add(
++                1, butil::memory_order_relaxed);
++        }
++    }
++
++    static void SubParsingContextCount() {
++        if (FLAGS_enable_cql_stream_allocation_monitor) {
++            Instance()->_parsing_ctx_objects.fetch_sub(
++                1, butil::memory_order_relaxed);
++        }
++    }
++
++    static GlobalCqlStreamMonitor* Instance() {
++        std::call_once(
++            g_global_monitor_once_flag,
++            [] () { g_global_monitor = new (std::nothrow) GlobalCqlStreamMonitor; });
++        return g_global_monitor;
++    }
++
++private:
++    GlobalCqlStreamMonitor()
++        : _parsing_ctx_objects(0) 
++        , _parsing_ctx_objects_bvar(cast_int, &_parsing_ctx_objects)
++        , _inflight_streams_window(&_inflight_streams, -1)
++        , _max_inflight_streams_window(&_max_inflight_streams, -1)
++        , _max_stream_cost_window(&_max_stream_cost, -1) {
++        if (FLAGS_enable_cql_stream_allocation_monitor) {
++            _parsing_ctx_objects_bvar.expose("cql_parsing_context_count");
++            _inflight_streams_window.expose("cql_inflight_average_streams_per_connection");
++            _max_inflight_streams_window.expose("cql_inflight_max_streams_on_one_connection");
++            _max_stream_cost_window.expose("cql_stream_allocation_max_cost");
++        } 
++    }
++    using MaxerWindow = bvar::Window<bvar::Maxer<unsigned>, bvar::SERIES_IN_SECOND>;
++    using RecorderWindow = bvar::Window<bvar::IntRecorder, bvar::SERIES_IN_SECOND>;
++
++    butil::atomic<int> _parsing_ctx_objects;
++    bvar::PassiveStatus<int> _parsing_ctx_objects_bvar;
++    bvar::IntRecorder _inflight_streams;
++    RecorderWindow _inflight_streams_window;
++    bvar::Maxer<unsigned> _max_inflight_streams;
++    MaxerWindow _max_inflight_streams_window;
++    bvar::Maxer<unsigned> _max_stream_cost;
++    MaxerWindow _max_stream_cost_window;
++};
++
++class CqlParsingContext;
++class CqlStreamCreator;
++
++struct CqlStream {
++    CqlStream() = default;
++    CqlStream(uint64_t cid) : correlation_id(cid) {}
++
++    bool IsValid() const {
++        return correlation_id != INVALID_BTHREAD_ID.value;
++    }
++
++    void Reset() {
++        correlation_id = INVALID_BTHREAD_ID.value;
++    }
++
++    uint64_t correlation_id = INVALID_BTHREAD_ID.value;
++};
++
++class CqlInputResponse : public InputMessageBase {
++friend class CqlParsingContext;
++friend void ProcessCqlResponse(InputMessageBase* msg_base);
++public:
++    void set_correlation_id(const uint64_t id) {
++        _correlation_id = id;
++    }
++
++    uint64_t correlation_id() const {
++        return _correlation_id;
++    }
++
++    int16_t GetStreamId() const {
++        return _response.head.stream_id;
++    }
++
++    CqlResponse& response() {
++        return _response;
++    }
++
++    static CqlInputResponse* New() {
++        return new (std::nothrow) CqlInputResponse();
++    }
++
++protected:
++    // MUST create an object by New().
++    CqlInputResponse() = default;
++
++    // @InputMessageBase
++    void DestroyImpl() {
++        delete this;
++    }
++
++private:
++    uint64_t _correlation_id = INVALID_BTHREAD_ID.value;
++    CqlResponse _response;
++};
++
++class CqlParsingContext : public Destroyable, public Describable {
++public:
++    virtual ~CqlParsingContext() = default;
++
++    int16_t AddStream(CqlStream stream);
++    bool RemoveStream(int16_t stream_id);
++    CqlStream FindStream(int16_t stream_id) const;
++
++    ParseError Consume(butil::IOBuf* buf);
++    ParseError ConsumeHead(butil::IOBuf* buf);
++    ParseError ConsumeBody(butil::IOBuf* buf);
++
++    ParseResult HandleAndDestroyInternalMessages(CqlInputResponse* stream);
++    ParseResult OnSupported(const CqlResponse& response);
++    ParseResult OnInternalError(const CqlResponse& response);
++    ParseResult OnReady(const CqlResponse& response);
++    ParseResult OnAuthenticator(const CqlResponse& response);
++    ParseResult OnAuthChallenge(const CqlResponse& response);
++    ParseResult OnAuthSuccess(const CqlResponse& response);
++    ParseResult OnInternalUseKeyspace(const CqlResponse& response);
++
++    void PackCqlOptions(butil::IOBuf* buf) const;		
++		void PackCqlStartup(butil::IOBuf* buf) const;
++    void PackPlainTextAuthenticator(const std::string& user_name,
++                                    const std::string& password,
++                                    butil::IOBuf* buf);
++    bool ReplyAuthResponse();
++    int UseKeyspaceIfNeeded();
++
++    bool overload() const {
++        return _overload;
++    }
++
++    void DecideOverloadStatus(int cost, int16_t stream_id) {
++        if (stream_id < 0
++            || cost > FLAGS_cql_streams_allocation_cost_overload_threshold
++            || _num_inflight_streams.load(butil::memory_order_relaxed)
++                > FLAGS_pending_cql_streams_overload_threshold) {
++            _overload = true;
++        }
++    }
++
++    uint8_t cql_protocol_version() const {
++        return _cql_protocol_version.version();
++    }
++    
++    bool IsExpectedVersion(uint8_t version) const {
++        return version == cql_protocol_version();
++    }
++
++    void set_cql_protocol_version(uint8_t version) {
++        _cql_protocol_version.Set(version);
++    }
++
++    void set_auth(const CassandraAuthenticator* auth) {
++        _auth = auth;
++    }
++
++    const CassandraAuthenticator* auth() const {
++        return _auth;
++    }
++
++    CqlStatus status() const {
++        return _status;
++    }
++ 
++    void set_status(CqlStatus status) {
++        _status = status;
++    }
++
++    bool set_startup_status_once() {
++        CqlStatus status_connected = CQL_CONNECTED;
++        return _status.compare_exchange_strong(
++            status_connected, CQL_STARTUP, butil::memory_order_relaxed);
++    }
++
++    bool IsOptions(int16_t stream_id) const {
++        return stream_id == kCqlOptionsStreamId;
++    }
++
++    bool AppendToPendingBuf(const CqlFrameHead& header,
++                            const butil::IOBuf& body);
++
++    bool IsReady() const {
++        return status() >= CQL_READY_WITH_PENDING_REQ;
++    }
++
++    const char* parsing_error() const {
++        return _parsing_error;
++    }
++
++    // @Destroyable
++    void Destroy() override {
++        GlobalCqlStreamMonitor::SubParsingContextCount();
++        delete this;
++    }
++
++    // @Describable
++    virtual void Describe(std::ostream& os, const DescribeOptions& options) const;
++
++    static CqlParsingContext* New(Socket* sock) {
++        GlobalCqlStreamMonitor::AddParsingContextCount();
++        return new (std::nothrow) CqlParsingContext(sock);
++    }
++
++    static bool IsInternalStream(int16_t stream_id) {
++        return stream_id >= kCqlStartupStreamId;
++    }
++
++private:
++friend ParseResult ParseCqlMessage(butil::IOBuf* source, Socket* socket,
++                                   bool read_eof, const void* arg);
++
++    CqlParsingContext(Socket* sock);
++
++    int16_t AllocateStreamId(int* cost);
++    int FindAndSetFirstAvailableStream(size_t index, int* cost);
++    int FindFirstBitOneFromRight(CqlStreamBucket bucket) const;
++    bool IsStreamExists(int16_t stream_id) const;
++
++    int WriteInternalMessageToSocket(butil::IOBuf* buf) {
++        // TODO(caidaojin): we use default write options here. 
++        // Maybe we need a bthread_id_t to handle write failure case.
++        return _socket->Write(buf);
++    }
++
++    bool FlushPendingMessages();
++
++    volatile bool _overload = false;
++
++    CqlProtocolVersion _cql_protocol_version;
++    std::atomic<CqlStatus> _status;
++    const CassandraAuthenticator* _auth = nullptr;
++
++    const char* _parsing_error = nullptr;
++    Socket* _socket = nullptr;
++    DestroyingPtr<CqlInputResponse> _parsing_response;
++
++    std::string _authenticator_expected;
++
++    butil::Mutex _pending_mu;
++    butil::IOBuf _pending_buf;
++
++    int _last_stream_allocation_cost = 0;
++    butil::atomic<int> _num_inflight_streams;		
++    butil::atomic<uint64_t> _curr_stream_bucket_index;
++    std::vector<butil::atomic<CqlStreamBucket>> _stream_buckets;
++    const int _stream_bucket_rr_stride;
++    std::vector<CqlStream> _inflight_streams;
++
++    DISALLOW_COPY_AND_ASSIGN(CqlParsingContext);
++};
++
++CqlParsingContext* GetParsingContextOf(Socket* sock) {
++    CHECK(sock != nullptr);
++    CqlParsingContext* ctx = static_cast<CqlParsingContext*>(sock->parsing_context());
++    if (ctx == nullptr) {
++        ctx = CqlParsingContext::New(sock);
++        sock->initialize_parsing_context(&ctx);
++    }
++
++    return ctx;
++}
++
++CqlParsingContext::CqlParsingContext(Socket* sock)
++    : _status(CQL_CONNECTED)
++    , _socket(sock)
++    , _num_inflight_streams(0)
++    , _curr_stream_bucket_index(0)
++    , _stream_buckets(GetNumOfCqlStreamBucket())
++    , _stream_bucket_rr_stride(GetCqlStreamBucketRrStride(_stream_buckets.size()))
++    , _inflight_streams(_stream_buckets.size() * kBitsOfCqlStreamBucket) {
++    CHECK(_stream_bucket_rr_stride != -1) << "Fail to find cql bucket rr stride."; 
++    for (size_t i = 0; i != _stream_buckets.size(); ++i) {
++        _stream_buckets[i] = (CqlStreamBucket)-1;
++    }
++}
++
++inline int CqlParsingContext::FindFirstBitOneFromRight(
++    CqlStreamBucket bucket) const {
++#if defined(__GNUC__)
++    return __builtin_ffsl(bucket);
++#elif defined(_MSC_VER)
++    unsigned long ret;
++#  if defined(_M_AMD64)
++    _BitScanForward64(&ret, bucket);
++#  else
++    _BitScanForward(&ret, bucket);
++#  endif
++    return static_cast<int>(ret);
++#else
++#endif
++}
++
++inline bool CqlParsingContext::IsStreamExists(int16_t stream_id) const {
++    if (stream_id < 0) {
++        return false;
++    }
++    const size_t bucket = stream_id / kBitsOfCqlStreamBucket;
++    const size_t offset = stream_id % kBitsOfCqlStreamBucket;
++    if (bucket < _stream_buckets.size() && 
++        (~_stream_buckets[bucket].load(butil::memory_order_relaxed)
++            & (CqlStreamBucket(1) << offset))) {
++        return true;
++    }
++    return false;
++}
++
++int16_t CqlParsingContext::AddStream(CqlStream stream) {
++    int cost = 0;
++    const int16_t stream_id = AllocateStreamId(&cost);
++    DecideOverloadStatus(cost, stream_id);
++    _last_stream_allocation_cost = cost;
++    if (stream_id >= 0) {
++        CHECK(!_inflight_streams.at(stream_id).IsValid())
++            << "Allocate a cql stream id=" << stream_id << " whose stream is not empty.";
++        _inflight_streams[stream_id] = stream;
++        _num_inflight_streams.fetch_add(1, butil::memory_order_relaxed);
++    }
++    GlobalCqlStreamMonitor::RecordStreamAllocation(
++        cost, _num_inflight_streams.load(butil::memory_order_relaxed));
++    return stream_id;
++}
++
++int CqlParsingContext::FindAndSetFirstAvailableStream(size_t index, int* cost) {
++    CqlStreamBucket bucket = 0;
++    CqlStreamBucket new_bucket = 0;
++    int offset = 0;
++    do {
++        ++(*cost);
++        bucket = _stream_buckets[index].load(butil::memory_order_acquire);
++        offset = FindFirstBitOneFromRight(bucket);
++        if (offset <= 0) {
++            return -1;
++        }
++        new_bucket = bucket & ~(CqlStreamBucket(1) << (offset - 1));
++    } while (!_stream_buckets[index].compare_exchange_strong(
++        bucket, new_bucket, butil::memory_order_acquire));
++    return offset - 1;
++}
++
++int16_t CqlParsingContext::AllocateStreamId(int* cost) {
++    const size_t begin = _curr_stream_bucket_index.fetch_add(
++        _stream_bucket_rr_stride, butil::memory_order_relaxed)
++        % _stream_buckets.size();
++    for(size_t i = begin; ;) {
++        int offset = FindAndSetFirstAvailableStream(i, cost);
++        if (offset >= 0) {
++            return offset + kBitsOfCqlStreamBucket * i;
++        }
++        i = (i + 1) % _stream_buckets.size();
++        if (i == begin) {
++            return -1;
++        }
++    }
++    return -1;
++}
++
++bool CqlParsingContext::RemoveStream(int16_t stream_id) {
++    const size_t bucket = stream_id / kBitsOfCqlStreamBucket;
++    if (stream_id < 0 || bucket >= _stream_buckets.size()) {
++        return false;
++    }
++    const CqlStreamBucket bit_mask = CqlStreamBucket(1) << (stream_id % kBitsOfCqlStreamBucket);
++    butil::atomic<CqlStreamBucket>& stream_bucket = _stream_buckets[bucket];
++    if (~stream_bucket & bit_mask) {
++        _inflight_streams[stream_id].Reset();
++        CqlStreamBucket c = stream_bucket.load(butil::memory_order_acquire); 
++        CqlStreamBucket n = c | bit_mask;
++        while (!stream_bucket.compare_exchange_strong(
++            c, n, butil::memory_order_release)) {
++            c = stream_bucket.load(butil::memory_order_relaxed);
++            n = c | bit_mask;
++            CHECK(~c & bit_mask) << "Bugs due to remove an un-allocated cql stream id.";
++        }
++        _num_inflight_streams.fetch_sub(1, butil::memory_order_relaxed);
++        return true;
++    }
++    return false;
++}
++
++CqlStream CqlParsingContext::FindStream(int16_t stream_id) const {
++    return IsStreamExists(stream_id)
++           ? _inflight_streams[stream_id] : CqlStream();
++}
++
++bool CqlParsingContext::AppendToPendingBuf(
++    const CqlFrameHead& header, const butil::IOBuf& body) {
++    BAIDU_SCOPED_LOCK(_pending_mu);
++    if (!IsReady()) {
++        CqlEncodeHead(header, &_pending_buf);
++        _pending_buf.append(body);
++        return true; 
++    }
++    return false;
++}
++
++ParseError CqlParsingContext::Consume(butil::IOBuf* buf) {
++    if (!_parsing_response) {
++        if (buf->size() >= CqlFrameHead::SerializedSize()) {
++            ParseError ret = ConsumeHead(buf);
++            if (ret != PARSE_OK) {
++                return ret;
++            }
++        } else {
++            return PARSE_ERROR_NOT_ENOUGH_DATA;
++        }
++    }
++    return ConsumeBody(buf);
++}
++
++ParseError CqlParsingContext::ConsumeHead(butil::IOBuf* buf) {
++    CqlFrameHead head;
++    butil::IOBufBytesIterator iter(*buf);
++    CHECK(CqlDecodeHead(iter, &head));
++    buf->pop_front(head.SerializedSize());
++    do {
++        if (head.version != (cql_protocol_version() | 0x80)) {
++            _parsing_error = "Unsupported protocol version of cql response.";
++            break;
++        }
++        if (!IsResponseOpcode(head.opcode)) {
++           _parsing_error = "Invalid opcode of cql response.";
++           break;
++        }
++        _parsing_response.reset(CqlInputResponse::New());
++        if (!_parsing_response) {
++            _parsing_error = "Fail to create cql input response.";
++            break;
++        }
++        _parsing_response->_response.head = head;
++        if (!IsInternalStream(head.stream_id)) {
++            CqlStream stream = FindStream(head.stream_id);
++            if (stream.IsValid()) {
++                _parsing_response->set_correlation_id(stream.correlation_id);
++                return PARSE_OK;
++            }
++            _parsing_error = "Null stream found for cql response.";
++        } else {
++            return PARSE_OK;
++        }
++    } while (false);
++    LOG(ERROR) << "Fail to parse cql head: " << head;
++    return PARSE_ERROR_ABSOLUTELY_WRONG;
++}
++
++ParseError CqlParsingContext::ConsumeBody(butil::IOBuf* buf) {
++    CHECK(_parsing_response);
++    const size_t body_len = _parsing_response->_response.head.length;
++    if (body_len <= buf->size()) {
++        CHECK_EQ(_parsing_response->_response.body.size(), 0);
++        buf->cutn(&_parsing_response->_response.body, body_len);
++        return PARSE_OK;
++    }
++    return PARSE_ERROR_NOT_ENOUGH_DATA;
++}
++
++void CqlParsingContext::PackPlainTextAuthenticator(
++    const std::string& user_name, const std::string& password,
++    butil::IOBuf* buf) {
++    CqlFrameHead head;
++    head.version = cql_protocol_version(),
++    head.opcode = CQL_OPCODE_AUTH_RESPONSE;
++    head.stream_id = kCqlAuthResponseStreamId;
++    head.length = user_name.size() + password.size() + 2;
++    CqlEncodeHead(head, buf);
++    CqlEncodePlainTextAuthenticate(user_name, password, buf);
++}
++
++bool CqlParsingContext::ReplyAuthResponse() {
++    // TODO(caidaojin): Support other auth policy.
++    // Now we only support authenticate with user name and password.
++    const CassandraAuthenticator* cass_auth = auth();
++    if (cass_auth == nullptr || cass_auth->user_name().empty() 
++        || cass_auth->password().empty()) {
++        return false;
++    }
++  
++    butil::IOBuf buf;
++    PackPlainTextAuthenticator(cass_auth->user_name(), cass_auth->password(), &buf);
++    return 0 == WriteInternalMessageToSocket(&buf);   
++}
++
++void CqlParsingContext::PackCqlOptions(butil::IOBuf* buf) const {
++    CqlFrameHead head(cql_protocol_version(),
++                      CQL_OPCODE_OPTIONS,
++                      kCqlOptionsStreamId,
++                      0);
++    CqlEncodeHead(head, buf);
++}
++
++void CqlParsingContext::PackCqlStartup(butil::IOBuf* buf) const {
++    CqlFrameHead head(cql_protocol_version(),
++                      CQL_OPCODE_STARTUP,
++                      kCqlStartupStreamId,
++                      0);
++    // Now only support cql version 3.0.0. 
++    // Do not support COMPRESSION.
++    std::map<std::string, std::string> body =
++        {{"CQL_VERSION", _cql_protocol_version.version_str()}};
++    CqlEncodeStartup(head, body, buf);
++}
++
++int CqlParsingContext::UseKeyspaceIfNeeded() {
++    const CassandraAuthenticator* cass_auth = auth();
++    if (cass_auth == nullptr || cass_auth->key_space().empty()) {
++        return 1;
++    }
++    std::string set_keyspace = "USE " + cass_auth->key_space();
++    CqlFrameHead head;
++    head.version = cql_protocol_version();
++    head.opcode = CQL_OPCODE_QUERY;
++    head.stream_id = kCqlSetKeyspceStreamId;
++    head.length = set_keyspace.size() + 4/*string size*/ + 3/*consistency + flags*/;
++
++    butil::IOBuf buf;
++    CqlEncodeHead(head, &buf);
++    CqlEncodeUseKeyspace(set_keyspace, &buf);
++    if (0 == WriteInternalMessageToSocket(&buf)) {
++        return 0;
++    }
++
++    return -1;
++}
++
++bool CqlParsingContext::FlushPendingMessages() {
++    BAIDU_SCOPED_LOCK(_pending_mu);
++    if (!_pending_buf.empty()) {
++        if (0 == WriteInternalMessageToSocket(&_pending_buf)) {
++             _pending_buf.clear();
++             return true;
++        }
++        return false;
++    }
++    return true;
++}
++
++ParseResult CqlParsingContext::OnSupported(const CqlResponse& response) {
++    // Get options if needed.
++    return MakeParseError(PARSE_ERROR_NOT_ENOUGH_DATA);
++}
++
++ParseResult CqlParsingContext::OnReady(const CqlResponse& response) {
++    CqlReadyDecoder ready(response.body);
++    if (ready.DecodeResponse()) {
++        return MakeParseError(PARSE_ERROR_NOT_ENOUGH_DATA);
++    }
++
++    return MakeParseError(
++        PARSE_ERROR_ABSOLUTELY_WRONG,
++        "Fail to decode ready reponse.");
++}
++
++ParseResult CqlParsingContext::OnAuthenticator(const CqlResponse& response) {
++    CqlAuthenticateDecoder authecticator(response.body);
++    if (authecticator.DecodeResponse()) {
++        _authenticator_expected = authecticator.authenticator();
++        if (status() == CQL_STARTUP) {
++            if (!ReplyAuthResponse()) {
++                return MakeParseError(PARSE_ERROR_ABSOLUTELY_WRONG,
++                                      "Fail to send auth response.");
++            }						
++            set_status(CQL_AUTHENTICATE);
++        } else {
++            LOG(ERROR) << "Received cql authenticate at unexpected status=" << status();
++        }
++        return MakeParseError(PARSE_ERROR_NOT_ENOUGH_DATA);
++    }
++    return MakeParseError(
++        PARSE_ERROR_ABSOLUTELY_WRONG,
++        "Fail to decode authenticate reponse.");
++}
++
++ParseResult CqlParsingContext::OnAuthChallenge(const CqlResponse& response) {
++    // TODO(caidaojin): Now not support auth challenge.
++    return MakeParseError(PARSE_ERROR_ABSOLUTELY_WRONG,
++                          "Now do not support auth challenge.");
++}
++
++ParseResult CqlParsingContext::OnAuthSuccess(const CqlResponse& response) {
++    CqlAuthSuccessDecoder auth_success(response.body);
++    if (auth_success.DecodeResponse()) {
++        std::string token;
++        if (!auth_success.DecodeAuthToken(&token) || !token.empty()) {
++            return MakeParseError(PARSE_ERROR_ABSOLUTELY_WRONG,
++                                  "Invalid auth response or not a empty body.");            
++        }
++        set_status(CQL_AUTH_SUCCESS);
++        int ret = UseKeyspaceIfNeeded();
++        if (ret < 0) {
++            return MakeParseError(PARSE_ERROR_ABSOLUTELY_WRONG,
++                                  "Fail to set keyspace for cql.");
++        }
++        if (ret == 0) {
++            set_status(CQL_SET_KEYSPACE);
++        } else {
++            LOG(ERROR) << "No need set keyspace for this cql connection. Are you sure?";
++            set_status(CQL_READY_WITH_PENDING_REQ);
++        }			
++        return MakeParseError(PARSE_ERROR_NOT_ENOUGH_DATA);
++    }
++    return MakeParseError(
++        PARSE_ERROR_ABSOLUTELY_WRONG,
++        "Fail to decode auth success reponse.");    
++}
++
++ParseResult CqlParsingContext::OnInternalUseKeyspace(const CqlResponse& response) {
++    CqlSetKeyspaceResultDecoder decoder(response.body);
++    if (!decoder.DecodeResponse()) {
++        return MakeParseError(
++            PARSE_ERROR_ABSOLUTELY_WRONG,
++            "Fail to decode internal use keyspace reponse.");
++    }		
++    if (auth() != nullptr && auth()->key_space() == decoder.keyspace()) {
++        set_status(CQL_READY_WITH_PENDING_REQ);
++        return MakeParseError(PARSE_ERROR_NOT_ENOUGH_DATA);
++    }
++    return MakeParseError(
++                PARSE_ERROR_ABSOLUTELY_WRONG,
++                "Invalid keyspace reponse.");
++}
++
++ParseResult CqlParsingContext::OnInternalError(const CqlResponse& response) {
++    if (!IsOptions(response.head.stream_id)) {
++        return MakeParseError(
++            PARSE_ERROR_ABSOLUTELY_WRONG,
++            "Received error response during cql connection initialization.");
++    }
++    CqlErrorDecoder decoder(response.body);
++    if (!decoder.DecodeResponse()) {
++        return MakeParseError(
++             PARSE_ERROR_ABSOLUTELY_WRONG,
++             "Fail to decode internal error reponse.");
++    }
++    RPC_VLOG << "Received a cql internal error response at status: " << status() 
++        << ". Brief error: " << decoder.GetErrorBrief()
++        << ". Details error: " << decoder.GetErrorDetails();
++    return MakeParseError(PARSE_ERROR_NOT_ENOUGH_DATA);
++}
++
++ParseResult CqlParsingContext::HandleAndDestroyInternalMessages(CqlInputResponse* input_response) {
++    DestroyingPtr<CqlInputResponse> msg_destroyer(input_response);
++    CqlResponse& response = input_response->response();
++    if (FLAGS_cql_verbose) {
++        LOG(ERROR) << "[CQL INTERNAL RESPONSE]: " 
++            << CqlMessageOsWrapper(response, true);
++    }
++    const CqlFrameHead& head = response.head;
++    ParseResult result = MakeParseError(PARSE_ERROR_NOT_ENOUGH_DATA);
++    switch (head.opcode) {
++    case CQL_OPCODE_ERROR:
++        result = OnInternalError(response);
++        break;
++    case CQL_OPCODE_AUTHENTICATE:
++        result = OnAuthenticator(response);
++        break;				
++    case CQL_OPCODE_AUTH_CHALLENGE:
++        result = OnAuthChallenge(response);
++        break;
++    case CQL_OPCODE_READY:
++        result = OnReady(response);
++        break;
++    case CQL_OPCODE_AUTH_SUCCESS: 
++        result = OnAuthSuccess(response);
++        break;
++    case CQL_OPCODE_SUPPORTED:
++        result = OnSupported(response);
++        break;
++    default:
++        break;
++    }
++    if (input_response->GetStreamId() == kCqlSetKeyspceStreamId) {
++        result = OnInternalUseKeyspace(response);
++    }
++    if (status() == CQL_READY_WITH_PENDING_REQ) {
++        if (FlushPendingMessages()) {
++            set_status(CQL_READY);
++        } else {
++            return MakeParseError(
++                PARSE_ERROR_ABSOLUTELY_WRONG,
++                "Fail to send cql pending requests.");
++        }
++    }
++    return result;
++}
++
++void CqlParsingContext::Describe(std::ostream& os,
++                                 const DescribeOptions& options) const {
++    os << "connection_state=" << cql_status_str(status()) 
++       << " num_inflight_streams=" << _num_inflight_streams.load(butil::memory_order_relaxed)
++       << " last_stream_allocation_cost=" << _last_stream_allocation_cost;
++    // TODO(caidaojin): print stream bucket bit map if verbose is enabled.
++}
++
++namespace {
++
++bool IsCqlSocketLightLoad(Socket* socket) {
++    CqlParsingContext* parsing_ctx	= GetParsingContextOf(socket);
++    return !parsing_ctx->overload();
++}
++
++}  // namespace
++
++class CqlStreamCreator : public StreamCreator {
++public:
++    CassOpCode opcode() const {
++        return _opcode;
++    }
++
++    static CqlStreamCreator* New(const CassandraRequest& cr) {
++        CqlStreamCreator* sc = new (std::nothrow) CqlStreamCreator();
++        if (sc != nullptr) {
++            sc->_opcode = cr.opcode();
++        }
++        return sc;
++    }
++
++    bool CheckIfSupportPrepare() {
++        return false;   
++    }
++
++protected:
++    // MUST create an object by New(const CassandraRequest& cr).
++    CqlStreamCreator() {}
++    // @StreamCreator
++    StreamUserData* OnCreatingStream(SocketUniquePtr* inout, Controller* cntl);
++
++    // @StreamCreator
++    void DestroyStreamCreator(Controller* cntl) {
++        delete this;
++    }
++
++private:
++    CassOpCode _opcode;
++};
++
++StreamUserData* CqlStreamCreator::OnCreatingStream(SocketUniquePtr* inout, Controller* cntl) {
++    if (cntl->connection_type() == CONNECTION_TYPE_SINGLE) {
++        if ((*inout)->GetAgentSocket(inout, IsCqlSocketLightLoad) != 0) {
++            cntl->SetFailed(EINTERNAL, "Fail to create cql agent socket");
++        }
++    }
++    return nullptr;
++}
++
++class CqlDummyMessage : public SocketMessage {
++public:
++    CqlDummyMessage(size_t size) : _bytes(size) {}
++    virtual butil::Status AppendAndDestroySelf(butil::IOBuf* out, Socket* sock) {
++        delete this;
++        return butil::Status::OK();
++    }
++
++    virtual size_t EstimatedByteSize() { return _bytes; }
++private:
++    const size_t _bytes;    
++};
++
++// "Message" = "Response" as we only implement the client for CQL.
++ParseResult ParseCqlMessage(butil::IOBuf* source, Socket* socket,
++                            bool read_eof, const void* /*arg*/) {
++    if (read_eof || source->empty()) {
++        return MakeParseError(PARSE_ERROR_NOT_ENOUGH_DATA);
++    }
++
++    CqlParsingContext* parsing_ctx = GetParsingContextOf(socket);
++    do {
++        ParseError err = parsing_ctx->Consume(source);
++        if (err != PARSE_OK) {
++            return MakeParseError(err, parsing_ctx->parsing_error());
++        }
++        CHECK(parsing_ctx->_parsing_response);
++        const int16_t id = parsing_ctx->_parsing_response->GetStreamId();
++        if (!parsing_ctx->IsInternalStream(id)) {
++            if (!parsing_ctx->RemoveStream(id)) {
++                return MakeParseError(PARSE_ERROR_ABSOLUTELY_WRONG,
++                                      "Fail to remove cql stream.");     
++            }
++            return MakeMessage(parsing_ctx->_parsing_response.release());
++        } else {
++            return parsing_ctx->HandleAndDestroyInternalMessages(
++                parsing_ctx->_parsing_response.release());
++        }
++    } while(true);
++    return MakeParseError(PARSE_ERROR_ABSOLUTELY_WRONG);
++}
++
++void ProcessCqlResponse(InputMessageBase* msg_base) {
++    DestroyingPtr<CqlInputResponse> msg(static_cast<CqlInputResponse*>(msg_base));
++
++    const int64_t start_parse_us = butil::cpuwide_time_us();
++    const bthread_id_t cid = { msg->correlation_id() };
++    Controller* cntl = nullptr;
++    const int rc = bthread_id_lock(cid, (void**)&cntl);
++    if (rc != 0) {
++        LOG_IF(ERROR, rc != EINVAL && rc != EPERM)
++            << "Fail to lock correlation_id=" << cid << ": " << berror(rc);
++        return;
++    }
++
++    ControllerPrivateAccessor accessor(cntl);
++    Span* span = accessor.span();
++    if (span) {
++        span->set_base_real_us(msg->base_real_us());
++        span->set_received_us(msg->received_us());
++        span->set_response_size(msg->_response.ByteSize());
++        span->set_start_parse_us(start_parse_us);
++    }
++    const int saved_error = cntl->ErrorCode();
++    if (cntl->response() != nullptr) {
++        if (cntl->response()->GetDescriptor() != CassandraResponse::descriptor()) {
++            cntl->SetFailed(ERESPONSE, "Must be CassandraResponse");
++        } else {
++            CassandraResponse& response = *(static_cast<CassandraResponse*>(cntl->response()));
++            response.MoveFrom(msg->_response);
++            // TODO(caidaojin): Move response decode() to ParseCqlMessage may be a better way.
++            // Usually, decode failure indicates that protocol has bugs. So we should 
++            // close this connection immediately.
++            if (!response.Decode()) {
++                RPC_VLOG << "Fail to decode cql response: " << response.LastError();
++            }
++            if (FLAGS_cql_verbose) {
++                LOG(ERROR) << "[CQL RESPONSE]: " << CqlMessageOsWrapper(response.cql_response(), true);
++            }
++        }
++    }
++
++    // Unlocks correlation_id inside. Revert controller's
++    // error code if it version check of `cid' fails
++    accessor.OnResponse(cid, saved_error);
++}
++
++void SerializeCqlRequest(butil::IOBuf* buf,
++                         Controller* cntl,
++                         const google::protobuf::Message* request) {
++    if (request == nullptr) {
++        return cntl->SetFailed(EREQUEST, "Cassandra request is NULL");
++    }
++    CassandraRequest& cass_req = 
++        *(const_cast<CassandraRequest*>(static_cast<const CassandraRequest*>(request)));
++    if (request->GetDescriptor() != CassandraRequest::descriptor()) {
++        return cntl->SetFailed(EREQUEST, "The request is not a CassandraRequest");
++    }
++
++    CqlStreamCreator* sc = CqlStreamCreator::New(cass_req);
++    if (sc == nullptr) {
++        return cntl->SetFailed("Fail to create cql stream creator");
++    }
++    cntl->set_stream_creator(sc);
++    if (!FLAGS_enable_cql_prepare) {
++        if (cass_req.IsValidOpcode() && !cass_req._query.empty()) {
++            return cass_req.Encode(buf);
++        } else {
++            return cntl->SetFailed(EREQUEST, "Invalid cassandra request.");
++        }
++    }
++    cntl->SetFailed(EREQUEST, "Fail to serialize cassandra request.");
++}
++
++void PackCqlRequest(butil::IOBuf* packet_buf,
++                    SocketMessage** sock_msg,
++                    uint64_t correlation_id,
++                    const google::protobuf::MethodDescriptor* method_des,
++                    Controller* cntl,
++                    const butil::IOBuf& request,
++                    const Authenticator* auth) {
++    ControllerPrivateAccessor accessor(cntl);
++    CqlStreamCreator* stream_ctx = 
++        dynamic_cast<CqlStreamCreator*>(accessor.stream_creator());
++    if (stream_ctx == nullptr) {
++        return cntl->SetFailed("None cql stream creator");
++    }	
++    Socket* sock = accessor.sending_sock();
++    CqlParsingContext* parsing_ctx  = GetParsingContextOf(sock);
++    if (parsing_ctx == nullptr) {
++        return cntl->SetFailed("Fail to get cql parsing context");
++    }
++    if (auth != nullptr) {
++        const CassandraAuthenticator* cass_auth = 
++            dynamic_cast<const CassandraAuthenticator*>(auth);
++        CHECK(cass_auth != nullptr);
++        parsing_ctx->set_auth(cass_auth);
++        if (cass_auth->has_set_cql_protocol_version()) {
++            parsing_ctx->set_cql_protocol_version(cass_auth->cql_protocol_version());
++        }
++    }
++    const int16_t stream_id = parsing_ctx->AddStream(correlation_id);
++    if (stream_id < 0) {
++        return cntl->SetFailed("Fail to allocate cql stream");
++    }
++    CqlFrameHead header(parsing_ctx->cql_protocol_version(),
++                        stream_ctx->opcode(),
++                        stream_id,
++                        request.size());
++    if (parsing_ctx->IsReady()) {
++        CqlEncodeHead(header, packet_buf);
++        packet_buf->append(request);
++    } else {
++        if (parsing_ctx->AppendToPendingBuf(header, request)) {
++            if (parsing_ctx->set_startup_status_once()) {
++                // Cql Startup request should be the first message on a connection.
++                parsing_ctx->PackCqlStartup(packet_buf);
++            } else {
++                // During cql connection initialization, we just register correlation id
++                // to socket, but write empty data. The actual request data will be written
++                // into socket after the conneciton is ready.
++                *sock_msg = new CqlDummyMessage(request.size() + header.SerializedSize());
++            }
++        } else {
++            CqlEncodeHead(header, packet_buf);
++            packet_buf->append(request);
++        }
++    }
++    if (FLAGS_cql_verbose) {
++        LOG(ERROR) << "[CQL REQUEST]: " 
++            << CqlMessageOsWrapper(header, request, true);
++    }
++}
++
++const std::string& GetCqlMethodName(
++    const google::protobuf::MethodDescriptor*,
++    const Controller*) {
++    const static std::string CQL_SERVER_STR = "cql-server";
++    return CQL_SERVER_STR;
++}
++
++} // namespace policy
++} // namespace brpc
+diff --git a/src/brpc/policy/cassandra_query_language_protocol.h b/src/brpc/policy/cassandra_query_language_protocol.h
+new file mode 100755
+index 00000000..0f3777b1
+--- /dev/null
++++ b/src/brpc/policy/cassandra_query_language_protocol.h
+@@ -0,0 +1,53 @@
++// Copyright (c) 2019 Iqiyi, Inc.
++// 
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++// 
++//     http://www.apache.org/licenses/LICENSE-2.0
++// 
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++
++// Authors: Daojin, Cai (caidaojin@qiyi.com)
++
++#ifndef BRPC_POLICY_CASSANDRA_QUERY_LANGUAGE_PROTOCOL_H
++#define BRPC_POLICY_CASSANDRA_QUERY_LANGUAGE_PROTOCOL_H
++
++#include "brpc/protocol.h"
++
++namespace brpc {
++namespace policy {
++
++// Parse cql response.
++ParseResult ParseCqlMessage(butil::IOBuf* source, Socket *socket, bool read_eof,
++                            const void *arg);
++
++// Actions to a cql response.
++void ProcessCqlResponse(InputMessageBase* msg);
++
++// Serialize a cql request.
++void SerializeCqlRequest(butil::IOBuf* buf,
++                         Controller* cntl,
++                         const google::protobuf::Message* request);
++
++// Pack `request' to `method' into `buf'.
++void PackCqlRequest(butil::IOBuf* buf,
++                    SocketMessage**,
++                    uint64_t correlation_id,
++                    const google::protobuf::MethodDescriptor* method,
++                    Controller* controller,
++                    const butil::IOBuf& request,
++                    const Authenticator* auth);
++
++const std::string& GetCqlMethodName(
++    const google::protobuf::MethodDescriptor*,
++    const Controller*);
++
++}  // namespace policy
++} // namespace brpc
++
++#endif  // BRPC_POLICY_CASSANDRA_QUERY_LANGUAGE_PROTOCOL_H
