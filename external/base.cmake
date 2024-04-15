@@ -1,10 +1,3 @@
-# set(DEPS_INSTALL_DIR "/tmp/external" CACHE STRING "library install prefix")
-# set(DEPS_PREFIX "/tmp/external" CACHE STRING "library install prefix")
-# option(BUILD_DEPS "build and install deps" ON)
-# option(BUILD_GCC "build gcc" OFF)
-
-
-
 find_program(MAKE_EXECUTABLE NAMES make gmake mingw32-make REQUIRED)
 
 # function(get_cmake_args)
@@ -52,13 +45,7 @@ include(${PROJECT_SOURCE_DIR}/external/openssl/config.cmake)
 #include(${PROJECT_SOURCE_DIR}/external/cassandra_driver/config.cmake)
 include(${PROJECT_SOURCE_DIR}/external/brpc/config.cmake)
 
-
-
-
 #end include
-
-
-
 
 #generate pb.h
 function(CUSTOM_PROTOBUF_GENERATE_CPP SRCS HDRS)

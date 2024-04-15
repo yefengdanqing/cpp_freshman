@@ -21,14 +21,14 @@ add_custom_target(
 
 
 
-# add_executable(brpc_client_main example/brpc/brpc_client.cpp ${PBUF_SRCS} ${PBUF_HDRS})
-# add_dependencies(brpc_client_main compile_all_protos_brpc ${LIB_DEPENDS})
-# target_link_libraries(brpc_client_main ${LIB_BIBRARY} dl)
+add_executable(brpc_client_main example/brpc/brpc_client.cpp ${PBUF_SRCS} ${PBUF_HDRS})
+add_dependencies(brpc_client_main compile_all_protos_brpc ${LIB_DEPENDS})
+target_link_libraries(brpc_client_main ${LIB_BIBRARY} dl z)
 
 
 add_executable(brpc_server_main example/brpc/brpc_server.cpp ${PBUF_SRCS} ${PBUF_HDRS})
 add_dependencies(brpc_server_main compile_all_protos_brpc ${LIB_DEPENDS})
-target_link_libraries(brpc_server_main ${LIB_BIBRARY} dl)
+target_link_libraries(brpc_server_main dl z ${LIB_BIBRARY})
 
 # add_executable(cassandra_test_main example/brpc/cassandra_test.cpp ${PBUF_SRCS} ${PBUF_HDRS})
 # add_dependencies(cassandra_test_main compile_all_protos_brpc)
