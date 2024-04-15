@@ -21,7 +21,7 @@ set(LIB_BIBRARY "" CACHE STRING "all .a or .so file")
 set(CMAKE_VERBOSE_MAKEFILE ON)
 #######
 ##增加库依赖
-include(${PROJECT_SOURCE_DIR}/third_party/base.cmake)
+include(${PROJECT_SOURCE_DIR}/external/base.cmake)
 #一些依赖库的内容
 #######
 

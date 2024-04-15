@@ -1,5 +1,5 @@
-# set(DEPS_INSTALL_DIR "/tmp/third_party" CACHE STRING "library install prefix")
-# set(DEPS_PREFIX "/tmp/third_party" CACHE STRING "library install prefix")
+# set(DEPS_INSTALL_DIR "/tmp/external" CACHE STRING "library install prefix")
+# set(DEPS_PREFIX "/tmp/external" CACHE STRING "library install prefix")
 # option(BUILD_DEPS "build and install deps" ON)
 # option(BUILD_GCC "build gcc" OFF)
 
@@ -34,23 +34,23 @@ endfunction(thirdparty_in_fetchcontent)
 
 #不要用master,除非人为升级
 #begin include
-include(${PROJECT_SOURCE_DIR}/third_party/protobuf/config.cmake)
+include(${PROJECT_SOURCE_DIR}/external/protobuf/config.cmake)
 
-include(${PROJECT_SOURCE_DIR}/third_party/boost/config.cmake)
-include(${PROJECT_SOURCE_DIR}/third_party/fmt/config.cmake)
-include(${PROJECT_SOURCE_DIR}/third_party/absl/config.cmake)
+include(${PROJECT_SOURCE_DIR}/external/boost/config.cmake)
+include(${PROJECT_SOURCE_DIR}/external/fmt/config.cmake)
+include(${PROJECT_SOURCE_DIR}/external/absl/config.cmake)
 
-include(${PROJECT_SOURCE_DIR}/third_party/spdlog/config.cmake)
-include(${PROJECT_SOURCE_DIR}/third_party/gflags/config.cmake)
-include(${PROJECT_SOURCE_DIR}/third_party/glog/config.cmake)
-include(${PROJECT_SOURCE_DIR}/third_party/googletest/config.cmake)
-include(${PROJECT_SOURCE_DIR}/third_party/leveldb/config.cmake)
-include(${PROJECT_SOURCE_DIR}/third_party/openssl/config.cmake)
+include(${PROJECT_SOURCE_DIR}/external/spdlog/config.cmake)
+include(${PROJECT_SOURCE_DIR}/external/gflags/config.cmake)
+include(${PROJECT_SOURCE_DIR}/external/glog/config.cmake)
+include(${PROJECT_SOURCE_DIR}/external/googletest/config.cmake)
+include(${PROJECT_SOURCE_DIR}/external/leveldb/config.cmake)
+include(${PROJECT_SOURCE_DIR}/external/openssl/config.cmake)
 
 
-#include(${PROJECT_SOURCE_DIR}/third_party/libuv/config.cmake)
-#include(${PROJECT_SOURCE_DIR}/third_party/cassandra_driver/config.cmake)
-include(${PROJECT_SOURCE_DIR}/third_party/brpc/config.cmake)
+#include(${PROJECT_SOURCE_DIR}/external/libuv/config.cmake)
+#include(${PROJECT_SOURCE_DIR}/external/cassandra_driver/config.cmake)
+include(${PROJECT_SOURCE_DIR}/external/brpc/config.cmake)
 
 
 
