@@ -1,13 +1,9 @@
-
-
-
 include(ExternalProject)
-set(THIRD_PARTY_PREFIX ${CMAKE_BINARY_DIR}/third_party)
 set(LIBUV_INCLUDE_DIR "${LIBUV_INSTALL_DIR}/include" CACHE PATH "libuv include directory." FORCE)
 set(LIBUV_LIBRARIES "${LIBUV_INSTALL_DIR}/lib/Libuv.a" CACHE FILEPATH "LIBUV_LIBRARIES" FORCE)
 
-set(LIBUV_ROOT ${THIRD_PARTY_PREFIX}/libuv)
-set(LIBUV_ROOT_DIR "${THIRD_PARTY_PREFIX}" CACHE STRING "libuv root directory" FORCE)
+set(LIBUV_ROOT ${EXTERNAL_PREFIX}/libuv)
+set(LIBUV_ROOT_DIR "${EXTERNAL_PREFIX}" CACHE STRING "libuv root directory" FORCE)
 set(LIBUV_GIT_TAG v1.x)  # 指定版本
 set(LIBUV_GIT_URL https://github.com/libuv/libuv.git)  # 指定git仓库地址
 

@@ -1,7 +1,7 @@
 include(ExternalProject)
 
-set(THIRD_PARTY_PREFIX ${CMAKE_BINARY_DIR}/third_party)
-set(BRPC_ROOT ${THIRD_PARTY_PREFIX}/brpc)
+# set(EXTERNAL_PREFIX ${CMAKE_BINARY_DIR}/external)
+set(BRPC_ROOT ${EXTERNAL_PREFIX}/brpc)
 set(BRPC_GIT_TAG master)
 set(BRPC_GIT_URL https://github.com/apache/incubator-brpc.git)
 
@@ -34,7 +34,7 @@ if (NOT brpc_FOUND)
         INSTALL_DIR           "${BRPC_ROOT}"
         UPDATE_COMMAND ""
         # PATCH_COMMAND     
-        #     COMMAND   bash -c "set -ex && git apply --check ${PROJECT_SOURCE_DIR}/third_party/brpc/922.patch.new && git apply ${PROJECT_SOURCE_DIR}/third_party/brpc/922.patch.new"
+        #     COMMAND   bash -c "set -ex && git apply --check ${PROJECT_SOURCE_DIR}/external/brpc/922.patch.new && git apply ${PROJECT_SOURCE_DIR}/external/brpc/922.patch.new"
         CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${BRPC_ROOT}
                -DCMAKE_INSTALL_LIBDIR=${BRPC_ROOT}/lib
                -DCMAKE_PREFIX_PATH=${TBRPC_CMAKE_PREFIX_PATH}

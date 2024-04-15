@@ -34,10 +34,11 @@ endfunction(thirdparty_in_fetchcontent)
 
 #不要用master,除非人为升级
 #begin include
+set(EXTERNAL_PREFIX ${CMAKE_BINARY_DIR}/external)
 include(${PROJECT_SOURCE_DIR}/external/protobuf/config.cmake)
 
 include(${PROJECT_SOURCE_DIR}/external/boost/config.cmake)
-include(${PROJECT_SOURCE_DIR}/external/fmt/config.cmake)
+#include(${PROJECT_SOURCE_DIR}/external/fmt/config.cmake)
 include(${PROJECT_SOURCE_DIR}/external/absl/config.cmake)
 
 include(${PROJECT_SOURCE_DIR}/external/spdlog/config.cmake)

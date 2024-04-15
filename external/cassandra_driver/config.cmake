@@ -2,12 +2,12 @@
 
 
 include(ExternalProject)
-set(THIRD_PARTY_PREFIX ${CMAKE_BINARY_DIR}/third_party)
-set(CASSANDRA_DRIVER_INSTALL_DIR "${PROJECT_BINARY_DIR}/third_party/cassandra_driver")
+# set(EXTERNAL_PREFIX ${CMAKE_BINARY_DIR}/external)
+set(CASSANDRA_DRIVER_INSTALL_DIR "${PROJECT_BINARY_DIR}/external/cassandra_driver")
 set(CASSANDRA_DRIVER_INCLUDE_DIR "${CASSANDRA_DRIVER_INSTALL_DIR}/include" CACHE PATH "cassandra_driver include directory." FORCE)
 set(CASSANDRA_DRIVER_LIBRARIES "${CASSANDRA_DRIVER_INSTALL_DIR}/lib/libscylla-cpp-driver.so" CACHE FILEPATH "CASSANDRA_DRIVER_LIBRARIES" FORCE)
 
-set(CASSANDRA_DRIVER_ROOT ${THIRD_PARTY_PREFIX}/cassandra_driver)
+set(CASSANDRA_DRIVER_ROOT ${EXTERNAL_PREFIX}/cassandra_driver)
 set(CASSANDRA_DRIVER_GIT_TAG  master)  # 指定版本
 set(CASSANDRA_DRIVER_GIT_URL https://github.com/scylladb/cpp-driver.git)  # 指定git仓库地址
 

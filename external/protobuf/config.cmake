@@ -2,10 +2,8 @@
 # include(${CMAKE_CURRENT_LIST_DIR}/../absl/config.cmake)
 set(CMAKE_CXX_STANDARD 17)
 INCLUDE(ExternalProject)
-
-set(THIRD_PARTY_PREFIX ${CMAKE_BINARY_DIR}/third_party)
-set(PROTOBUF_ROOT ${THIRD_PARTY_PREFIX}/protobuf)
-file(MAKE_DIRECTORY ${THIRD_PARTY_PREFIX}/protobuf)
+set(PROTOBUF_ROOT ${EXTERNAL_PREFIX}/protobuf)
+file(MAKE_DIRECTORY ${EXTERNAL_PREFIX}/protobuf)
 set(PROTOBUF_LIB_DIR       ${PROTOBUF_ROOT}/lib)
 set(PROTOBUF_INCLUDE_DIR   ${PROTOBUF_ROOT}/include)
 set(PROTOBUF_BIN_DIR       ${PROTOBUF_ROOT}/bin)
@@ -26,7 +24,7 @@ set(PROTOBUF_GIT_URL  https://github.com/protocolbuffers/protobuf.git)
 set(PROTOBUF_VERSION "protobuf-3.5.1")
 
 # execute_process(
-#     COMMAND tar -xvzf ${PROJECT_SOURCE_DIR}/third_party/protobuf/${PROTOBUF_VERSION}.tar.gz -C ${PROTOBUF_ROOT}
+#     COMMAND tar -xvzf ${PROJECT_SOURCE_DIR}/external/protobuf/${PROTOBUF_VERSION}.tar.gz -C ${PROTOBUF_ROOT}
 #     RESULT_VARIABLE PROTOBUF_SOURCE_UNZIP_SUCCESS
 # )
 # if(NOT "${PROTOBUF_SOURCE_UNZIP_SUCCESS}" STREQUAL "0")

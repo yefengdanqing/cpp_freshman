@@ -1,6 +1,6 @@
 INCLUDE(ExternalProject)
 
-set(RAPIDJSON_INSTALL_DIR "${PROJECT_BINARY_DIR}/third_party/rapidjson")
+set(RAPIDJSON_INSTALL_DIR "${PROJECT_BINARY_DIR}/external/rapidjson")
 set(RAPIDJSON_INCLUDE_DIR "${RAPIDJSON_INSTALL_DIR}/include" CACHE PATH "rapidjson include directory." FORCE)
 set(RAPIDJSON_LIBRARIES   "${RAPIDJSON_INSTALL_DIR}/lib/librapidjson.a" CACHE FILEPATH "RAPIDJSON_LIBRARIES" FORCE)
 
@@ -8,7 +8,7 @@ include_directories(SYSTEM ${RAPIDJSON_INCLUDE_DIR})
 
 set(RAPIDJSON_VERSION "rapidjson-1.1.0")
 execute_process(
-    COMMAND tar -xvzf ${PROJ_THIRD_PARTY_DIR}/rapidjson/${RAPIDJSON_VERSION}.tar.gz -C ${PROJ_THIRD_PARTY_UNZIP_DIR}
+    COMMAND tar -xvzf ${PROJ_EXTERNAL_DIR}/rapidjson/${RAPIDJSON_VERSION}.tar.gz -C ${PROJ_EXTERNAL_UNZIP_DIR}
     RESULT_VARIABLE RAPIDJSON_SOURCE_UNZIP_SUCCESS
 )
 
@@ -22,7 +22,7 @@ include_directories(${RAPIDJSON_INSTALL_DIR})
 ExternalProject_Add(
     rapidjson_rapidjson
     PREFIX          ${RAPIDJSON_SOURCES_DIR}
-    SOURCE_DIR          "${PROJ_THIRD_PARTY_UNZIP_DIR}/${RAPIDJSON_VERSION}"
+    SOURCE_DIR          "${PROJ_EXTERNAL_UNZIP_DIR}/${RAPIDJSON_VERSION}"
     BUILD_BYPRODUCTS    ${RAPIDJSON_VERSION}
     UPDATE_COMMAND   ""
     CMAKE_ARGS      -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
@@ -45,8 +45,8 @@ set_property(TARGET rapidjson PROPERTY IMPORTED_LOCATION ${RAPIDJSON_LIBRARIES})
 add_dependencies(rapidjson rapidjson_rapidjson)
 
 set(LIB_BIBRARY
-    ${LIB_BIBRARY}
-    ${RAPIDJSON_LIBRARIES})
+    ${RAPIDJSON_LIBRARIES}
+    ${LIB_BIBRARY})
 set(LIB_DEPENDS
-        ${BRPC_LIBRARIES}
-        "rapidjson")
+        "rapidjson"
+        ${BRPC_LIBRARIES})

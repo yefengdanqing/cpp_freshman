@@ -1,7 +1,6 @@
 include(ExternalProject)
 set(ABSL_PROPAGATE_CXX_STD ON)
-set(THIRD_PARTY_PREFIX ${CMAKE_BINARY_DIR}/third_party)
-set(ABSL_INSTALL_DIR "${PROJECT_BINARY_DIR}/third_party/absl")
+set(ABSL_INSTALL_DIR "${PROJECT_BINARY_DIR}/external/absl")
 set(ABSL_INCLUDE_DIR "${ABSL_INSTALL_DIR}/include" CACHE PATH "a'b's include directory." FORCE)
 set(ABSL_LIBRARY_DIR "${ABSL_INSTALL_DIR}/lib")
 set(ABSL_LIBRARIES   "${ABSL_LIBRARY_DIR}/libabsl_bad_any_cast_impl.so"
@@ -70,22 +69,22 @@ set(ABSL_LIBRARIES   "${ABSL_LIBRARY_DIR}/libabsl_bad_any_cast_impl.so"
                 "${ABSL_LIBRARY_DIR}/libabsl_throw_delegate.so"
  CACHE FILEPATH "ABSL_LIBRARIES" FORCE)
 
-set(ABSL_ROOT ${THIRD_PARTY_PREFIX}/absl)
+set(EXTERNAL_ABSL_ROOT ${EXTERNAL_PREFIX}/absl)
 set(ABSL_GIT_TAG  master)  # 指定版本
 set(ABSL_GIT_URL https://github.com/abseil/abseil-cpp.git)  # 指定git仓库地址
 
 
-set(ABSL_CONFIGURE    cd ${ABSL_ROOT}/src/ABSL && rm -rf build && mkdir build && cd build && CXXFLAGS=-fPIC cmake .. -DCMAKE_INSTALL_PREFIX=${ABSL_ROOT} -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_LIBDIR=lib -DABSL_BUILD_TESTING=OFF -DABSL_USE_GOOGLETEST_HEAD=OFF)  # 指定配置指令（注意此处修改了安装目录，否则默认情况下回安装到系统目录)
+set(ABSL_CONFIGURE    cd ${EXTERNAL_ABSL_ROOT}/src/ABSL && rm -rf build && mkdir build && cd build && CXXFLAGS=-fPIC cmake .. -DCMAKE_INSTALL_PREFIX=${EXTERNAL_ABSL_ROOT} -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_LIBDIR=lib -DABSL_BUILD_TESTING=OFF -DABSL_USE_GOOGLETEST_HEAD=OFF)  # 指定配置指令（注意此处修改了安装目录，否则默认情况下回安装到系统目录)
 
-set(ABSL_MAKE         cd ${ABSL_ROOT}/src/ABSL/build && CC=gcc CXX=g++ CXXFLAGS=-fPIC make -j8)  # 指定编译指令（需要覆盖默认指令，进入我们指定的ABSL_ROOT目录下)
+set(ABSL_MAKE         cd ${EXTERNAL_ABSL_ROOT}/src/ABSL/build && CC=gcc CXX=g++ CXXFLAGS=-fPIC make -j8)  # 指定编译指令（需要覆盖默认指令，进入我们指定的EXTERNAL_ABSL_ROOT目录下)
 
-set(ABSL_INSTALL      cd ${ABSL_ROOT}/src/ABSL/build && make install)  # 指定安装指令（需要覆盖默认指令，进入我们指定的ABSL_ROOT目录下,可以copy 出来
+set(ABSL_INSTALL      cd ${EXTERNAL_ABSL_ROOT}/src/ABSL/build && make install)  # 指定安装指令（需要覆盖默认指令，进入我们指定的EXTERNAL_ABSL_ROOT目录下,可以copy 出来
 
 
 # 指定编译好的静态库文件的路径
-set(ABSL_LIB_DIR       ${ABSL_ROOT}/lib)
+set(ABSL_LIB_DIR       ${EXTERNAL_ABSL_ROOT}/lib)
 # 指定头文件所在的目录
-set(ABSL_INCLUDE_DIR   ${ABSL_ROOT}/include)
+set(ABSL_INCLUDE_DIR   ${EXTERNAL_ABSL_ROOT}/include)
 
 message("add depends dirs: [${ABSL_LIB_DIR}][${ABSL_INCLUDE_DIR}]")
 link_directories(${ABSL_LIB_DIR})
@@ -94,9 +93,9 @@ include_directories(${ABSL_INCLUDE_DIR})
 message("cmake_module_path: " ${CMAKE_MODULE_PATH})
 
 
-list(FIND CMAKE_PREFIX_PATH ${ABSL_ROOT} INDEX)
+list(FIND CMAKE_PREFIX_PATH ${EXTERNAL_ABSL_ROOT} INDEX)
 if(INDEX EQUAL -1)
-    list(APPEND CMAKE_PREFIX_PATH ${ABSL_ROOT})
+    list(APPEND CMAKE_PREFIX_PATH ${EXTERNAL_ABSL_ROOT})
 endif()
 string (REPLACE ";" "\\;" CMAKE_PREFIX_PATH_STR "${CMAKE_PREFIX_PATH}")
 
@@ -105,7 +104,7 @@ find_package(absl QUIET)
 if (NOT absl_FOUND)
         ExternalProject_Add(ABSL
                 #DEPENDS LIBUV
-                PREFIX            ${ABSL_ROOT}
+                PREFIX            ${EXTERNAL_ABSL_ROOT}
                 GIT_REPOSITORY    ${ABSL_GIT_URL}
                 GIT_TAG           ${ABSL_GIT_TAG}
                 CONFIGURE_COMMAND ${ABSL_CONFIGURE}
@@ -128,6 +127,6 @@ set(LIB_DEPENDS
         "absl"
         ${LIB_DEPENDS})
 
-#set(ENV{PKG_CONFIG_PATH} "$ENV{PKG_CONFIG_PATH}:${ABSL_ROOT}/lib/pkgconfig/")
+#set(ENV{PKG_CONFIG_PATH} "$ENV{PKG_CONFIG_PATH}:${EXTERNAL_ABSL_ROOT}/lib/pkgconfig/")
 
 

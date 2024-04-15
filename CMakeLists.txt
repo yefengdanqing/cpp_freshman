@@ -1,4 +1,6 @@
 cmake_minimum_required(VERSION 3.17)
+set(CMAKE_C_COMPILER /usr/local/bin/gcc)
+set(CMAKE_CXX_COMPILER /usr/local/bin/g++)
 
 message(STATUS "CMAKE_C_COMPILER:${CMAKE_C_COMPILER} ${CMAKE_CXX_COMPILER}")
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -89,4 +91,5 @@ elseif(EXEC_NAME STREQUAL empty)
 endif()
 
 message("finish build ${EXEC_NAME}")
+
 
