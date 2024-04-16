@@ -1,8 +1,17 @@
 cmake_minimum_required(VERSION 3.17)
 # set(CMAKE_C_COMPILER /usr/local/bin/gcc)
 # set(CMAKE_CXX_COMPILER /usr/local/bin/g++)
+# Find C compiler
+find_program(CMAKE_C_COMPILER NAMES gcc PATHS /usr)
+find_program(CMAKE_CXX_COMPILER NAMES g++ PATHS /usr)
+if(CMAKE_C_COMPILER AND CMAKE_CXX_COMPILER)
+    message(STATUS "CMAKE_C_COMPILER:${CMAKE_C_COMPILER} ${CMAKE_CXX_COMPILER}")
+else()
+    # set(CMAKE_C_COMPILER /usr/local/bin/gcc)
+    # set(CMAKE_CXX_COMPILER /usr/local/bin/g++)
+    message(FATAL_ERROR "Could not find the compilers")
+endif()
 
-message(STATUS "CMAKE_C_COMPILER:${CMAKE_C_COMPILER} ${CMAKE_CXX_COMPILER}")
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_COMPILER_IS_GNUCXX ON)
@@ -88,6 +97,8 @@ elseif(EXEC_NAME STREQUAL cassandra_driver)
 elseif(EXEC_NAME STREQUAL empty)
     message("build default googltest and brcp finish")
 endif()
+
+include(${PROJECT_SOURCE_DIR}/cmakes/protobuf.cmake)
 include(${PROJECT_SOURCE_DIR}/cmakes/googletest.cmake)
 include(${PROJECT_SOURCE_DIR}/cmakes/brpc.cmake)
 

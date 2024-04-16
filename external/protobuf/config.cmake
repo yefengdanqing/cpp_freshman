@@ -11,8 +11,7 @@ set(PROTOBUF_SELF_LIBRARIES "${PROTOBUF_LIB_DIR}/libprotobuf-lite.a"
                         "${PROTOBUF_LIB_DIR}/libprotobuf.a"
                         "${PROTOBUF_LIB_DIR}/libprotoc.a" CACHE FILEPATH "PROTOBUF_SELF_LIBRARIES" FORCE)
 set(PBUF_PROTOC            ${PROTOBUF_BIN_DIR}/protoc)
-# set(PROTOBUF_INCLUDE_DIRS "${PROTOBUF_INCLUDE_DIR}" CACHE PATH "Path to gflags include files")
-# set(PROTOBUF_LIBRARIES "${PROTOBUF_LIB_DIR}/libprotobuf.a" CACHE PATH "Path to gflags library files")
+
 
 
 #include_directories(SYSTEM ${PROTOBUF_INCLUDE_DIR})
