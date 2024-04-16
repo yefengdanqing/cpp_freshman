@@ -2,8 +2,8 @@
 # include(${CMAKE_CURRENT_LIST_DIR}/../absl/config.cmake)
 set(CMAKE_CXX_STANDARD 17)
 INCLUDE(ExternalProject)
-set(EXTERNAL_PROTOBUF_ROOT ${CMAKE_BINARY_DIR}/external/protobuf)
-file(MAKE_DIRECTORY ${EXTERNAL_PROTOBUF_ROOT}/protobuf)
+set(EXTERNAL_PROTOBUF_ROOT ${EXTERNAL_PREFIX}/protobuf)
+file(MAKE_DIRECTORY ${EXTERNAL_PREFIX}/protobuf)
 set(PROTOBUF_LIB_DIR       ${EXTERNAL_PROTOBUF_ROOT}/lib)
 set(PROTOBUF_INCLUDE_DIR   ${EXTERNAL_PROTOBUF_ROOT}/include)
 set(PROTOBUF_BIN_DIR       ${EXTERNAL_PROTOBUF_ROOT}/bin)
@@ -11,8 +11,11 @@ set(PROTOBUF_SELF_LIBRARIES "${PROTOBUF_LIB_DIR}/libprotobuf-lite.a"
                         "${PROTOBUF_LIB_DIR}/libprotobuf.a"
                         "${PROTOBUF_LIB_DIR}/libprotoc.a" CACHE FILEPATH "PROTOBUF_SELF_LIBRARIES" FORCE)
 set(PBUF_PROTOC            ${PROTOBUF_BIN_DIR}/protoc)
+# set(PROTOBUF_INCLUDE_DIRS "${PROTOBUF_INCLUDE_DIR}" CACHE PATH "Path to gflags include files")
 # set(PROTOBUF_LIBRARIES "${PROTOBUF_LIB_DIR}/libprotobuf.a" CACHE PATH "Path to gflags library files")
 
+
+#include_directories(SYSTEM ${PROTOBUF_INCLUDE_DIR})
 include_directories(${PROTOBUF_INCLUDE_DIR})
 link_directories(${PROTOBUF_LIB_DIR})
 
@@ -56,7 +59,7 @@ ExternalProject_Add(
                         # ./cmake
   UPDATE_COMMAND      ""
   # BUILD_COMMAND       cd <SOURCE_DIR> && ./configure --prefix=${EXTERNAL_PROTOBUF_ROOT} && make check && make -j8 && make install
-  BUILD_COMMAND       cd <SOURCE_DIR> && cmake . -DCMAKE_CXX_STANDARD=14 -DCMAKE_INSTALL_PREFIX=${EXTERNAL_PROTOBUF_ROOT} -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_LIBDIR=lib -D_GLIBCXX_USE_CXX11_ABI=0 && cmake --build . --parallel 10 && cmake --install .
+  BUILD_COMMAND       cd <SOURCE_DIR> && cmake . -DCMAKE_CXX_STANDARD=17 -DCMAKE_INSTALL_PREFIX=${EXTERNAL_PROTOBUF_ROOT} -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_LIBDIR=lib && cmake --build . --parallel 10 && cmake --install .
   BUILD_IN_SOURCE 1
 )
 
@@ -65,7 +68,6 @@ ExternalProject_Add(
 add_library(protobuf_protobuf STATIC IMPORTED GLOBAL)
 set_property(TARGET protobuf_protobuf PROPERTY IMPORTED_LOCATION ${PROTOBUF_SELF_LIBRARIES})
 add_dependencies(protobuf_protobuf PROTOBUF)
-
 
 set(LIB_BIBRARY
     ${LIB_BIBRARY}
