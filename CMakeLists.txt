@@ -19,10 +19,10 @@ set(CMAKE_COMPILER_IS_GNUCXX ON)
 set(CMAKE_CXX_FLAGS "-w -g -pthread -O0 -fno-omit-frame-pointer -Werror=return-type")
 set(build_type "")
 if (CMAKE_BUILD_TYPE STREQUAL "Asan")
-    #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address")    
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address")   
 endif()
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address")
+
 
 project(cpp_freshman LANGUAGES CXX)
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmakes)

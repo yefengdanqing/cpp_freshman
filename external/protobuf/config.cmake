@@ -1,5 +1,3 @@
-# include(${CMAKE_CURRENT_LIST_DIR}/../base.cmake)
-# include(${CMAKE_CURRENT_LIST_DIR}/../absl/config.cmake)
 set(CMAKE_CXX_STANDARD 17)
 INCLUDE(ExternalProject)
 set(EXTERNAL_PROTOBUF_ROOT ${EXTERNAL_PREFIX}/protobuf)
@@ -12,9 +10,6 @@ set(PROTOBUF_SELF_LIBRARIES "${PROTOBUF_LIB_DIR}/libprotobuf-lite.a"
                         "${PROTOBUF_LIB_DIR}/libprotoc.a" CACHE FILEPATH "PROTOBUF_SELF_LIBRARIES" FORCE)
 set(PBUF_PROTOC            ${PROTOBUF_BIN_DIR}/protoc)
 
-
-
-#include_directories(SYSTEM ${PROTOBUF_INCLUDE_DIR})
 include_directories(${PROTOBUF_INCLUDE_DIR})
 link_directories(${PROTOBUF_LIB_DIR})
 
@@ -30,17 +25,12 @@ set(PROTOBUF_VERSION "protobuf-3.5.1")
 #     message(FATAL_ERROR "unzip && patch tar failed -> ${PROTOBUF_SOURCE_UNZIP_SUCCESS}")
 # endif()
 
-# list(FIND CMAKE_PREFIX_PATH ${PROTOBUF_LIB_DIR} _DEP_INDEX)
-# if (_DEP_INDEX EQUAL -1)
-#     list(APPEND CMAKE_PREFIX_PATH ${PROTOBUF_LIB_DIR})
-# endif ()
 list(FIND CMAKE_PREFIX_PATH ${EXTERNAL_PROTOBUF_ROOT} _DEP_INDEX)
 if (_DEP_INDEX EQUAL -1)
     list(APPEND CMAKE_PREFIX_PATH ${EXTERNAL_PROTOBUF_ROOT})
 endif ()
 string(REPLACE ";" "|" TPROTO_CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH}")
 
-message("SOURCE_DIR SOURCE_DIR SOURCE_DIR:${SOURCE_DIR}")
 ExternalProject_Add(
   PROTOBUF
   GIT_REPOSITORY       ${PROTOBUF_GIT_URL}
@@ -58,7 +48,7 @@ ExternalProject_Add(
                         # ./cmake
   UPDATE_COMMAND      ""
   # BUILD_COMMAND       cd <SOURCE_DIR> && ./configure --prefix=${EXTERNAL_PROTOBUF_ROOT} && make check && make -j8 && make install
-  BUILD_COMMAND       cd <SOURCE_DIR> && cmake . -DCMAKE_CXX_STANDARD=17 -DCMAKE_INSTALL_PREFIX=${EXTERNAL_PROTOBUF_ROOT} -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_LIBDIR=lib && cmake --build . --parallel 10 && cmake --install .
+  BUILD_COMMAND       cd <SOURCE_DIR> && cmake . -DCMAKE_CXX_STANDARD=17 -DCMAKE_INSTALL_PREFIX=${EXTERNAL_PROTOBUF_ROOT} -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER} -DBUILD_SHARED_LIBS=OFF -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS} -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS} -DCMAKE_INSTALL_LIBDIR=lib && cmake --build . --parallel 10 && cmake --install .
   BUILD_IN_SOURCE 1
 )
 
@@ -69,8 +59,8 @@ set_property(TARGET protobuf_protobuf PROPERTY IMPORTED_LOCATION ${PROTOBUF_SELF
 add_dependencies(protobuf_protobuf PROTOBUF)
 
 set(LIB_BIBRARY
-    ${LIB_BIBRARY}
-    ${PROTOBUF_SELF_LIBRARIES})
+    ${PROTOBUF_SELF_LIBRARIES}
+    ${LIB_BIBRARY})
 set(LIB_DEPENDS
-        ${LIB_DEPENDS}
-        "protobuf_protobuf")
+        "protobuf_protobuf"
+        ${LIB_DEPENDS})

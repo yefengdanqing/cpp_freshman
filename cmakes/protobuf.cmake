@@ -1,7 +1,7 @@
-aux_source_directory(${PROJECT_SOURCE_DIR}/example/protobuf source_dir)
+aux_source_directory(${PROJECT_SOURCE_DIR}/example/protobuf protobuf_source_dir)
 aux_source_directory(${PROJECT_SOURCE_DIR}/build/protocol/protobuf/cpp protocol_dir)
 
-message(STATUS "This is SOURCE dir " ${source_dir})
+message(STATUS "This is SOURCE dir " ${protobuf_source_dir})
 file(GLOB PBUF_FILES "${PROJECT_SOURCE_DIR}/proto/*.proto")
 message("proto buf files: ${PBUF_FILES}")
 
@@ -12,7 +12,7 @@ message("protobuf result files:[${PBUF_SRCS}][${PBUF_HDRS}]")
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin/protobuf)
 set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib/protobuf)
 
-add_executable(protobuf_main ${source_dir} ${PBUF_SRCS} ${protocol_dir})
+add_executable(protobuf_main ${protobuf_source_dir} ${PBUF_SRCS} ${protocol_dir})
 
 
 # add_custom_command(
