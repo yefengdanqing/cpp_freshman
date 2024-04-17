@@ -8,7 +8,6 @@ set(BRPC_LIB_DIR       ${EXTERNAL_BRPC_ROOT}/lib)
 set(BRPC_INCLUDE_DIR   ${EXTERNAL_BRPC_ROOT}/include)
 set(BRPC_LIBRARIES   "${BRPC_LIB_DIR}/libbrpc.a" CACHE FILEPATH "BRPC_LIBRARIES" FORCE)
 set(BRPC_VERSION "brpc")
-message("skt brpc lib64: ${BRPC_LIB_DIR} ${BRPC_INCLUDE_DIR}")
 include_directories(${BRPC_INCLUDE_DIR})
 link_directories(${BRPC_LIB_DIR})
 
@@ -18,14 +17,14 @@ if (_DEP_INDEX EQUAL -1)
 endif ()
 string(REPLACE ";" "|" TBRPC_CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH}")
 
-# find_package(brpc QUIET)
+#find_package(brpc QUIET)
 if (NOT brpc_FOUND)
     ExternalProject_Add(BRPC
-        GIT_REPOSITORY        ${BRPC_GIT_URL}
-        GIT_TAG               ${BRPC_GIT_TAG}
+        # GIT_REPOSITORY        ${BRPC_GIT_URL}
+        # GIT_TAG               ${BRPC_GIT_TAG}
         # PREFIX                  "${EXTERNAL_BRPC_ROOT}" #debug code
         SOURCE_DIR            "${EXTERNAL_BRPC_ROOT}"
-        DEPENDS               leveldb_leveldb gflags_gflags protobuf_protobuf openssl_openssl glog
+        DEPENDS               leveldb_leveldb gflags_gflags protobuf_protobuf openssl_openssl glog_glog
         INSTALL_DIR           "${EXTERNAL_BRPC_ROOT}"
         UPDATE_COMMAND ""
         # PATCH_COMMAND     
@@ -40,6 +39,7 @@ if (NOT brpc_FOUND)
                 -DCMAKE_PREFIX_PATH=${TBRPC_CMAKE_PREFIX_PATH}
                 -DWITH_GLOG=OFF
                 -DBUILD_BRPC_TOOLS=OFF
+                -DBUILD_UNIT_TESTS=OFF
                 -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
                 -DBUILD_SHARED_LIBS=OFF
                 -DProtobuf_PROTOC_EXECUTABLE=${PBUF_PROTOC}
