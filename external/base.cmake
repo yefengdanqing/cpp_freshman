@@ -30,17 +30,17 @@ endfunction(thirdparty_in_fetchcontent)
 set(EXTERNAL_PREFIX ${CMAKE_BINARY_DIR}/external)
 include(${PROJECT_SOURCE_DIR}/external/protobuf/config.cmake)
 
-# include(${PROJECT_SOURCE_DIR}/external/boost/config.cmake)
+include(${PROJECT_SOURCE_DIR}/external/boost/config.cmake)
 #include(${PROJECT_SOURCE_DIR}/external/fmt/config.cmake)
-# include(${PROJECT_SOURCE_DIR}/external/absl/config.cmake)
+include(${PROJECT_SOURCE_DIR}/external/absl/config.cmake)
 
-# include(${PROJECT_SOURCE_DIR}/external/spdlog/config.cmake)
+include(${PROJECT_SOURCE_DIR}/external/spdlog/config.cmake)
 include(${PROJECT_SOURCE_DIR}/external/leveldb/config.cmake)
 include(${PROJECT_SOURCE_DIR}/external/openssl/config.cmake)
 include(${PROJECT_SOURCE_DIR}/external/gflags/config.cmake)
-include(${PROJECT_SOURCE_DIR}/external/glog/config.cmake)
+# include(${PROJECT_SOURCE_DIR}/external/glog/config.cmake)
 include(${PROJECT_SOURCE_DIR}/external/googletest/config.cmake)
-#include(${PROJECT_SOURCE_DIR}/external/gperftools/config.cmake)
+include(${PROJECT_SOURCE_DIR}/external/gperftools/config.cmake)
 
 
 
