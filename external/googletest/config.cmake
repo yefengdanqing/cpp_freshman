@@ -20,7 +20,7 @@ if (NOT googletest_FOUND)
         ExternalProject_Add(GOOGLETEST
                 PREFIX                  ${EXTERNAL_GTEST_ROOT}
                 GIT_REPOSITORY          https://github.com/google/googletest.git
-                GIT_TAG                 release-1.12.1
+                GIT_TAG                 v1.14.0
                 CONFIGURE_COMMAND       cd ${EXTERNAL_GTEST_ROOT}/src/GOOGLETEST && cmake 
                                 -DCMAKE_INSTALL_PREFIX=${EXTERNAL_GTEST_ROOT}
                                 -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}

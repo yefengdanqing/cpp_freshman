@@ -70,9 +70,13 @@ set(ABSL_LIBRARIES   "${ABSL_LIBRARY_DIR}/libabsl_bad_any_cast_impl.so"
  CACHE FILEPATH "ABSL_LIBRARIES" FORCE)
 
 set(EXTERNAL_ABSL_ROOT ${EXTERNAL_PREFIX}/absl)
-set(ABSL_GIT_TAG  master)  # 指定版本
+set(ABSL_GIT_TAG 20230802.1)  # 指定版本
 set(ABSL_GIT_URL https://github.com/abseil/abseil-cpp.git)  # 指定git仓库地址
 
+list(FIND CMAKE_PREFIX_PATH ${EXTERNAL_ABSL_ROOT} INDEX)
+if(INDEX EQUAL -1)
+    list(APPEND CMAKE_PREFIX_PATH ${EXTERNAL_ABSL_ROOT})
+endif()
 
 set(ABSL_CONFIGURE    cd ${EXTERNAL_ABSL_ROOT}/src/ABSL && rm -rf build && mkdir build && cd build && CXXFLAGS=-fPIC cmake .. -DCMAKE_INSTALL_PREFIX=${EXTERNAL_ABSL_ROOT} -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_LIBDIR=lib -DABSL_BUILD_TESTING=OFF -DABSL_USE_GOOGLETEST_HEAD=OFF)  # 指定配置指令（注意此处修改了安装目录，否则默认情况下回安装到系统目录)
 
@@ -119,6 +123,8 @@ endif()
 ADD_LIBRARY(absl SHARED IMPORTED GLOBAL)
 SET_PROPERTY(TARGET absl PROPERTY IMPORTED_LOCATION ${ABSL_LIBRARIES})
 add_dependencies(absl ABSL)
+
+
 
 set(LIB_BIBRARY
         ${ABSL_LIBRARIES}

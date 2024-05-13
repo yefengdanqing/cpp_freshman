@@ -44,6 +44,7 @@ class ExampleServiceImple : public example::ExampleService {
                   const example::Request* request,
                   example::Response* response,
                   google::protobuf::Closure* done) {
+        brpc::ClosureGuard done_guard(done);
         // 从Controller中获取请求信息
         brpc::Controller* cntl = static_cast<brpc::Controller*>(cntl_base);
         // 设置响应信息

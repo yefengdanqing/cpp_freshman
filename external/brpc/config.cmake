@@ -20,11 +20,11 @@ string(REPLACE ";" "|" TBRPC_CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH}")
 #find_package(brpc QUIET)
 if (NOT brpc_FOUND)
     ExternalProject_Add(BRPC
-        # GIT_REPOSITORY        ${BRPC_GIT_URL}
-        # GIT_TAG               ${BRPC_GIT_TAG}
+        GIT_REPOSITORY        ${BRPC_GIT_URL}
+        GIT_TAG               ${BRPC_GIT_TAG}
         # PREFIX                  "${EXTERNAL_BRPC_ROOT}" #debug code
         SOURCE_DIR            "${EXTERNAL_BRPC_ROOT}"
-        DEPENDS               leveldb_leveldb gflags_gflags protobuf_protobuf openssl_openssl glog_glog
+        DEPENDS               leveldb_leveldb gflags_gflags protobuf_protobuf openssl_openssl
         INSTALL_DIR           "${EXTERNAL_BRPC_ROOT}"
         UPDATE_COMMAND ""
         # PATCH_COMMAND     
@@ -54,7 +54,6 @@ add_dependencies(brpc BRPC ${LIB_DEPENDS})
 set(LIB_BIBRARY
     ${BRPC_LIBRARIES}
     ${LIB_BIBRARY})
-message("LIB_BIBRARY--LIB_BIBRARY--LIB_BIBRARY--${LIB_BIBRARY}")
 
 set(LIB_DEPENDS
         "brpc"

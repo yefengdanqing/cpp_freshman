@@ -17,5 +17,6 @@ set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin/boost)
 set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib/boost)
 add_executable(boost_main ${source_dir})
 add_dependencies(boost_main ${LIB_DEPENDS})
-target_link_libraries(boost_main ${LIB_BIBRARY})
+target_link_libraries(boost_main Boost::thread Boost::graph gtest_main gtest)
+#target_link_libraries(boost_main ${LIB_BIBRARY})
 

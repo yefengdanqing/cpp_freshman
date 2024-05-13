@@ -35,12 +35,13 @@ include(${PROJECT_SOURCE_DIR}/external/boost/config.cmake)
 include(${PROJECT_SOURCE_DIR}/external/absl/config.cmake)
 
 include(${PROJECT_SOURCE_DIR}/external/spdlog/config.cmake)
+include(${PROJECT_SOURCE_DIR}/external/googletest/config.cmake)
 include(${PROJECT_SOURCE_DIR}/external/leveldb/config.cmake)
 include(${PROJECT_SOURCE_DIR}/external/openssl/config.cmake)
 include(${PROJECT_SOURCE_DIR}/external/gflags/config.cmake)
-# include(${PROJECT_SOURCE_DIR}/external/glog/config.cmake)
-include(${PROJECT_SOURCE_DIR}/external/googletest/config.cmake)
-include(${PROJECT_SOURCE_DIR}/external/gperftools/config.cmake)
+#include(${PROJECT_SOURCE_DIR}/external/glog/config.cmake)
+include(${PROJECT_SOURCE_DIR}/external/babylon/config.cmake)
+#include(${PROJECT_SOURCE_DIR}/external/gperftools/config.cmake)
 
 
 

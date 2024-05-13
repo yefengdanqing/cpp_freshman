@@ -33,7 +33,6 @@ add_custom_target(
     compile_all_protos
     DEPENDS ${PBUF_SRCS} ${PBUF_HDRS}
 )
-message("abc abc abc abc ${LIB_DEPENDS}----${LIB_BIBRARY}")
 add_dependencies(protobuf_main ${LIB_DEPENDS} compile_all_protos)
 target_link_libraries(protobuf_main ${LIB_BIBRARY})
 

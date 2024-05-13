@@ -1,6 +1,4 @@
 cmake_minimum_required(VERSION 3.17)
-# set(CMAKE_C_COMPILER /usr/local/bin/gcc)
-# set(CMAKE_CXX_COMPILER /usr/local/bin/g++)
 # Find C compiler
 find_program(CMAKE_C_COMPILER NAMES gcc PATHS /usr)
 find_program(CMAKE_CXX_COMPILER NAMES g++ PATHS /usr)
@@ -18,9 +16,9 @@ set(CMAKE_COMPILER_IS_GNUCXX ON)
 #默认一般O2的优化
 set(CMAKE_CXX_FLAGS "-w -g -pthread -O0 -fno-omit-frame-pointer -Werror=return-type")
 set(build_type "")
-if (CMAKE_BUILD_TYPE STREQUAL "Asan")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address")   
-endif()
+# if (CMAKE_BUILD_TYPE STREQUAL "Asan")
+#     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address")   
+# endif()
 
 
 
@@ -98,6 +96,7 @@ elseif(EXEC_NAME STREQUAL empty)
     message("build default googltest and brcp finish")
 endif()
 
+# include(${PROJECT_SOURCE_DIR}/cmakes/boost.cmake)
 include(${PROJECT_SOURCE_DIR}/cmakes/protobuf.cmake)
 include(${PROJECT_SOURCE_DIR}/cmakes/googletest.cmake)
 include(${PROJECT_SOURCE_DIR}/cmakes/brpc.cmake)
