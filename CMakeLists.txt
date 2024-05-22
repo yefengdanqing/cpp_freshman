@@ -15,6 +15,8 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_COMPILER_IS_GNUCXX ON)
 #默认一般O2的优化
 set(CMAKE_CXX_FLAGS "-w -g -pthread -O0 -fno-omit-frame-pointer -Werror=return-type")
+set(CMAKE_C_FLAGS "-w -g -pthread -O0 -fno-omit-frame-pointer -Werror=return-type")
+
 set(build_type "")
 # if (CMAKE_BUILD_TYPE STREQUAL "Asan")
 #     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address")   
@@ -100,6 +102,8 @@ endif()
 include(${PROJECT_SOURCE_DIR}/cmakes/protobuf.cmake)
 include(${PROJECT_SOURCE_DIR}/cmakes/googletest.cmake)
 include(${PROJECT_SOURCE_DIR}/cmakes/brpc.cmake)
+include(${PROJECT_SOURCE_DIR}/cmakes/babylon.cmake)
+
 
 message("finish build ${EXEC_NAME}")
 

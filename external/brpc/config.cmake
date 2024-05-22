@@ -42,7 +42,7 @@ if (NOT brpc_FOUND)
                 -DBUILD_UNIT_TESTS=OFF
                 -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
                 -DBUILD_SHARED_LIBS=OFF
-                -DProtobuf_PROTOC_EXECUTABLE=${PBUF_PROTOC}
+                #-DProtobuf_PROTOC_EXECUTABLE=${PBUF_PROTOC}
         LIST_SEPARATOR  |
         BUILD_BYPRODUCTS ${BRPC_LIBRARIES})
 endif()

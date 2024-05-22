@@ -4,8 +4,13 @@ set(BOOST_INCLUDE_LIBRARIES thread filesystem system graph preprocessor spirit)
 set(BOOST_ENABLE_CMAKE ON)
 set(FETCHCONTENT_QUIET FALSE)
 SET(BOOST_CONFIGURE ${BOOST_ROOT}/src/Boost/bootstrap.sh --prefix=${BOOST_ROOT})
-SET(BOOST_INSTALL ${BOOST_ROOT}/src/Boost/b2 --buildtype=complete install -j15 --prefix=${BOOST_ROOT})
+SET(BOOST_INSTALL ${BOOST_ROOT}/src/Boost/b2 -j15 --buildtype=complete install --prefix=${BOOST_ROOT})
 include_directories(system /usr/local/include/python3.8/pyconfig.h)
+include_directories(${BOOST_ROOT}/include)
+list(FIND CMAKE_PREFIX_PATH ${BOOST_ROOT} INDEX)
+if(INDEX EQUAL -1)
+    list(APPEND CMAKE_PREFIX_PATH ${BOOST_ROOT})
+endif()
 
 
 #include(FetchContent)
@@ -22,40 +27,22 @@ include_directories(system /usr/local/include/python3.8/pyconfig.h)
 
 # BOOST
 set(BOOST_REQ_SUBMODELS1 "libs/accumulators;libs/algorithm;libs/align;libs/any;libs/array;libs/asio;libs/assert;libs/assign;libs/atomic;libs/beast;libs/bimap;libs/bind;libs/callable_traits;libs/chrono;libs/circular_buffer;libs/compatibility;libs/compute;libs/concept_check;libs/config;libs/container;libs/container_hash;libs/context;libs/contract;libs/conversion;libs/convert;libs/core;libs/coroutine;libs/coroutine2;libs/crc;libs/date_time;libs/describe;libs/detail;libs/dll;libs/dynamic_bitset;libs/endian;libs/exception;libs/fiber;libs/filesystem;libs/flyweight;libs/foreach;libs/format;libs/function;libs/functional;libs/function_types;libs/fusion;libs/geometry;libs/gil;libs/graph;libs/graph_parallel;libs/hana;libs/headers;libs/heap;libs/histogram;libs/hof;libs/icl;libs/index.html;libs/integer;libs/interprocess;libs/intrusive;libs/io;libs/iostreams;libs/iterator;libs/Jamfile.v2;libs/json;libs/lambda;libs/lambda2;libs/leaf;libs/lexical_cast;libs/libraries.htm;libs/locale;libs/local_function;libs/lockfree;libs/log;libs/logic;libs/maintainers.txt;libs/math;libs/metaparse;libs/move;libs/mp11;libs/mpi;libs/mpl;libs/msm;libs/multi_array;libs/multi_index;libs/multiprecision;libs/nowide;libs/numeric;libs/optional;libs/outcome;libs/parameter;libs/parameter_python;libs/pfr;libs/phoenix;libs/platform_maintainers.txt;libs/poly_collection;libs/polygon;libs/pool;libs/predef;libs/preprocessor;libs/process;libs/program_options;libs/property_map;libs/property_map_parallel;libs/property_tree;libs/proto;libs/ptr_container;libs/python;libs/qvm;libs/random;libs/range;libs/ratio;libs/rational;libs/regex;libs/safe_numerics;libs/scope_exit;libs/serialization;libs/signals2;libs/smart_ptr;libs/sort;libs/spirit;libs/stacktrace;libs/statechart;libs/static_assert;libs/static_string;libs/stl_interfaces;libs/system;libs/test;libs/thread;libs/throw_exception;libs/timer;libs/tokenizer;libs/tti;libs/tuple;libs/type_erasure;libs/type_index;libs/typeof;libs/type_traits;libs/units;libs/unordered;libs/url;libs/utility;libs/uuid;libs/variant;libs/variant2;libs/vmd;libs/wave;libs/winapi;libs/xpressive;libs/yap")
-
-# Set(FETCHCONTENT_QUIET FALSE)
-# FetchContent_Declare(
-#     boost
-#     GIT_REPOSITORY "https://github.com/boostorg/boost.git"
-#     GIT_TAG boost-1.81.0
-#     GIT_SUBMODULES ${BOOST_REQ_SUBMODELS1}
-#     GIT_PROGRESS TRUE
-#     CONFIGURE_COMMAND ""  # tell CMake it's not a cmake project
-#     SOURCE_DIR ${BOOST_ROOT}
-#     BINARY_DIR ${BOOST_ROOT}
-# )
-# FetchContent_MakeAvailable(boost)
-
-include(ExternalProject)
-ExternalProject_Add(
-    Boost
-    GIT_REPOSITORY "https://github.com/boostorg/boost.git"
-    GIT_TAG boost-1.83.0
-    PREFIX ${BOOST_ROOT}
-    # 因为执行b2的时候，需要在同目录下读取boost-build.jam，因此BUILD_IN_SOURCE
-    BUILD_IN_SOURCE   true
-    CONFIGURE_COMMAND "${BOOST_CONFIGURE}"
-    BUILD_COMMAND       ""
-    INSTALL_COMMAND   "${BOOST_INSTALL}"
-)
-
-
-include_directories(${BOOST_ROOT}/include)
-
-list(FIND CMAKE_PREFIX_PATH ${BOOST_ROOT} INDEX)
-if(INDEX EQUAL -1)
-    list(APPEND CMAKE_PREFIX_PATH ${BOOST_ROOT})
+if(NOT TARGET Boost::boost)
+    message("not find boost boost")
+    include(ExternalProject)
+    ExternalProject_Add(
+        Boost
+        GIT_REPOSITORY "https://github.com/boostorg/boost.git"
+        GIT_TAG boost-1.83.0
+        PREFIX ${BOOST_ROOT}
+        # 因为执行b2的时候，需要在同目录下读取boost-build.jam，因此BUILD_IN_SOURCE
+        BUILD_IN_SOURCE   true
+        CONFIGURE_COMMAND "${BOOST_CONFIGURE}"
+        BUILD_COMMAND       ""
+        INSTALL_COMMAND   "${BOOST_INSTALL}"
+    )
 endif()
+
 # set(LIB_BIBRARY
 #     ${LIB_BIBRARY}
 #     "Boost::thread Boost::graph")
