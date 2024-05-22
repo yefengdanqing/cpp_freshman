@@ -1,58 +1,91 @@
-# set(EXTERNAL_PREFIX ${CMAKE_BINARY_DIR}/external)
-set(BOOST_ROOT ${EXTERNAL_PREFIX}/boost)
-set(BOOST_INCLUDE_LIBRARIES thread filesystem system graph preprocessor spirit)
-set(BOOST_ENABLE_CMAKE ON)
-set(FETCHCONTENT_QUIET FALSE)
-SET(BOOST_CONFIGURE ${BOOST_ROOT}/src/Boost/bootstrap.sh --prefix=${BOOST_ROOT})
-SET(BOOST_INSTALL ${BOOST_ROOT}/src/Boost/b2 -j15 --buildtype=complete install --prefix=${BOOST_ROOT})
-include_directories(system /usr/local/include/python3.8/pyconfig.h)
-include_directories(${BOOST_ROOT}/include)
-list(FIND CMAKE_PREFIX_PATH ${BOOST_ROOT} INDEX)
-if(INDEX EQUAL -1)
-    list(APPEND CMAKE_PREFIX_PATH ${BOOST_ROOT})
+include(ExternalProject)
+set(EXTERNAL_BOOST_ROOT ${CMAKE_BINARY_DIR}/external/boost)
+set(BOOST_GIT_TAG boost-1.83.0)
+set(BOOST_GIT_URL https://github.com/boostorg/boost.git)
+
+
+set(BOOST_LIB_DIR       ${EXTERNAL_BOOST_ROOT}/lib)
+set(BOOST_INCLUDE_DIR   ${EXTERNAL_BOOST_ROOT}/include)
+set(BOOST_LIBRARIES     "${BOOST_LIB_DIR}/libboost_atomic.a"
+                        "${BOOST_LIB_DIR}/libboost_chrono.a"
+                        "${BOOST_LIB_DIR}/libboost_container.a"
+                        "${BOOST_LIB_DIR}/libboost_context.a"
+                        "${BOOST_LIB_DIR}/libboost_contract.a"
+                        "${BOOST_LIB_DIR}/libboost_coroutine.a"
+                        "${BOOST_LIB_DIR}/libboost_date_time.a"
+                        "${BOOST_LIB_DIR}/libboost_exception.a"
+                        "${BOOST_LIB_DIR}/libboost_fiber.a"
+                        "${BOOST_LIB_DIR}/libboost_fiber_numa.a"
+                        "${BOOST_LIB_DIR}/libboost_filesystem.a"
+                        "${BOOST_LIB_DIR}/libboost_graph.a"
+                        "${BOOST_LIB_DIR}/libboost_iostreams.a"
+                        "${BOOST_LIB_DIR}/libboost_json.a"
+                        "${BOOST_LIB_DIR}/libboost_locale.a"
+                        "${BOOST_LIB_DIR}/libboost_log.a"
+                        "${BOOST_LIB_DIR}/libboost_log_setup.a"
+                        "${BOOST_LIB_DIR}/libboost_nowide.a"
+                        "${BOOST_LIB_DIR}/libboost_prg_exec_monitor.a"
+                        "${BOOST_LIB_DIR}/libboost_program_options.a"
+                        "${BOOST_LIB_DIR}/libboost_random.a"
+                        "${BOOST_LIB_DIR}/libboost_serialization.a"
+                        "${BOOST_LIB_DIR}/libboost_stacktrace_addr2line.a"
+                        "${BOOST_LIB_DIR}/libboost_stacktrace_basic.a"
+                        "${BOOST_LIB_DIR}/libboost_stacktrace_noop.a"
+                        "${BOOST_LIB_DIR}/libboost_test_exec_monitor.a"
+                        "${BOOST_LIB_DIR}/libboost_thread.a"
+                        "${BOOST_LIB_DIR}/libboost_timer.a"
+                        "${BOOST_LIB_DIR}/libboost_type_erasure.a"
+                        "${BOOST_LIB_DIR}/libboost_unit_test_framework.a"
+                        "${BOOST_LIB_DIR}/libboost_url.a"
+                        "${BOOST_LIB_DIR}/libboost_wave.a"
+                        "${BOOST_LIB_DIR}/libboost_wserialization.a"
+CACHE FILEPATH "BOOST_LIBRARIES" FORCE)
+set(BOOST_VERSION "boost")
+include_directories(${BOOST_INCLUDE_DIR})
+link_directories(${BOOST_LIB_DIR})
+
+list(FIND CMAKE_PREFIX_PATH ${EXTERNAL_BOOST_ROOT} _DEP_INDEX)
+if (_DEP_INDEX EQUAL -1)
+    list(APPEND CMAKE_PREFIX_PATH ${EXTERNAL_BOOST_ROOT})
+endif ()
+#string(REPLACE ";" "|" TBOOST_CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH}")
+
+#find_package(boost QUIET)
+if (NOT BOOST_FOUND)
+    ExternalProject_Add(Boost
+        GIT_REPOSITORY        ${BOOST_GIT_URL}
+        GIT_TAG               ${BOOST_GIT_TAG}
+        # PREFIX                  "${EXTERNAL_BOOST_ROOT}" #debug code
+        SOURCE_DIR            "${EXTERNAL_BOOST_ROOT}"
+        INSTALL_DIR           "${EXTERNAL_BOOST_ROOT}"
+        UPDATE_COMMAND ""
+        CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${EXTERNAL_BOOST_ROOT}
+                -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+                -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
+                -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS}
+                -DCMAKE_POSITION_INDEPENDENT_CODE=ON
+                -DCMAKE_INSTALL_LIBDIR=${EXTERNAL_BOOST_ROOT}/lib
+                -DCMAKE_PREFIX_PATH=${TBOOST_CMAKE_PREFIX_PATH}
+                -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+                -DBUILD_SHARED_LIBS=OFF
+        LIST_SEPARATOR  |
+        BUILD_BYPRODUCTS ${BOOST_LIBRARIES})
 endif()
 
 
-#include(FetchContent)
+ADD_LIBRARY(boost STATIC IMPORTED GLOBAL)
+SET_PROPERTY(TARGET boost PROPERTY IMPORTED_LOCATION ${BOOST_LIBRARIES})
+add_dependencies(boost Boost)
+set(LIB_BIBRARY
+    ${BOOST_LIBRARIES}
+    ${LIB_BIBRARY})
 
-# FetchContent_Declare(
-#   boost
-#   GIT_REPOSITORY https://github.com/boostorg/boost.git
-#   GIT_TAG boost-1.81.0
-#   SOURCE_DIR ${BOOST_ROOT}
-#   BINARY_DIR ${BOOST_ROOT}
-# )
-# FetchContent_MakeAvailable(
-#   boost)
+set(LIB_DEPENDS
+        "boost"
+        ${LIB_DEPENDS})
 
-# BOOST
-set(BOOST_REQ_SUBMODELS1 "libs/accumulators;libs/algorithm;libs/align;libs/any;libs/array;libs/asio;libs/assert;libs/assign;libs/atomic;libs/beast;libs/bimap;libs/bind;libs/callable_traits;libs/chrono;libs/circular_buffer;libs/compatibility;libs/compute;libs/concept_check;libs/config;libs/container;libs/container_hash;libs/context;libs/contract;libs/conversion;libs/convert;libs/core;libs/coroutine;libs/coroutine2;libs/crc;libs/date_time;libs/describe;libs/detail;libs/dll;libs/dynamic_bitset;libs/endian;libs/exception;libs/fiber;libs/filesystem;libs/flyweight;libs/foreach;libs/format;libs/function;libs/functional;libs/function_types;libs/fusion;libs/geometry;libs/gil;libs/graph;libs/graph_parallel;libs/hana;libs/headers;libs/heap;libs/histogram;libs/hof;libs/icl;libs/index.html;libs/integer;libs/interprocess;libs/intrusive;libs/io;libs/iostreams;libs/iterator;libs/Jamfile.v2;libs/json;libs/lambda;libs/lambda2;libs/leaf;libs/lexical_cast;libs/libraries.htm;libs/locale;libs/local_function;libs/lockfree;libs/log;libs/logic;libs/maintainers.txt;libs/math;libs/metaparse;libs/move;libs/mp11;libs/mpi;libs/mpl;libs/msm;libs/multi_array;libs/multi_index;libs/multiprecision;libs/nowide;libs/numeric;libs/optional;libs/outcome;libs/parameter;libs/parameter_python;libs/pfr;libs/phoenix;libs/platform_maintainers.txt;libs/poly_collection;libs/polygon;libs/pool;libs/predef;libs/preprocessor;libs/process;libs/program_options;libs/property_map;libs/property_map_parallel;libs/property_tree;libs/proto;libs/ptr_container;libs/python;libs/qvm;libs/random;libs/range;libs/ratio;libs/rational;libs/regex;libs/safe_numerics;libs/scope_exit;libs/serialization;libs/signals2;libs/smart_ptr;libs/sort;libs/spirit;libs/stacktrace;libs/statechart;libs/static_assert;libs/static_string;libs/stl_interfaces;libs/system;libs/test;libs/thread;libs/throw_exception;libs/timer;libs/tokenizer;libs/tti;libs/tuple;libs/type_erasure;libs/type_index;libs/typeof;libs/type_traits;libs/units;libs/unordered;libs/url;libs/utility;libs/uuid;libs/variant;libs/variant2;libs/vmd;libs/wave;libs/winapi;libs/xpressive;libs/yap")
-if(NOT TARGET Boost::boost)
-    message("not find boost boost")
-    include(ExternalProject)
-    ExternalProject_Add(
-        Boost
-        GIT_REPOSITORY "https://github.com/boostorg/boost.git"
-        GIT_TAG boost-1.83.0
-        PREFIX ${BOOST_ROOT}
-        # 因为执行b2的时候，需要在同目录下读取boost-build.jam，因此BUILD_IN_SOURCE
-        BUILD_IN_SOURCE   true
-        CONFIGURE_COMMAND "${BOOST_CONFIGURE}"
-        BUILD_COMMAND       ""
-        INSTALL_COMMAND   "${BOOST_INSTALL}"
-    )
-endif()
+    
+# https://github.com/PaddlePaddle/Paddle/blob/develop/cmake/external/boost.cmake
+#https://github.com/tushushu/bigflow/tree/ab494e49a02b446bb2f504a2652f866c924c1baf/cmake
 
-# set(LIB_BIBRARY
-#     ${LIB_BIBRARY}
-#     "Boost::thread Boost::graph")
-# set(LIB_DEPENDS "Boost::filesystem"
-#   ${LIB_DEPENDS})
-
-# find_package(Boost REQUIRED COMPONENTS graph)
-# include_directories(${Boost_INCLUDE_DIRS})
-# message("xxxxxxxxxxxxxxxx:${Boost_LIBRARIES}")
-                
-
-# get_target_property(BASE_LOCATION graph LOCATION)
-# message("boost::boost 路径: ${BASE_LOCATION}")
