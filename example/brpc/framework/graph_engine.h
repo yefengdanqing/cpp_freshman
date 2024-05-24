@@ -1,3 +1,4 @@
+#pragma once
 #include "babylon/anyflow/builder.h"
 #include "babylon/anyflow/graph.h"
 #include "babylon/concurrent/object_pool.h"
@@ -9,6 +10,8 @@ using babylon::anyflow::Closure;
 using babylon::anyflow::GraphBuilder;
 using babylon::anyflow::GraphProcessor;
 using babylon::anyflow::GraphExecutor;
+namespace ranker {
+namespace ranker {
 
 typedef babylon::ObjectPool<Graph> GraphPool;
 
@@ -32,6 +35,9 @@ private:
     std::set<std::string> _graph_names;
 
 };
+
+}
+}
 
 
 

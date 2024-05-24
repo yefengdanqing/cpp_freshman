@@ -7,7 +7,7 @@
         exit(1); \
     }
 
-namespace example{
+namespace ranker{
 namespace  ranker {
 struct RequestInfo {
     int32_t timeout;

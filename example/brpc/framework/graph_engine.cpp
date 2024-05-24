@@ -1,4 +1,6 @@
 #include "graph_engine.h"
+namespace ranker {
+namespace ranker {
 
 Graph* GraphEngine::get(const std::string& name) noexcept {
     // auto it = _graphs.find(name);
@@ -40,4 +42,6 @@ bool GraphEngine::init_pool(int size, int cache_size, const std::string& name) n
     //ptr->...; // 返回值为定制Deleter的智能指针
     // 析构时实例自动归还，池内实例超出容量N后，超出部分会直接销毁
     
+}
+}
 }

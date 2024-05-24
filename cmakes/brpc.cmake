@@ -2,6 +2,10 @@
 
 aux_source_directory(${PROJECT_SOURCE_DIR}/example/brpc source_dir)
 aux_source_directory(${PROJECT_SOURCE_DIR}/example/brpc/common common_dir)
+aux_source_directory(${PROJECT_SOURCE_DIR}/example/brpc/framework framework_dir)
+aux_source_directory(${PROJECT_SOURCE_DIR}/example/brpc/processor processor_dir)
+aux_source_directory(${PROJECT_SOURCE_DIR}/example/brpc/service service_dir)
+
 
 message(STATUS "This is SOURCE dir " ${source_dir})
 
@@ -21,13 +25,14 @@ add_custom_target(
 )
 
 
+include_directories(${PROJECT_SOURCE_DIR}/example/brpc)
 
 add_executable(brpc_client_main example/brpc/brpc_client.cpp ${PBUF_SRCS} ${PBUF_HDRS})
 add_dependencies(brpc_client_main compile_all_protos_brpc ${LIB_DEPENDS})
 target_link_libraries(brpc_client_main ${LIB_BIBRARY} dl z)
 
 
-add_executable(brpc_server_main example/brpc/brpc_server.cpp ${PBUF_SRCS} ${PBUF_HDRS} ${common_dir})
+add_executable(brpc_server_main example/brpc/brpc_server.cpp ${PBUF_SRCS} ${PBUF_HDRS} ${common_dir} ${framework_dir} ${processor_dir} ${service_dir})
 add_dependencies(brpc_server_main compile_all_protos_brpc ${LIB_DEPENDS})
 target_link_libraries(brpc_server_main dl z ${LIB_BIBRARY})
 

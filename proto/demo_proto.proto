@@ -1,18 +1,156 @@
 syntax = "proto3";
 option cc_generic_services = true;
 
-package example;
+package ranker_server;
 
-message Request {
+message RsRequest {
     string message = 1;
     string request_id = 2;
+    string adx = 3;
+    string one_id = 4;
+    int32 timeout = 5;
+
+    repeated OfferInfo offer_info = 20;
+}
+message OfferInfo {
+    uint64 demand_offer_id = 1;
+    double given_price = 2;
+    double received_price = 3;
+    double given_price_factor = 4;
+    int32 target_goal_type = 5; //表示深度目标细分类型，iaa, iap, iaa& iap、次留、付费、关键行为，可定义成枚举
+    double target_goal_value = 6; //深度期望目标值，如roas、双出价转化率
+    int32 target_goal_window = 7; //表示单子选择看多长时间指标,  day0, day1, day3, day7，可定义成枚举
+    int32 queue_id = 8;
+    int32 index = 9;
+    PackageInfo package_info = 20;
+    
+}
+message PackageInfo {
+    //应用市场基本信息
+    string package_name = 1; // 单子包名，iOS为idxxx格式，android为com.xx格式，非app类型为空
+    string app_name = 2; //应用名称
+    int32 app_size = 3;  //应用包体大小，单位KB
+    int32 content_rating = 4; //内容分级
+    int32 num_ratings = 5; //应用评分人数
+    double rating = 6; //应用评分
+    string developer_id = 7; //开发者在应用市场的ID
+    string bundle_id = 8; //ios com.xxx形式的ID
+    int32 market_status = 9; //应用市场的上下架状态，1上架，非1已下架
+  
+    //归一化信息
+    string normalized_package_name = 10; //iOS/Android归一化的包名
+    string normalized_developer_id = 11; //归一化的开发者ID
+  
+    //分类相关信息，运营手动分类，详细解释见 https://data-platform.mobvista.com/#/detail?section=Package+Services&sectionId=2&auth=user&menuId=197&menutitle=%08PackageService-tag%E4%BF%A1%E6%81%AF%E8%AF%B4%E6%98%8E
+    int32 business_category_1 = 30; //一级品类，大分类，如休闲、工具、五垂、中重度对应的分类代码，若不存在，则为0，后面追加的字段
+    int32 business_category_2 = 12; //二级品类，垂类细分，根据运营手动打的一/二/三级分类映射得到，若不存在，则为0
+    int32 mtg_category_level_1 = 13; // 运营手动打的一级分类代码，若不存在，则为0
+    int32 mtg_category_level_2 = 14; //运营手动打的二级分类代码，若不存在，则为0
+    int32 mtg_category_level_3 = 15; //运营手动打的三级分类代码，若不存在，则为0
+  
+    //市场抓取的分类与榜单信息
+    int32 category_type = 16; // 大分类，仅有application、game、other三种枚举值，是否还有必要，待讨论
+    repeated string market_category = 17; //市场一级分类
+    repeated string market_sub_category = 18; //市场二级分类
+    repeated string similar_packages = 19; //相似包名
+    repeated string developer_packages = 20; //同开发者下的包名
+}  
+
+message RsResponse {
+    int32 status_code = 1;
+    string error_msg = 2;
+    string request_id = 3;
+    string ext_algo_list = 20;
+    repeated DemandAdCandidate demand_offer_candidate = 40;
+
 }
 
-message Response {
-    string reply = 1;
-    string request_id = 2;
+message DemandAdCandidate {
+    int64 demand_offer_id = 1;
+    //单子和创意的粗排和精排，Rs填充
+    DemandOfferPreRankInfo demand_offer_prerank_info = 70;  //单子维度prerank信息
+    DemandCreativePreRankInfo demand_creative_prerank_info_list = 80;  //demand创意prerank信息，与demand_creative_list保持相同长度及index
+    DemandRankInfo demand_rank_info_list = 90;  //demand精排rank信息，offer*creative叉乘粒度，与demand_creative_list保持相同长度及index
 }
+
+
+//单子prerank(单子粗排)结果
+message DemandOfferPreRankInfo {
+    double demand_offer_prerank_ivr = 1;
+    double demand_offer_prerank_score = 2; //ivr粗排打分
+    int32 demand_offer_prerank_group_id = 3; //group id
+    int32 demand_offer_prerank_queue_id = 4;
+    int32 demand_offer_prerank_group_index = 5; //当前group下排序index
+    int32 demand_offer_prerank_group_score = 6; //group下多队列排序分数
+    
+  
+    //roas prerank info
+    double demand_offer_prerank_d0_iap_pltv = 11;
+    double demand_offer_prerank_d0_iaa_pltv = 12;
+    double demand_offer_prerank_d3_iap_pltv = 13;
+    double demand_offer_prerank_d3_iaa_pltv = 14;
+    double demand_offer_prerank_d7_iap_pltv = 15;
+    double demand_offer_prerank_d7_iaa_pltv = 16;
+    double demand_offer_prerank_iaa_pltv_select = 17; // 根据window选择的iaa分数
+    double demand_offer_prerank_iap_pltv_select = 18; // 根据window选择的iap分数
+    double demand_offer_prerank_roas_pltv_stat_val = 19;
+    bool demand_offer_prerank_roas_pltv_stat_hit = 20; //命中pltv stat词表
+    double demand_offer_prerank_roas_bid_ratio = 21;
+  
+  
+    //cpe preran info
+    double demand_offer_prerank_cpe_pegr = 41;
+    double demand_offer_prerank_cpe_target_goal_value = 42;
+    double demand_offer_prerank_cpe_bid_ratio = 43;
+}
+  
+  
+//demand侧创意prerank(创意粗排)结果
+message DemandCreativePreRankInfo {
+    double demand_creative_prerank_ivr = 1;
+    double demand_creative_prerank_score = 2;
+    int32 demand_creative_prerank_queue_id = 3;
+    int32 demand_creative_prerank_group_id = 4;
+    int32 demand_creative_prerank_level = 5;
+    int32 demand_creative_prerank_index = 6;  //group下排序index
+}
+  
+  //demand侧rank(offer+creative的联合精排)结果
+  message DemandRankInfo {
+    //target-roas
+    double demand_rank_roas_pltv_before_cal = 1;
+    double demand_rank_roas_pltv_cal_ratio = 2;
+    double demand_rank_roas_final_pltv = 3;  //pltv
+    double demand_rank_roas_bid_ratio = 4;
+    double demand_rank_roas_ori_cpi = 5;
+    double demand_rank_roas_given_price_factor = 6;
+  
+    //target-cpe
+    double demand_rank_cpe_cold_start_price = 21;
+    double demand_rank_cpe_pegr_before_cal = 22;
+    double demand_rank_cpe_pegr_cal_ratio = 23;
+    double demand_rank_cpe_final_pegr = 24;
+  
+    //dvr
+    double demand_rank_deepconv_dvr = 41;
+    double demand_rank_deepconv_dvr_cal = 42; //pdvr
+  
+    double demand_rank_ivr = 61;   //原始精排分数pivr
+    float demand_rank_ivr_calib = 62;     // 校准的打分
+    double demand_rank_ecpm = 63;   //roas/cpe/双出价 cpm
+    int32 demand_rank_index = 64;  // 最终排序index
+    float demand_rank_trynew_showrate_bid_ratio = 65;
+    float demand_rank_trynew_auto_trynew_bid_ratio = 66;
+    float demand_rank_general_bid_ratio = 67;
+  
+    float given_price = 81;
+    double receive_billing_price = 82;       // 预估的扣费
+    double given_billing_price = 83;         // 考虑运营的factor之后
+    double bid_price = 84;  // 最终返回的价格
+  }
+  
+  
 
 service ExampleService {
-    rpc SayHello(Request) returns (Response);
+    rpc SayHello(RsRequest) returns (RsResponse);
 }
