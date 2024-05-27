@@ -1,7 +1,6 @@
 #coding --UTF-8--
 import json
 import sys
-import json
 def json_flatten(key, value, basic_types=(str,int,float,bool,complex,bytes)):
     flatten_dict = {}
     if isinstance(value, dict):
