@@ -33,7 +33,7 @@ void install_single_handler() {
 
 int main() {
     brpc::Server server;
-    ranker::ranker::ExampleServiceImple service_impl;
+    utopian::ranker::ExampleServiceImple service_impl;
     // 注册服务
     if (server.AddService(&service_impl,
                           brpc::SERVER_DOESNT_OWN_SERVICE) != 0) {

@@ -6,7 +6,7 @@
 #include "framework/graph_engine.h"
 
 
-namespace ranker {
+namespace utopian {
 namespace ranker {
 // 实现一个继承自ExampleService的服务类
 class ExampleServiceImple : public ranker_server::ExampleService {

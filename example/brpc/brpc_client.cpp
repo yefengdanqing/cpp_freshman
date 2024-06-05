@@ -75,7 +75,7 @@ int main() {
     LOG(INFO) << "remote_side=" << cntl.remote_side();
 
     // 输出响应结果
-    std::cout << "Reply: " << rs_response.status_code() << " " << rs_response.request_id()<< std::endl;
+    std::cout << "Reply: " << rs_response.status_code() << " ,msg:" << rs_response.error_msg() << " ,request_id:" << rs_response.request_id() << " ,ext_algo_list:"<< rs_response.ext_algo_list() << std::endl;
 
     return 0;
 }

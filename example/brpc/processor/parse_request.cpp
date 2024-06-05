@@ -1,7 +1,7 @@
 #include "parse_request.h"
 
 
-namespace ranker {
+namespace utopian {
 namespace ranker {
 
 int ParseRequestProcessor::process() noexcept {

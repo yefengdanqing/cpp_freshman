@@ -12,7 +12,7 @@ using babylon::anyflow::Closure;
 using babylon::anyflow::GraphBuilder;
 using babylon::anyflow::GraphProcessor;
 
-namespace ranker {
+namespace utopian {
 namespace ranker{
 
 class PrerankProcessor : public GraphProcessor {
