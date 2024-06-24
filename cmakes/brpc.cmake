@@ -6,6 +6,7 @@ aux_source_directory(${PROJECT_SOURCE_DIR}/example/brpc/plugins/framework framew
 aux_source_directory(${PROJECT_SOURCE_DIR}/example/brpc/processor processor_dir)
 aux_source_directory(${PROJECT_SOURCE_DIR}/example/brpc/service service_dir)
 aux_source_directory(${PROJECT_SOURCE_DIR}/example/brpc/plugins/dict dict_dir)
+aux_source_directory(${PROJECT_SOURCE_DIR}/example/brpc/util util_dir)
 
 
 
@@ -32,12 +33,12 @@ include_directories(${PROJECT_SOURCE_DIR}/example/brpc/plugins)
 
 add_executable(brpc_client_main example/brpc/brpc_client.cpp ${PBUF_SRCS} ${PBUF_HDRS})
 add_dependencies(brpc_client_main compile_all_protos_brpc ${LIB_DEPENDS})
-target_link_libraries(brpc_client_main ${LIB_BIBRARY} dl z)
+target_link_libraries(brpc_client_main ${LIB_BIBRARY} dl z stdc++fs)
 
 
-add_executable(brpc_server_main example/brpc/brpc_server.cpp ${PBUF_SRCS} ${PBUF_HDRS} ${common_dir} ${framework_dir} ${processor_dir} ${service_dir} ${dict_dir})
+add_executable(brpc_server_main example/brpc/brpc_server.cpp ${PBUF_SRCS} ${PBUF_HDRS} ${common_dir} ${framework_dir} ${processor_dir} ${service_dir} ${dict_dir} ${util_dir})
 add_dependencies(brpc_server_main compile_all_protos_brpc ${LIB_DEPENDS})
-target_link_libraries(brpc_server_main dl z ${LIB_BIBRARY})
+target_link_libraries(brpc_server_main dl z stdc++fs ${LIB_BIBRARY})
 
 # add_executable(cassandra_test_main example/brpc/cassandra_test.cpp ${PBUF_SRCS} ${PBUF_HDRS})
 # add_dependencies(cassandra_test_main compile_all_protos_brpc)

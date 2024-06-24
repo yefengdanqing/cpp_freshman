@@ -4,6 +4,7 @@
 
 #include "gflags/gflags.h"
 #include "service/ranker_service.h"
+#include "common/global.h"
 
 
 DEFINE_int32(idle_timeout_s, -1, "Connection will be closed if there is no read/write operations during the last idle_timeout_s'");
@@ -31,7 +32,21 @@ void install_single_handler() {
     signal(SIGBUS, server_core_signal_handler);
 }
 
-int main() {
+int main(int argc, char* argv[]) {
+    //处理参数变量
+    google::ParseCommandLineFlags(&argc, &argv, true);
+    google::SetVersionString("v1");
+    google::SetCommandLineOption("flagfile", "./conf/gflags.conf");
+
+    //brpc 监控
+    // brpc最多dump 65535个纬度的监控
+    google::SetCommandLineOption("bvar_max_dump_multi_dimension_metric_number", "65535");
+
+    //初始化全局的变量
+    CHECK_RET_EXIT(utopian::ranker::GlobalInitializer::get_global_instance().init(), "global init failed,exit");
+
+
+
     brpc::Server server;
     utopian::ranker::ExampleServiceImple service_impl;
     // 注册服务

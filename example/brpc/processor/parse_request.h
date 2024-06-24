@@ -6,7 +6,7 @@
 
 #include "common/common.h"
 
-
+using babylon::Any;
 using babylon::anyflow::Graph;
 using babylon::anyflow::GraphData;
 using babylon::anyflow::Closure;
@@ -20,8 +20,9 @@ namespace ranker{
 
 class ParseRequestProcessor : public GraphProcessor {
 private:
-    // int setup(GraphVertex& vertex) noexcept;
-    int process() noexcept override;
+    virtual int config(const Any& origin_option, Any& option) const noexcept override;
+    virtual int setup() noexcept override;
+    virtual int process() noexcept override;
     ANYFLOW_INTERFACE (
         ANYFLOW_DEPEND_DATA(ranker_server::RsRequest, request)
         ANYFLOW_EMIT_DATA(RequestInfo, normalized_request)

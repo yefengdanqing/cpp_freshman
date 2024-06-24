@@ -1,0 +1,48 @@
+
+<graph>
+    <vertices>
+
+        <vertex>
+            <processor>ParseRequestProcessor</processor>
+            <dependencies>
+                <dependency>request</dependency>
+            </dependencies>
+            <outputs>
+                <output>normalized_request</output>
+            </outputs>
+        </vertex>
+        
+        <vertex>
+            <processor>RankProcessor</processor>
+            <dependencies>
+                <dependency>normalized_request</dependency>
+                <dependency>prerank_info</dependency>
+            </dependencies>
+            <outputs>
+                <output>rank_info</output>
+            </outputs>
+        </vertex>
+
+        <vertex>
+            <processor>PrerankProcessor</processor>
+            <dependencies>
+                <dependency>normalized_request</dependency>
+            </dependencies>
+            <outputs>
+                <output>prerank_info</output>
+            </outputs>
+        </vertex>
+        <vertex>
+            <processor>OutputProcessor</processor>
+            <dependencies>
+                <dependency>normalized_request</dependency>
+                <dependency>prerank_info</dependency>
+                <dependency>rank_info</dependency>
+            </dependencies>
+            <outputs>
+                <output>response_info</output>
+                <output>rs_response</output>
+            </outputs>
+        </vertex>
+    </vertices>
+</graph>

@@ -1,0 +1,17 @@
+<dicts>
+    <dict>
+        <path>./dict/bid_ratio.txt</path>
+        <name>bid_ratio.txt</name>
+        <type>HashSetString</type>
+    </dict>
+    <dict>
+        <path>./dict/stop_bid.txt</path>
+        <name>stop_bid.txt</name>
+        <type>HashSetString</type>
+    </dict>
+    <!-- <dict>
+        <path>./dict/bid_ratio.txt</path>
+        <name>bid_ratio.txt</name>
+        <type>HashSetString</type>
+    </dict> -->
+</dicts>

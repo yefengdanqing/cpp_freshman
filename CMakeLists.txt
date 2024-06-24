@@ -29,7 +29,7 @@ list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmakes)
 
 set(LIB_DEPENDS "" CACHE STRING "all")
 set(LIB_BIBRARY "" CACHE STRING "all .a or .so file")
-set(CMAKE_VERBOSE_MAKEFILE ON)
+set(CMAKE_VERBOSE_MAKEFILE OFF)
 #######
 ##增加库依赖
 include(${PROJECT_SOURCE_DIR}/external/base.cmake)

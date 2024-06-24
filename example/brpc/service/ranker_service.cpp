@@ -76,6 +76,7 @@ void ExampleServiceImple::SayHello(google::protobuf::RpcController* cntl_base,
                         vertex_builder_ptr = &builder_second.add_vertex([] {
                             return std::make_unique<ParseRequestProcessor>();
                         });
+                        vertex_builder_ptr->option(RoasFactor());
                     } else if (process == "RankProcessor") {
                         vertex_builder_ptr = &builder_second.add_vertex([] {
                             return std::make_unique<RankProcessor>();
