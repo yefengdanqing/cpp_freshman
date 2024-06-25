@@ -49,7 +49,7 @@ void DictManager::check() {
         for (auto& dict : dict_hander_vect) {
             if (dict == nullptr)    continue;
             time_t now = time(NULL);
-            LOG(NOTICE) << "start check time" << now;
+            LOG(NOTICE) << "start check time:" << now;
             int cur_idx = dict->cur_index.load();
             int bg_idx = 1 - cur_idx;
             auto& cur_dict = dict->dicts[cur_idx];
@@ -65,13 +65,14 @@ void DictManager::check() {
             }
             time_t new_mtime = get_file_last_mtime(cur_dict->get_cur_file());
             if (new_mtime == dict->modify_time) {
-                LOG(NOTICE) << "dict:" << cur_dict->get_cur_file() << ", time:" << new_mtime;
+                LOG(NOTICE) << "dict:" << dict->dict_name << ", dict path:" << cur_dict->get_cur_file() << ", time:" << new_mtime;
                 continue;
             }
             if (bg_dict != nullptr) {
                 bg_dict.reset();
             }
 
+            // auto new_dict = dict->cfunc(dict->dict_file_path);
             auto new_dict = dict->cfunc();
             if (new_dict->init() == 0 && 
                 new_dict->load()) {
@@ -112,6 +113,7 @@ void* DictManager::load_dict_by_thread(void* args) {
 
 int32_t DictManager::parallel_sync_load() {
     if (dict_hander_vect.empty()) {
+        LOG(INFO) << "dict vection:" << dict_hander_vect.size() << "is empty";
         return 0;
     }
 
@@ -123,11 +125,16 @@ int32_t DictManager::parallel_sync_load() {
     for(auto& info : dict_hander_vect) {
         if (info == nullptr)    continue;
         int idx = info->cur_index.load();
-        auto& hander_ptr = info->dicts[idx];
+        std::shared_ptr<DictBase>& hander_ptr = info->dicts[idx];
         //必须先new一个
+        if (info->dict_file_path.empty()) {
+            LOG(WARNING) << "dict name:" << info->dict_name << ", dict path is empty!!";
+            continue;
+        }
+        // hander_ptr = info->cfunc(info->dict_file_path);
         hander_ptr = info->cfunc();
         if (hander_ptr == nullptr) {
-            LOG(INFO) << "dict name:" << info->dict_name << "is null";
+            LOG(WARNING) << "dict name:" << info->dict_name << "is null";
             continue;
         }
         hander_ptr->init();

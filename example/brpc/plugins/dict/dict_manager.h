@@ -7,13 +7,16 @@
 #include <memory>
 #include <atomic>
 #include <string_view>
+#include <functional>
 
 #include "bthread/bthread.h"
 
 // extern std::shared_ptr<utopian::ranker::DictManager::DictHander> dict_name_##info;
-#define GET_DICT(dict_name, dict_ret)  \
-    extern std::shared_ptr<utopian::ranker::DictManager::DictHander> dict_name_##info;\
-    dict_ret = dict_name_##info->dicts[dict_name_##info->cur_index.load()]; 
+// static_pointer_cast和dynamic_pointer_cast
+#define WRAP(...) __VA_ARGS__
+#define GET_DICT(dict_name, dict_ret, class_type)  \
+    extern std::shared_ptr<utopian::ranker::DictManager::DictHander> dict_name##_info;\
+    dict_ret = std::static_pointer_cast<class_type>(dict_name##_info->dicts[dict_name##_info->cur_index.load()]);
 
 
 namespace utopian {
@@ -28,23 +31,21 @@ inline static std::time_t get_file_last_mtime(const std::string& file) {
     auto f_time = std::filesystem::last_write_time(file);
     return decltype(f_time)::clock::to_time_t(f_time);
 }
-
-typedef std::shared_ptr<DictBase> (*create_func)();
-// using create_func = std::shared_ptr<DictBase> (*)();
-
 template<typename T>
-std::shared_ptr<DictBase> __create_func() {
-    return std::make_shared<T>();
+std::shared_ptr<DictBase> __create_func(const std::string& file_path) {
+    return std::make_shared<T>(file_path);
 }
 
+// using create_func = std::function<std::shared_ptr<DictBase>(const std::string&)>;
+using create_func = std::function<std::shared_ptr<DictBase>()>;
+
+// typedef std::shared_ptr<DictBase> (*create_func)(const std::string&);
+// using create_func = std::shared_ptr<DictBase> (*)(const std::string&);
 // 注册函数，将模板函数实例化后赋值给函数指针
-template<typename T>
-create_func register_func() {
-    return &__create_func<T>;
-}
-
-
-
+// template<typename T>
+// create_func register_func(const std::string& path) {
+//     return &__create_func<T>;
+// }
 
 
 class DictManager {
@@ -57,9 +58,10 @@ public:
 
     struct DictHander {
         std::string dict_name;
+        std::string dict_file_path; //记录
         std::shared_ptr<DictBase> dicts[2];
         std::atomic<int> cur_index;
-        create_func cfunc = nullptr;
+        create_func cfunc;
         time_t modify_time;
         time_t load_finish_time;
     };
@@ -68,19 +70,27 @@ public:
         static DictManager instance;
         return instance;
     }
-    //dict_name 不能用引用么
     template<typename T>
-    void register_dict(std::string dict_name,
+    void register_dict(const std::string& dict_name,
+                        const std::string& dict_file_path,
                         std::shared_ptr<DictHander> info) {
-        dict_hander_vect.emplace_back(info);
+        std::cout << "register_dict:" << dict_name << std::endl;
         if (info == nullptr) {
             //日志
             std::cout << "ptr is null" << std::endl;
             return;
         }
+        dict_hander_vect.emplace_back(info);
         info->dict_name = dict_name;
+        info->dict_file_path = dict_file_path;
         info->modify_time = 0;
-        info->cfunc = (register_func<T>());
+        //这是调用
+        // info->cfunc = __create_func<T>(dict_file_path);
+        //在调用的地方传入
+        // info->cfunc = __create_func<T>; 
+        //可以用bind，或者lambda
+        info->cfunc = std::bind(__create_func<T>, dict_file_path);
+        std::cout << "register_dict:" << dict_name << " " << dict_hander_vect.size() << std::endl;
     }
     static void* load_dict_by_thread(void* ptr);
     int32_t run(bool is_wait_all_done = false);
@@ -107,12 +117,13 @@ struct DictLoadArg {
 };
 
 #define DEFINE_DICT_REGISTER_BASE(class_name, dict_name) \
-    std::shared_ptr<utopian::ranker::DictManager::DictHander> dict_name_##info = std::make_shared<utopian::ranker::DictManager::DictHander>();    \
-    void register_dict_##dict_name() {      \
-        if (dict_name_##info == nullptr) std::cout << "ptr is null" << std::endl;   \
-        utopian::ranker::DictManager::get_single_instance().register_dict<utopian::ranker::class_name>(#dict_name, dict_name_##info);    \
+    std::shared_ptr<utopian::ranker::DictManager::DictHander> dict_name##_info = std::make_shared<utopian::ranker::DictManager::DictHander>();    \
+    void register_dict##_dict_name() {      \
+        if (dict_name##_info == nullptr) std::cout << "ptr is null" << std::endl;   \
+        utopian::ranker::DictManager::get_single_instance().register_dict<utopian::ranker::class_name>(#dict_name, dict_name##_info);    \
     }   \
-    void register_dict_##dict_name() __attribute__((constructor));
+    void register_dict##_dict_name() __attribute__((constructor));
+
 
 }
 }

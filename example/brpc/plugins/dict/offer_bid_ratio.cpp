@@ -12,7 +12,8 @@ namespace utopian {
 
 namespace ranker {
 bool OfferBidRatio::init() {
-    _dict_file = "./conf/dicts/offer_bid_ratio.txt";
+    // _dict_file = "./conf/dicts/offer_bid_ratio.txt";
+    return true;
 
 }
 bool OfferBidRatio::load() {
@@ -40,11 +41,10 @@ bool OfferBidRatio::load() {
         items.clear();
         split_new_v1<double>(line, "\t", items);
         if (items.size() < 2)   continue;
-        LOG(NOTICE) << int64_t(items[0]) << "   " << items[1];
         offer_exp_ratio.emplace(int64_t(items[0]), items[1]);
     }
-
-
+    LOG(NOTICE) << "dict path:" << _dict_file << ", load numbers:" << offer_exp_ratio.size();
+    return true;
 }
 
 }

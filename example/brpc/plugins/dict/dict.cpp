@@ -1,7 +1,0 @@
-namespace utopian {
-namespace ranker {
-
-
-
-}
-}
