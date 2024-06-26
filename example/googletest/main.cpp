@@ -3,6 +3,7 @@
 #include "gtest/gtest.h"
 #include "myfuture.h"
 #include "test_class.h"
+#include "before_main.h"
 
 //./google_test --gtest-filter=abc.123
 //abc是测试套件名字，123是测试用例名字

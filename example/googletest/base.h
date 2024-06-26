@@ -1,3 +1,4 @@
+#pragma once
 #include <iostream>
 #include <thread>
 #include <string>
@@ -9,6 +10,9 @@ class Base {
 public:
     Base() {
         std::cout << "thread id :" << std::this_thread::get_id() << "," << __FUNCTION__ << "-(" << this << ")" << std::endl;
+    }
+    Base(const std::string& info) {
+        std::cout << info << std::endl;
     }
     ~Base() {}
     void increase(std::string& name) {

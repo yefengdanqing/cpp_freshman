@@ -24,8 +24,6 @@
 namespace utopian{
 namespace  ranker {
 
-#define DECLEAR_DICT_BASE(dict_name)    \
-    extern std::shared_ptr<utopian::ranker::DictManager::DictHander> dict_name_##info;
 
 struct RequestInfo {
     int32_t timeout;
