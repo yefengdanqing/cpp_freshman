@@ -5,8 +5,9 @@
 #include "test_class.h"
 #include "before_main.h"
 
-//./google_test --gtest-filter=abc.123
-//abc是测试套件名字，123是测试用例名字
+//./google_test --gtest_filter=abc.123
+//abc是测试套件名字，测试套件可以被继承;
+//123是测试用例名字
 //main函数必须有参数，否则没办法传入
 int main(int argc, char* argv[]) {
     ::testing::InitGoogleTest(&argc, argv);

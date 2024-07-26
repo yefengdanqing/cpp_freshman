@@ -24,7 +24,7 @@ string(REPLACE ";" "|" TBABYLON_CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH}")
 
 
 #find_package(babylon QUIET)
-if (NOT brpc_FOUND)
+if (NOT babylon_FOUND)
     ExternalProject_Add(BABYLON
         GIT_REPOSITORY        ${BABYLON_GIT_URL}
         GIT_TAG               ${BABYLON_GIT_TAG}
@@ -43,7 +43,7 @@ if (NOT brpc_FOUND)
                 -DCMAKE_PREFIX_PATH=${TBABYLON_CMAKE_PREFIX_PATH}
                 -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
                 -DBUILD_SHARED_LIBS=OFF
-                -DBUILD_TESTING=ON
+                -DBUILD_TESTING=OFF
                 -DCMAKE_CXX_STANDARD=17
                 -DCMAKE_CXX_STANDARD_REQUIRED=ON
         LIST_SEPARATOR  |

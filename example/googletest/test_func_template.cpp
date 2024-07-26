@@ -18,6 +18,7 @@ TEST(TestFuncTemplate, decrease) {
     ASSERT_EQ(result, "word hello");
     ASSERT_EQ(decrease(1, 1), 0);
     ASSERT_EQ(decrease(10.0, 10.0), 0);
+    ASSERT_EQ(foo<int>(), 10);
 }
 
 TEST(TestFuncTemplate, is_base_of_test) {

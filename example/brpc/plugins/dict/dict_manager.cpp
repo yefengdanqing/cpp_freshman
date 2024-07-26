@@ -58,7 +58,7 @@ void DictManager::check() {
                 continue;
             }
             auto& bg_dict = dict->dicts[bg_idx];
-            if (bg_dict != nullptr && abs(now - dict->load_finish_time > 120)) {
+            if (bg_dict != nullptr && abs(now - dict->load_finish_time > 300)) {
                 // 加载完成时间超过2min, 删除旧词典
                 LOG(NOTICE) << "free dict : " << bg_dict->get_cur_file() << " success" << ", the effective time is : " << now;
                 bg_dict.reset();

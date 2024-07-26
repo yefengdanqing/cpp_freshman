@@ -1,4 +1,10 @@
+#include "babylon/application_context.h"
+
 #include "prerank.h"
+
+using ::babylon::ApplicationContext;
+
+
 
 namespace utopian {
 namespace ranker{
@@ -12,6 +18,7 @@ int PrerankProcessor::process() noexcept {
     *prerank_info.emit() = std::move(info);
         
 }
+// BABYLON_REGISTER_FACTORY_COMPONENT(PrerankProcessor, "PrerankProcessor", GraphProcessor);
 
 }
 }

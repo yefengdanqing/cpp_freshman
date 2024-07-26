@@ -1,4 +1,6 @@
 #include "butil/logging.h"
+#include "babylon/application_context.h"
+using ::babylon::ApplicationContext;
 #include "output.h"
 
 namespace utopian {
@@ -27,5 +29,8 @@ int OutputProcessor::process() noexcept {
     response_ptr->set_ext_algo_list("ext_algo");
 
 }
+
+// BABYLON_REGISTER_FACTORY_COMPONENT(OutputProcessor, "OutputProcessor", GraphProcessor);
+
 }
 }

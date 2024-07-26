@@ -20,8 +20,8 @@ namespace ranker{
 
 class ParseRequestProcessor : public GraphProcessor {
 private:
-    virtual int config(const Any& origin_option, Any& option) const noexcept override;
-    virtual int setup() noexcept override;
+    // virtual int config(const Any& origin_option, Any& option) const noexcept override;
+    // virtual int setup() noexcept override;
     virtual int process() noexcept override;
     ANYFLOW_INTERFACE (
         ANYFLOW_DEPEND_DATA(ranker_server::RsRequest, request)

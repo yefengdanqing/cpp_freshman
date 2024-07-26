@@ -24,7 +24,7 @@ if (NOT brpc_FOUND)
         GIT_TAG               ${BRPC_GIT_TAG}
         # PREFIX                  "${EXTERNAL_BRPC_ROOT}" #debug code
         SOURCE_DIR            "${EXTERNAL_BRPC_ROOT}"
-        DEPENDS               leveldb_leveldb gflags_gflags protobuf_protobuf openssl_openssl
+        DEPENDS               openssl_openssl leveldb_leveldb gflags_gflags protobuf_protobuf
         INSTALL_DIR           "${EXTERNAL_BRPC_ROOT}"
         UPDATE_COMMAND ""
         # PATCH_COMMAND     
@@ -42,6 +42,7 @@ if (NOT brpc_FOUND)
                 -DBUILD_UNIT_TESTS=OFF
                 -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
                 -DBUILD_SHARED_LIBS=OFF
+                -DBRPC_ENABLE_CPU_PROFILER=ON
                 #-DProtobuf_PROTOC_EXECUTABLE=${PBUF_PROTOC}
         LIST_SEPARATOR  |
         BUILD_BYPRODUCTS ${BRPC_LIBRARIES})

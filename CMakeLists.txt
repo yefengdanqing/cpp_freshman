@@ -14,8 +14,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_COMPILER_IS_GNUCXX ON)
 #默认一般O2的优化
-set(CMAKE_CXX_FLAGS "-w -g -pthread -O0 -fno-omit-frame-pointer -Werror=return-type")
-set(CMAKE_C_FLAGS "-w -g -pthread -O0 -fno-omit-frame-pointer -Werror=return-type")
+set(CMAKE_CXX_FLAGS "-w -g -pthread -O0 -fno-omit-frame-pointer -Werror=return-type -lstdc++fs")
+set(CMAKE_C_FLAGS "-w -g -pthread -O0 -fno-omit-frame-pointer -Werror=return-type -lstdc++fs")
 
 set(build_type "")
 # if (CMAKE_BUILD_TYPE STREQUAL "Asan")

@@ -1,4 +1,7 @@
+#include "babylon/application_context.h"
 #include "ranker.h"
+
+using ::babylon::ApplicationContext;
 
 namespace utopian {
 namespace ranker{
@@ -10,5 +13,7 @@ int RankProcessor::process() noexcept {
     info.pivr = 0.01 * prerank_info->pivr;
     *rank_info.emit() = std::move(info); 
 }
+// BABYLON_REGISTER_FACTORY_COMPONENT(RankProcessor, "RankProcessor", GraphProcessor);
+
 }
 }

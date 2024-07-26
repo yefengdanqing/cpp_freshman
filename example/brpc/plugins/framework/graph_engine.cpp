@@ -1,34 +1,191 @@
+
+
+#include "boost/property_tree/ptree.hpp"
+#include "boost/property_tree/xml_parser.hpp"
+
+#include "babylon/anyflow/builtin/expression.h"
+#include "babylon/application_context.h"
+#include <babylon/any.h>
+
+
+
+
 #include "graph_engine.h"
+#include "processor_factory.h"
+
+
+using babylon::anyflow::builtin::ExpressionProcessor;
+using babylon::anyflow::GraphData;
+using babylon::anyflow::Closure;
+using babylon::anyflow::GraphBuilder;
+using babylon::anyflow::GraphProcessor;
+using babylon::anyflow::GraphVertexBuilder;
+using babylon::anyflow::GraphDependencyBuilder;
+using babylon::anyflow::GraphEmitBuilder;
+using ::babylon::ApplicationContext;
+using ::babylon::Any;
+
 namespace utopian {
 namespace ranker {
 
-Graph* GraphEngine::get(const std::string& name) noexcept {
-    // auto it = _graphs.find(name);
-    // if (it != _graphs.end()) {
-    //     return it->second.get();
-    // }
-    return nullptr;
-}
 
-
-Graph GraphEngine::try_get(const std::string& name) noexcept {
+std::unique_ptr<GraphExecutor> GraphEngine::_executor = nullptr;
 
 
 
-}
-std::unique_ptr<Graph> GraphEngine::create() noexcept {
 
-}
-void GraphEngine::executor(GraphExecutor* executor) {
 
-}
-bool GraphEngine::init_pool(int size, int cache_size, const std::string& name) noexcept {
-    auto pool = std::unique_ptr<GraphPool>(new GraphPool());
-    if (pool == nullptr) {
-        BABYLON_LOG(INFO) << "set pool failed";
-        return false;
+Graph* GraphEngine::try_get(const std::string& name) noexcept {
+    auto iter = _graphs.find(name);
+    if (iter == _graphs.end()) {
+        return nullptr;
     }
-    pool->reserve_and_clear(size);
+    return iter->second->pop().get();
+
+}
+std::unique_ptr<Graph>& GraphEngine::create() noexcept {
+    return _graph;
+}
+
+void GraphEngine::check_executor() {
+    if (GraphEngine::_executor == nullptr) {
+        GraphEngine::_executor = ::std::unique_ptr<ThreadPoolGraphExecutor>(new ThreadPoolGraphExecutor);
+        //后续通过bthread执行
+        ThreadPoolGraphExecutor* specific_executor = dynamic_cast<ThreadPoolGraphExecutor*>(_executor.get());
+        if (specific_executor) {
+            int ret = specific_executor->initialize(20, 20);  // 调用派生类的实现
+            if (ret == -1) {
+                BABYLON_LOG(INFO) << "ThreadPoolGraphExecutor initialize failed";
+            }
+        } else {
+            // 处理转换失败的情况
+        }
+        // executor.initialize(thread_num, queue_capacity);
+        // 投入使用
+        // 等待已提交任务排空，并关闭执行线程
+        // executor.stop();
+    }
+}
+
+int GraphEngine::initialize() noexcept {
+    check_executor();
+    return 0;
+}
+
+//可以从配置文件加载
+
+bool GraphEngine::init_pool(int size, int cache_size, const std::string& name) noexcept {
+    if (_graphs.find(name) == _graphs.end()) {
+        auto iter = _graphs.emplace(name, std::make_unique<GraphPool>());
+        if (iter.second == true) {
+            BABYLON_LOG(INFO) << "first grap pool set";
+        } else {
+            BABYLON_LOG(INFO) << "grap pool set";
+        }
+        auto& one_graph_pool = _graphs[name];
+        one_graph_pool->reserve_and_clear(size);
+
+        // 执行器后续可以用bthread
+        // builder.set_executor(*(GraphEngine::_executor.get()));
+
+
+
+
+        boost::property_tree::ptree pt;
+        std::ifstream xml_file("config.xml"); 
+        boost::property_tree::read_xml(xml_file, pt);
+        // 遍历每个 vertex和每个表达式,后续可以再加一个配置文件，支持表达式,可以用一个函数解决
+        for (const auto& vertex : pt.get_child("graph.vertices")) {
+            LOG(INFO) << "Vertex:";
+            std::string processor_name = vertex.second.get<std::string>("processor");
+            //这里可以用工厂模式或者其他方式VertexUnitParser::parse
+            BABYLON_LOG(INFO) << "  Processor: " << processor_name;
+            GraphVertexBuilder* vertex_builder_ptr = nullptr;
+            vertex_builder_ptr = &builder.add_vertex([processor_name] {
+                auto processor = ProcessorFactory::create_processor(processor_name);
+                // if (processor == nullptr) {
+                //     LOG(WARNING) << "processor: " << processor_name << " not exists";
+                //     return nullptr;
+                // }
+                return processor;
+            });
+            
+            // vertex_builder_ptr = &builder.add_vertex([processor_name] {
+            //             // std::unique_ptr<GraphProcessor> result(ApplicationContext::instance().get<GraphProcessor>("ParseRequestProcessor"));
+            //              // return result;
+            //             Any any;
+            //             any = std::move(processor_name);
+            //             auto request_processor = ApplicationContext::instance().component_accessor<GraphProcessor>().create(any).release();
+            //             return std::unique_ptr<GraphProcessor>(request_processor);
+                        
+            //             // return std::make_unique<ParseRequestProcessor>();
+            // });
+            // vertex_builder_ptr->option(RoasFactor());
+
+            // {
+            //     if (processor_name == "ParseRequestProcessor") {
+            //         vertex_builder_ptr = &builder.add_vertex([] {
+            //             return std::make_unique<ParseRequestProcessor>();
+            //         });
+            //         vertex_builder_ptr->option(RoasFactor());
+            //     } else if (processor_name == "RankProcessor") {
+            //         vertex_builder_ptr = &builder.add_vertex([] {
+            //             return std::make_unique<RankProcessor>();
+            //         });
+            //     } else if (processor_name == "OutputProcessor") {
+            //         vertex_builder_ptr = &builder.add_vertex([processor_name] {
+            //             return std::make_unique<OutputProcessor>();
+            //         });
+            //     } else if (processor_name == "PrerankProcessor") {
+            //         vertex_builder_ptr = &builder.add_vertex([] {
+            //             return std::make_unique<PrerankProcessor>();
+            //         });
+            //     } else {
+            //         continue;
+            //     }
+            // }
+
+            // 遍历每个 dependency、outputs、condition、expression
+            for (const auto& dependency : vertex.second.get_child("dependencies")) {
+                const auto& depend_str = dependency.second.data();
+                vertex_builder_ptr->named_depend(depend_str).to(depend_str);
+            }
+            for (const auto& output : vertex.second.get_child("outputs")) {
+                const auto& output_str = output.second.data();
+                vertex_builder_ptr->named_emit(output_str).to(output_str);
+            }
+        }
+        //在解析配置之后
+        //表达式
+        ExpressionProcessor::apply(builder);
+
+        // auto page_heap_plugin = context.get<PageHeapPlugin>();
+        // _builder.page_heap(&page_heap_plugin->page_heap());
+        //完成图的构建
+        int ret = builder.finish();
+        if (ret == 0) {
+            LOG(INFO) << "finish success:0";
+        } else {
+            LOG(INFO) << "finish success:" << ret;
+        }
+
+
+        one_graph_pool->set_creator(
+            [this]{
+            auto graph = builder.build().release();
+            return graph;
+        });
+        // _graph = builder.build();
+    
+
+    LOG(TRACE) << "init graph pool success. pool size:" << size 
+               << ", cached size:" << cache_size
+               << ", reserve global:" << size;
+    }
+    return true;
+    
+
+
     // pool->set_creator(
     //     [thist]{
     //         auto graph = builder.build().release();
@@ -43,5 +200,7 @@ bool GraphEngine::init_pool(int size, int cache_size, const std::string& name) n
     // 析构时实例自动归还，池内实例超出容量N后，超出部分会直接销毁
     
 }
+
+BABYLON_REGISTER_COMPONENT(GraphEngine, "graph_engine");
 }
 }

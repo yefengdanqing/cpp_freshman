@@ -13,6 +13,7 @@ namespace ranker {
 
 DECLEAR_DICT_BASE(offer_bid_ratio);
 DECLEAR_DICT_BASE(common_dict_info_offer);
+// DECLEAR_DICT_BASE(index_pkg_tag_info);
 
 
 

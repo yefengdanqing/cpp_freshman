@@ -58,7 +58,7 @@ public:
         return true;
 
     }
-    V get_key(const K& key) {
+    const V get_key(const K& key) {
         if (auto it = key_value_mapping.find(key); it != key_value_mapping.end()) {
             return it->second;
         } else {

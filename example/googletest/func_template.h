@@ -37,6 +37,7 @@ typename std::enable_if<std::is_floating_point<T>::value, T>::type add(T a, T b)
     double result = a * 100 + b * 100;
     return result;
 }
+//注意函数覆盖的方式
 
 //泛化和特化,特化是相对于模板类型的某个特定类型的详细定义
 template<typename T>
@@ -50,4 +51,21 @@ template<>
 std::string decrease(std::string a, std::string b) {
     std::cout << "type:" << typeid(a).name() << " " << typeid(b).name()<< std::endl;
     return b + " " + a;
+}
+
+template<typename T>
+int foo() {
+    T a;
+    return 10;  
+}
+// template<>
+// int foo() {
+//     int a = 10;
+//     return 10;
+// }
+
+template<>
+int foo<int>() {
+    int a = 10;
+    return 10;
 }
