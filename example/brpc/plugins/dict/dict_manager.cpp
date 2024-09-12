@@ -44,7 +44,7 @@ int32_t DictManager::run(bool is_wait_all_done) {
     return 0;
 }
 void DictManager::check() {
-    int sleep_time = 60;
+    int sleep_time = 3600;
     while (1) {
         for (auto& dict : dict_hander_vect) {
             if (dict == nullptr)    continue;

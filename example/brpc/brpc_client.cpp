@@ -2,6 +2,7 @@
 #include "butil/logging.h"
 #include "brpc/channel.h"
 #include "demo_proto.pb.h"
+using google::protobuf::Arena;
 
 int main() {
     brpc::Channel channel;
@@ -11,17 +12,25 @@ int main() {
         LOG(ERROR) << "Fail to initialize channel";
         return -1;
     }
+    //通过arena 分配
+    Arena arena_request;
+    ranker_server::RsRequest* request = Arena::CreateMessage<ranker_server::RsRequest>(&arena_request);
+
+    // Arena arena_response;
+    ranker_server::RsResponse* response = Arena::CreateMessage<ranker_server::RsResponse>(&arena_request);
 
     // 创建 RsRequest 对象
-    ranker_server::RsRequest rs_request;
-    ranker_server::RsResponse rs_response;
+    ranker_server::RsRequest& rs_request = (*request);
+    ranker_server::RsResponse& rs_response = (*response);
 
     // 设置各个字段的值
     rs_request.set_message("Test message");
     rs_request.set_request_id("66503a39b2c54d0007e800dx");
-    rs_request.set_adx("skt_test_adx");
+    rs_request.set_adx("skt_test_sdk");
     rs_request.set_one_id("test491d1fe44b98ac63991161b21e5bd5af45");
     rs_request.set_timeout(166);
+    rs_request.set_ad_type("reward");
+    rs_request.set_channel("trageting");
 
     // 添加 OfferInfo 对象到 RsRequest 中
     ranker_server::OfferInfo* offer_info = rs_request.add_offer_info();

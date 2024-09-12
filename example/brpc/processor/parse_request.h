@@ -26,6 +26,9 @@ private:
     ANYFLOW_INTERFACE (
         ANYFLOW_DEPEND_DATA(ranker_server::RsRequest, request)
         ANYFLOW_EMIT_DATA(RequestInfo, normalized_request)
+        ANYFLOW_EMIT_DATA(bool, IsSdkTraffic)
+        ANYFLOW_EMIT_DATA(bool, IsNotIvrv)
+        ANYFLOW_EMIT_DATA(bool, IsSpecialChannel)
     )
 };
     

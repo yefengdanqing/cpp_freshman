@@ -11,7 +11,9 @@ int RankProcessor::process() noexcept {
     info.request_id = normalized_request->request_id;
     info.ecpm = 300;
     info.pivr = 0.01 * prerank_info->pivr;
-    *rank_info.emit() = std::move(info); 
+    *rank_info.emit() = std::move(info);
+    return 0;
+
 }
 // BABYLON_REGISTER_FACTORY_COMPONENT(RankProcessor, "RankProcessor", GraphProcessor);
 

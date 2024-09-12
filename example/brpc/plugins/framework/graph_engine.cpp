@@ -58,6 +58,7 @@ void GraphEngine::check_executor() {
                 BABYLON_LOG(INFO) << "ThreadPoolGraphExecutor initialize failed";
             }
         } else {
+            LOG(INFO) << "not use special executor";
             // 处理转换失败的情况
         }
         // executor.initialize(thread_num, queue_capacity);
@@ -88,9 +89,6 @@ bool GraphEngine::init_pool(int size, int cache_size, const std::string& name) n
         // 执行器后续可以用bthread
         // builder.set_executor(*(GraphEngine::_executor.get()));
 
-
-
-
         boost::property_tree::ptree pt;
         std::ifstream xml_file("config.xml"); 
         boost::property_tree::read_xml(xml_file, pt);
@@ -103,49 +101,10 @@ bool GraphEngine::init_pool(int size, int cache_size, const std::string& name) n
             GraphVertexBuilder* vertex_builder_ptr = nullptr;
             vertex_builder_ptr = &builder.add_vertex([processor_name] {
                 auto processor = ProcessorFactory::create_processor(processor_name);
-                // if (processor == nullptr) {
-                //     LOG(WARNING) << "processor: " << processor_name << " not exists";
-                //     return nullptr;
-                // }
                 return processor;
             });
-            
-            // vertex_builder_ptr = &builder.add_vertex([processor_name] {
-            //             // std::unique_ptr<GraphProcessor> result(ApplicationContext::instance().get<GraphProcessor>("ParseRequestProcessor"));
-            //              // return result;
-            //             Any any;
-            //             any = std::move(processor_name);
-            //             auto request_processor = ApplicationContext::instance().component_accessor<GraphProcessor>().create(any).release();
-            //             return std::unique_ptr<GraphProcessor>(request_processor);
-                        
-            //             // return std::make_unique<ParseRequestProcessor>();
-            // });
-            // vertex_builder_ptr->option(RoasFactor());
 
-            // {
-            //     if (processor_name == "ParseRequestProcessor") {
-            //         vertex_builder_ptr = &builder.add_vertex([] {
-            //             return std::make_unique<ParseRequestProcessor>();
-            //         });
-            //         vertex_builder_ptr->option(RoasFactor());
-            //     } else if (processor_name == "RankProcessor") {
-            //         vertex_builder_ptr = &builder.add_vertex([] {
-            //             return std::make_unique<RankProcessor>();
-            //         });
-            //     } else if (processor_name == "OutputProcessor") {
-            //         vertex_builder_ptr = &builder.add_vertex([processor_name] {
-            //             return std::make_unique<OutputProcessor>();
-            //         });
-            //     } else if (processor_name == "PrerankProcessor") {
-            //         vertex_builder_ptr = &builder.add_vertex([] {
-            //             return std::make_unique<PrerankProcessor>();
-            //         });
-            //     } else {
-            //         continue;
-            //     }
-            // }
-
-            // 遍历每个 dependency、outputs、condition、expression
+            // 遍历每个 dependency、outputs、condition
             for (const auto& dependency : vertex.second.get_child("dependencies")) {
                 const auto& depend_str = dependency.second.data();
                 vertex_builder_ptr->named_depend(depend_str).to(depend_str);
@@ -157,10 +116,21 @@ bool GraphEngine::init_pool(int size, int cache_size, const std::string& name) n
         }
         //在解析配置之后
         //表达式
+        pt.clear();
+        std::ifstream exp_xml_file("expression.xml");
+        boost::property_tree::read_xml(exp_xml_file, pt);
+        for (const auto& expression : pt.get_child("expressions")) {
+            const std::string& exp_name = expression.second.get<std::string>("name");
+            const std::string& exp_val = expression.second.get<std::string>("value");
+            LOG(INFO) << "name:" << exp_name << ", value:" << exp_val;
+            ExpressionProcessor::apply(builder, exp_name, exp_val);
+        }
         ExpressionProcessor::apply(builder);
 
         // auto page_heap_plugin = context.get<PageHeapPlugin>();
-        // _builder.page_heap(&page_heap_plugin->page_heap());
+        // builder.page_heap(&page_heap_plugin->page_heap());
+
+        // 表达式应用需要在finish之前，之后正常使用graph
         //完成图的构建
         int ret = builder.finish();
         if (ret == 0) {

@@ -3,6 +3,8 @@
 #include "butil/logging.h"
 #include "brpc/channel.h"
 
+// #include "fmt/format.h"
+
 #include "babylon/application_context.h"
 
 #include "boost/property_tree/ptree.hpp"
@@ -13,6 +15,8 @@
 #include "processor/prerank.h"
 #include "processor/ranker.h"
 #include "processor/output.h"
+
+
 
 
 
@@ -94,7 +98,12 @@ void ExampleServiceImple::SayHello(google::protobuf::RpcController* cntl_base,
         auto error_code = closure.get();
         LOG(INFO) << error_code;
         graph->reset();
-    }  
+        //有个response的问题？
+    }
+    // {
+    //     const std::string& ref = fmt::format("Name: {}", "Alice"); // 悬空引用
+    //     LOG(INFO) << ref; // 未定义行为
+    // }
     
 }
 

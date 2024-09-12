@@ -1,13 +1,12 @@
 include(ExternalProject)
 set(EXTERNAL_BRPC_ROOT ${CMAKE_BINARY_DIR}/external/brpc)
-set(BRPC_GIT_TAG master)
+set(BRPC_GIT_TAG 1.10.0)
 set(BRPC_GIT_URL https://github.com/apache/incubator-brpc.git)
 
 
 set(BRPC_LIB_DIR       ${EXTERNAL_BRPC_ROOT}/lib)
 set(BRPC_INCLUDE_DIR   ${EXTERNAL_BRPC_ROOT}/include)
 set(BRPC_LIBRARIES   "${BRPC_LIB_DIR}/libbrpc.a" CACHE FILEPATH "BRPC_LIBRARIES" FORCE)
-set(BRPC_VERSION "brpc")
 include_directories(${BRPC_INCLUDE_DIR})
 link_directories(${BRPC_LIB_DIR})
 

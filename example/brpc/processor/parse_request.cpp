@@ -23,6 +23,13 @@ int ParseRequestProcessor::process() noexcept {
     // auto tmp_config = *option<RoasFactor>();
     // BABYLON_LOG(INFO) << "ratio:" << tmp_config.ratio;
     *normalized_request.emit() = std::move(tmp);
+    *IsSdkTraffic.emit() = request->adx() == "skt_test_sdkx";
+    *IsNotIvrv.emit() = !(request->ad_type() == "reward" || request->adx() == "inist");
+    const std::string channel = request->channel();
+    BABYLON_LOG(INFO) << "channel:" << channel;
+    *IsSpecialChannel.emit() = (request->channel() == "sdk_ee" || request->channel() == "target");
+     return 0;
+
 }
 
 // int ParseRequestProcessor::config(const Any& origin_option, Any& option) const noexcept {

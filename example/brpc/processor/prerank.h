@@ -21,6 +21,7 @@ private:
     int process() noexcept override;
     ANYFLOW_INTERFACE (
         ANYFLOW_DEPEND_DATA(RequestInfo, normalized_request)
+        ANYFLOW_DEPEND_DATA(bool, IsSkipPreRank)
         ANYFLOW_EMIT_DATA(PrerankInfo, prerank_info)
     )
 

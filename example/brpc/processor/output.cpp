@@ -27,7 +27,7 @@ int OutputProcessor::process() noexcept {
     response_ptr->set_request_id(normalized_request->request_id);
     response_ptr->set_error_msg("success");
     response_ptr->set_ext_algo_list("ext_algo");
-
+    return 0;
 }
 
 // BABYLON_REGISTER_FACTORY_COMPONENT(OutputProcessor, "OutputProcessor", GraphProcessor);
