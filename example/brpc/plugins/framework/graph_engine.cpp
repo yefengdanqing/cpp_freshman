@@ -5,13 +5,12 @@
 
 #include "babylon/anyflow/builtin/expression.h"
 #include "babylon/application_context.h"
-#include <babylon/any.h>
-
+#include "babylon/any.h"
 
 
 
 #include "graph_engine.h"
-#include "processor_factory.h"
+#include "bthread_graph_executor.h"
 
 
 using babylon::anyflow::builtin::ExpressionProcessor;
@@ -26,7 +25,7 @@ using ::babylon::ApplicationContext;
 using ::babylon::Any;
 
 namespace utopian {
-namespace ranker {
+namespace framework {
 
 
 std::unique_ptr<GraphExecutor> GraphEngine::_executor = nullptr;
@@ -85,9 +84,9 @@ bool GraphEngine::init_pool(int size, int cache_size, const std::string& name) n
         }
         auto& one_graph_pool = _graphs[name];
         one_graph_pool->reserve_and_clear(size);
-
-        // 执行器后续可以用bthread
-        // builder.set_executor(*(GraphEngine::_executor.get()));
+        
+        // Use bthread to run graph processor
+        // builder.set_executor(::babylon::anyflow::BthreadGraphExecutor::instance());
 
         boost::property_tree::ptree pt;
         std::ifstream xml_file("config.xml"); 
@@ -99,9 +98,17 @@ bool GraphEngine::init_pool(int size, int cache_size, const std::string& name) n
             //这里可以用工厂模式或者其他方式VertexUnitParser::parse
             BABYLON_LOG(INFO) << "  Processor: " << processor_name;
             GraphVertexBuilder* vertex_builder_ptr = nullptr;
-            vertex_builder_ptr = &builder.add_vertex([processor_name] {
-                auto processor = ProcessorFactory::create_processor(processor_name);
-                return processor;
+            auto accessor = ApplicationContext::instance().component_accessor<GraphProcessor>(processor_name);
+            // auto option = vertex_node["option"];
+            // auto& vertex = _builder.add_vertex([accessor, option]() mutable {
+            //     ::babylon::Any option_any {option};
+            //         return ::std::unique_ptr<GraphProcessor> {
+            //         accessor.create(option_any).release()};
+            //     });
+
+            //为啥是mutable
+            vertex_builder_ptr = &builder.add_vertex([accessor]() mutable {
+                return ::std::unique_ptr<GraphProcessor> {accessor.create().release()};
             });
 
             // 遍历每个 dependency、outputs、condition
@@ -140,10 +147,12 @@ bool GraphEngine::init_pool(int size, int cache_size, const std::string& name) n
         }
 
 
-        one_graph_pool->set_creator(
-            [this]{
+        one_graph_pool->set_creator([this]{
             auto graph = builder.build().release();
             return graph;
+        });
+        one_graph_pool->set_recycler([](Graph& graph) {
+            graph.reset();
         });
         // _graph = builder.build();
     

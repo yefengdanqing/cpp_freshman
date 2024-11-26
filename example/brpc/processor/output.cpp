@@ -17,11 +17,10 @@ int OutputProcessor::process() noexcept {
 
     auto response_ptr = rs_response.emit();
 
-    Committer<RsResponse> committer = rs_response.emit();
-    if (committer.valid()) {
-        LOG(INFO) << "valid";
+    if (response_ptr.valid()) {
+        LOG(INFO) << "emit valid";
     } else {
-        LOG(INFO) << "invalid";
+        LOG(INFO) << " emit invalid";
     }
 
     response_ptr->set_request_id(normalized_request->request_id);
@@ -30,7 +29,7 @@ int OutputProcessor::process() noexcept {
     return 0;
 }
 
-// BABYLON_REGISTER_FACTORY_COMPONENT(OutputProcessor, "OutputProcessor", GraphProcessor);
+BABYLON_REGISTER_COMPONENT(OutputProcessor, "OutputProcessor", ::babylon::anyflow::GraphProcessor);
 
 }
 }

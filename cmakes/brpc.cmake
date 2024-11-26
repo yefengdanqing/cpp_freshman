@@ -10,7 +10,7 @@ aux_source_directory(${PROJECT_SOURCE_DIR}/example/brpc/util util_dir)
 
 
 
-message(STATUS "This is SOURCE dir " ${source_dir})
+message(STATUS "This is brpc SOURCE dir " ${source_dir} ${framework_dir})
 
 file(GLOB PBUF_FILES "${PROJECT_SOURCE_DIR}/proto/*.proto")
 message(STATUS "proto is PBUF_FILES " ${PBUF_FILES})
@@ -36,7 +36,17 @@ add_dependencies(brpc_client_main compile_all_protos_brpc ${LIB_DEPENDS})
 target_link_libraries(brpc_client_main ${LIB_BIBRARY} dl z stdc++fs)
 
 
-add_executable(brpc_server_main example/brpc/brpc_server.cpp ${PBUF_SRCS} ${PBUF_HDRS} ${common_dir} ${framework_dir} ${processor_dir} ${service_dir} ${dict_dir} ${util_dir})
+add_executable(brpc_server_main example/brpc/brpc_server.cpp
+            example/brpc/plugins/framework/bthread_graph_executor.cpp
+            ${PBUF_SRCS}
+            ${PBUF_HDRS}
+            ${common_dir}
+            ${framework_dir}
+            ${processor_dir}
+            ${service_dir}
+            ${dict_dir}
+            ${util_dir})
+
 add_dependencies(brpc_server_main compile_all_protos_brpc ${LIB_DEPENDS})
 target_link_libraries(brpc_server_main dl z stdc++fs ${LIB_BIBRARY})
 

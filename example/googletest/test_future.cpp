@@ -22,3 +22,23 @@ TEST(packaged_task, packaged_task_future) {
 	std::packaged_task<void()> task1;
 	std::cout << "result status:" << task1.valid() << std::endl;
 }
+
+TEST(SkillTrait1, SkillTraitVector1) {
+	std::cout << "SkillTrait1.SkillTraitVector1" << std::endl;
+    std::vector<TestData> datas;
+	datas.push_back(TestData{1, 2, "abc"});
+	datas.push_back(TestData{2, 3, "abc"});
+	datas.push_back(TestData{5, 6, "abc"});
+	datas.push_back(TestData{4, 5, "abc"});
+	datas.push_back(TestData{5, 6, "abc"});
+	datas.push_back(TestData{3, 4, "abc"});
+	std::cout << datas.size() << "abcabc" << std::endl;
+    datas.~vector();
+	std::cout << datas.size() << "abcabc" << std::endl;
+
+    // EXPECT_EQ(6, datas.size());//已经析构了，取到的数是未定义的
+    new (&datas)::std::vector<TestData>{1};
+    datas.push_back(TestData{1, 2, "abc"});
+    EXPECT_EQ(2, datas.size());
+    std::cout << datas.size() << "abcabc" << std::endl;
+}

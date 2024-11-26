@@ -15,7 +15,7 @@ int RankProcessor::process() noexcept {
     return 0;
 
 }
-// BABYLON_REGISTER_FACTORY_COMPONENT(RankProcessor, "RankProcessor", GraphProcessor);
+BABYLON_REGISTER_COMPONENT(RankProcessor, "RankProcessor", GraphProcessor);
 
 }
 }

@@ -48,7 +48,7 @@ public:
         //     LOG(WARNING) << "common_dict_info_offer get key " << val << ",not key:" << index_pkg_tag_info_ptr->get_key(2);
         // }
 
-        auto graph_engine = ApplicationContext::instance().get<GraphEngine>("graph_engine");
+        auto graph_engine = ApplicationContext::instance().get<framework::GraphEngine>("graph_engine");
         if (graph_engine) {
             LOG(WARNING) << "graph engine is not null";
             graph_engine->initialize();

@@ -22,7 +22,7 @@ class ExampleServiceImple : public ranker_server::ExampleService {
                   ranker_server::RsResponse* response,
                   google::protobuf::Closure* done);
 private:
-    GraphEngine graph_engine;
+    framework::GraphEngine graph_engine;
 };
 
 }

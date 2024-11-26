@@ -30,7 +30,7 @@ int PrerankProcessor::process() noexcept {
     return 0;
         
 }
-// BABYLON_REGISTER_FACTORY_COMPONENT(PrerankProcessor, "PrerankProcessor", GraphProcessor);
+BABYLON_REGISTER_COMPONENT(PrerankProcessor, "PrerankProcessor", GraphProcessor);
 
 }
 }

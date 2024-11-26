@@ -16,7 +16,7 @@ using babylon::anyflow::ThreadPoolGraphExecutor;
 using ::babylon::ApplicationContext;
 
 namespace utopian {
-namespace ranker {
+namespace framework {
 
 typedef babylon::ObjectPool<Graph> GraphPool;
 

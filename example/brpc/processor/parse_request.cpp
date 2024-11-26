@@ -56,8 +56,6 @@ int ParseRequestProcessor::process() noexcept {
 //     BABYLON_LOG(INFO) << "ParseRequestProcessor::setup";
 //     return 0;
 // }
-   
-// BABYLON_REGISTER_COMPONENT(ParseRequestProcessor, "ParseRequestProcessor", GraphProcessor);
-BABYLON_REGISTER_FACTORY_COMPONENT(ParseRequestProcessor, "ParseRequestProcessor", GraphProcessor);
+BABYLON_REGISTER_COMPONENT(ParseRequestProcessor, "ParseRequestProcessor", GraphProcessor);
 }
 }

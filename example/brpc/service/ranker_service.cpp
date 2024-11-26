@@ -66,7 +66,7 @@ void ExampleServiceImple::SayHello(google::protobuf::RpcController* cntl_base,
     }
     
     {
-        auto graph_engine = ApplicationContext::instance().get<GraphEngine>("graph_engine");
+        auto graph_engine = ApplicationContext::instance().get<framework::GraphEngine>("graph_engine");
         auto graph = graph_engine->try_get("main_graph");
         // auto& graph = graph_engine->create();
         if (graph == nullptr) {
@@ -76,7 +76,7 @@ void ExampleServiceImple::SayHello(google::protobuf::RpcController* cntl_base,
         //非只读
         auto* req = graph->find_data("request");
         *(req->emit<RsRequest>()) = *request;
-        // 只读
+        // 只读,可以preset
         const auto output_data = graph->find_data("rs_response");
         // 【高级用法】在图运行之前，将some_exist_instance引用预置到data内部
         // 后续data->emit<T>()时会使用some_exist_instance作为底层实例
