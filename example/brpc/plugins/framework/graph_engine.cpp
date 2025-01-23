@@ -86,7 +86,7 @@ bool GraphEngine::init_pool(int size, int cache_size, const std::string& name) n
         one_graph_pool->reserve_and_clear(size);
         
         // Use bthread to run graph processor
-        // builder.set_executor(::babylon::anyflow::BthreadGraphExecutor::instance());
+        builder.set_executor(BthreadGraphExecutor::instance());
 
         boost::property_tree::ptree pt;
         std::ifstream xml_file("config.xml"); 
@@ -154,7 +154,6 @@ bool GraphEngine::init_pool(int size, int cache_size, const std::string& name) n
         one_graph_pool->set_recycler([](Graph& graph) {
             graph.reset();
         });
-        // _graph = builder.build();
     
 
     LOG(TRACE) << "init graph pool success. pool size:" << size 

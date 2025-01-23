@@ -65,7 +65,7 @@
 #     set(GFLAGS_EXTERNAL FALSE)
 # endif()
 
-
+set(CMAKE_CXX_STANDARD 17)
 include(ExternalProject)
 set(EXTERNAL_GFLAGS_ROOT ${CMAKE_BINARY_DIR}/external/gflags)
 # 指定编译好的静态库文件的路径

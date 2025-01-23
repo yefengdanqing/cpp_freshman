@@ -1,4 +1,5 @@
 include(ExternalProject)
+set(CMAKE_CXX_STANDARD 17)
 set(EXTERNAL_BRPC_ROOT ${CMAKE_BINARY_DIR}/external/brpc)
 set(BRPC_GIT_TAG 1.10.0)
 set(BRPC_GIT_URL https://github.com/apache/incubator-brpc.git)

@@ -14,8 +14,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_COMPILER_IS_GNUCXX ON)
 #默认一般O2的优化
-set(CMAKE_CXX_FLAGS "-w -g -pthread -O0 -fno-omit-frame-pointer -Werror=return-type -lstdc++fs")
-set(CMAKE_C_FLAGS "-w -g -pthread -O0 -fno-omit-frame-pointer -Werror=return-type -lstdc++fs")
+set(CMAKE_CXX_FLAGS "-w -g -pthread -O0 -fno-omit-frame-pointer -Werror=return-type -lstdc++fs -fpermissive")
+set(CMAKE_C_FLAGS "-w -g -pthread -O0 -fno-omit-frame-pointer -Werror=return-type -lstdc++fs -fpermissive")
 
 set(build_type "")
 # if (CMAKE_BUILD_TYPE STREQUAL "Asan")
@@ -29,7 +29,7 @@ list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmakes)
 
 set(LIB_DEPENDS "" CACHE STRING "all")
 set(LIB_BIBRARY "" CACHE STRING "all .a or .so file")
-set(CMAKE_VERBOSE_MAKEFILE OFF)
+set(CMAKE_VERBOSE_MAKEFILE ON)
 #######
 ##增加库依赖
 include(${PROJECT_SOURCE_DIR}/external/base.cmake)
@@ -104,10 +104,9 @@ include(${PROJECT_SOURCE_DIR}/cmakes/protobuf.cmake)
 include(${PROJECT_SOURCE_DIR}/cmakes/googletest.cmake)
 
 include(${PROJECT_SOURCE_DIR}/cmakes/brpc.cmake)
-
 include(${PROJECT_SOURCE_DIR}/cmakes/babylon.cmake)
 
-include(${PROJECT_SOURCE_DIR}/cmakes/fmt.cmake)
+#include(${PROJECT_SOURCE_DIR}/cmakes/fmt.cmake)
 
 
 

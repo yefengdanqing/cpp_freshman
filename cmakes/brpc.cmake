@@ -3,9 +3,9 @@
 aux_source_directory(${PROJECT_SOURCE_DIR}/example/brpc source_dir)
 aux_source_directory(${PROJECT_SOURCE_DIR}/example/brpc/common common_dir)
 aux_source_directory(${PROJECT_SOURCE_DIR}/example/brpc/plugins/framework framework_dir)
+aux_source_directory(${PROJECT_SOURCE_DIR}/example/brpc/plugins/dict dict_dir)
 aux_source_directory(${PROJECT_SOURCE_DIR}/example/brpc/processor processor_dir)
 aux_source_directory(${PROJECT_SOURCE_DIR}/example/brpc/service service_dir)
-aux_source_directory(${PROJECT_SOURCE_DIR}/example/brpc/plugins/dict dict_dir)
 aux_source_directory(${PROJECT_SOURCE_DIR}/example/brpc/util util_dir)
 
 
@@ -40,8 +40,8 @@ add_executable(brpc_server_main example/brpc/brpc_server.cpp
             example/brpc/plugins/framework/bthread_graph_executor.cpp
             ${PBUF_SRCS}
             ${PBUF_HDRS}
-            ${common_dir}
             ${framework_dir}
+            ${common_dir}
             ${processor_dir}
             ${service_dir}
             ${dict_dir}

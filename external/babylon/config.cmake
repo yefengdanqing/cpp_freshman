@@ -24,7 +24,7 @@ string(REPLACE ";" "|" TBABYLON_CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH}")
 
 
 #find_package(babylon QUIET)
-if (NOT babylon_FOUND)
+#if (NOT babylon_FOUND)
     ExternalProject_Add(BABYLON
         GIT_REPOSITORY        ${BABYLON_GIT_URL}
         GIT_TAG               ${BABYLON_GIT_TAG}
@@ -48,12 +48,12 @@ if (NOT babylon_FOUND)
                 -DCMAKE_CXX_STANDARD_REQUIRED=ON
         LIST_SEPARATOR  |
         BUILD_BYPRODUCTS ${BABYLON_LIB_LIBRARIES})
-endif()
+#endif()
 
 
 ADD_LIBRARY(babylon STATIC IMPORTED GLOBAL)
 SET_PROPERTY(TARGET babylon PROPERTY IMPORTED_LOCATION ${BABYLON_LIB_LIBRARIES})
-add_dependencies(babylon BRPC ${LIB_DEPENDS})
+add_dependencies(babylon BABYLON ${LIB_DEPENDS})
 set(LIB_BIBRARY
     ${BABYLON_LIB_LIBRARIES}
     ${LIB_BIBRARY})

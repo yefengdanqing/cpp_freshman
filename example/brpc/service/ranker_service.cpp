@@ -87,18 +87,21 @@ void ExampleServiceImple::SayHello(google::protobuf::RpcController* cntl_base,
         // std::cout << tmp.request_id << " "<< tmp.bid_price << std::endl;
         //是否可以直接用指针呢，内存怎么处理的
         const auto tmp = output_data->value<RsResponse>();
-        BABYLON_LOG(INFO) << "result:" <<tmp->request_id() << ", response:" << response->request_id();
+        // 为啥tmp是空
+        // BABYLON_LOG(INFO) << "result:" <<tmp->request_id() << ", response:" << response->request_id();
+        BABYLON_LOG(INFO) << "result response:" << response->request_id();
         // 设置响应信息，根据状态码填充信息
         // response->CopyFrom(*(tmp));
         // 重置图的运行状态，以便重复使用同一个Graph实例
         // 重置之前需要彻底结束上一次运行，即等待之前的closure彻底结束（析构或者closure.wait）
+        // 只有closure.wait()返回后，graph的执行才彻底结束，可以析构或reset回收以便再次使用
         closure.wait();
         //~closure;自动调用wait
         bool finished = closure.finished();
+        // 阻塞等待求解完毕
         auto error_code = closure.get();
         LOG(INFO) << error_code;
         graph->reset();
-        //有个response的问题？
     }
     // {
     //     const std::string& ref = fmt::format("Name: {}", "Alice"); // 悬空引用

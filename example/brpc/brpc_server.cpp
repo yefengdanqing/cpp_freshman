@@ -18,7 +18,6 @@ static void server_core_signal_handler(int signum) {
     // base::debug::StackTrace trace;
     out << std::endl << "Program terminated with signal " << signum << std::endl;
     // trace.OutputToStream(&out);
-
     signal(signum, SIG_DFL); // stack_trace输出结束后，再绑回默认的handler继续处理
     raise(signum);
 }
@@ -41,6 +40,7 @@ int main(int argc, char* argv[]) {
     //brpc 监控
     // brpc最多dump 65535个纬度的监控
     google::SetCommandLineOption("bvar_max_dump_multi_dimension_metric_number", "65535");
+    install_single_handler();
 
     //初始化全局的变量
     CHECK_RET_EXIT(utopian::ranker::GlobalInitializer::get_global_instance().init(), "global init failed,exit");
@@ -67,6 +67,7 @@ int main(int argc, char* argv[]) {
     }
     // 服务启动后，会一直运行，直到调用server.stop(0)停止服务
     server.RunUntilAskedToQuit();
+    _exit(0);
     return 0;
 }
 
