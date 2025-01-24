@@ -21,13 +21,13 @@ message("${LIB_DEPENDS} ${LIB_BIBRARY}")
 
 #babylon_test_main main
 # 使用file(GLOB)收集component_application目录下的源文件
-file(GLOB application_src ${PROJECT_SOURCE_DIR}/example/babylon/component_application/*.cpp)
+file(GLOB_RECURSE application_src ${PROJECT_SOURCE_DIR}/example/babylon/component_application/*.cpp)
 # 使用file(GLOB)收集component_queue目录下的源文件
-file(GLOB queue_src ${PROJECT_SOURCE_DIR}/example/babylon/component_queue/*.cpp)
+file(GLOB_RECURSE queue_src ${PROJECT_SOURCE_DIR}/example/babylon/component_queue/*.cpp)
 # 使用file(GLOB)收集expressor目录下的源文件
-file(GLOB expressor_src ${PROJECT_SOURCE_DIR}/example/babylon/expressor/*.cpp)
+file(GLOB_RECURSE expressor_src ${PROJECT_SOURCE_DIR}/example/babylon/expressor/*.cpp)
 # 使用file(GLOB)收集dependency目录下的源文件
-file(GLOB dependency_src ${PROJECT_SOURCE_DIR}/example/babylon/dependency/*.cpp)
+file(GLOB_RECURSE dependency_src ${PROJECT_SOURCE_DIR}/example/babylon/dependency/*.cpp)
 
 # 设置包含目录
 include_directories(

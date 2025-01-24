@@ -14,8 +14,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_COMPILER_IS_GNUCXX ON)
 #默认一般O2的优化
-set(CMAKE_CXX_FLAGS "-w -g -pthread -O0 -fno-omit-frame-pointer -Werror=return-type -lstdc++fs -fpermissive")
-set(CMAKE_C_FLAGS "-w -g -pthread -O0 -fno-omit-frame-pointer -Werror=return-type -lstdc++fs -fpermissive")
+set(CMAKE_CXX_FLAGS "-w -g -pthread -O2 -fno-omit-frame-pointer -Werror=return-type -lstdc++fs -fpermissive")
+set(CMAKE_C_FLAGS "-w -g -pthread -O2 -fno-omit-frame-pointer -Werror=return-type -lstdc++fs -fpermissive")
 
 set(build_type "")
 # if (CMAKE_BUILD_TYPE STREQUAL "Asan")
@@ -105,6 +105,7 @@ include(${PROJECT_SOURCE_DIR}/cmakes/googletest.cmake)
 
 include(${PROJECT_SOURCE_DIR}/cmakes/brpc.cmake)
 include(${PROJECT_SOURCE_DIR}/cmakes/babylon.cmake)
+include(${PROJECT_SOURCE_DIR}/cmakes/performance_units.cmake)
 
 #include(${PROJECT_SOURCE_DIR}/cmakes/fmt.cmake)
 
