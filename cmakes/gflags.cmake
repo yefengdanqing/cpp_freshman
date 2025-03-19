@@ -3,8 +3,8 @@ aux_source_directory(${PROJECT_SOURCE_DIR}/example/gflags source_dir)
 message(STATUS "This is SOURCE dir " ${source_dir})
 
 
-set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin/gflags)
-set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib/gflags)
+# set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin/gflags)
+# set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib/gflags)
 
 add_executable(gflags_main ${source_dir})
 target_link_libraries(gflags_main gflags pthread)

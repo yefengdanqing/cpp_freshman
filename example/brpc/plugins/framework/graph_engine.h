@@ -14,6 +14,7 @@ using babylon::anyflow::GraphProcessor;
 using babylon::anyflow::GraphExecutor;
 using babylon::anyflow::ThreadPoolGraphExecutor;
 using ::babylon::ApplicationContext;
+using ::babylon::PageHeap;
 
 namespace utopian {
 namespace framework {
@@ -53,6 +54,7 @@ private:
     std::unordered_map<std::string, std::unique_ptr<GraphPool>> _graphs;
     std::set<std::string> _graph_names;
     std::vector<VertexMessage> _vertexs_message;
+    static ::std::unique_ptr<PageHeap> _s_page_heap;
 
 };
 

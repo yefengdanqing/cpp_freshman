@@ -48,17 +48,21 @@ struct MiddelProcessor : public GraphProcessor {
 struct EndProcessor : public GraphProcessor {
   virtual int process() noexcept override {
     BABYLON_LOG(WARNING) << "EndProcessor";
-    if (f != nullptr && !f->empty()) {
-        BABYLON_LOG(WARNING) << "depend data f not empty";    
-        *g.emit() = *e + *f;
-    } else {
-        BABYLON_LOG(WARNING) << "depend data f xxx empty";
-        *g.emit() = *e;
-    }
+    // if (f != nullptr && !f->empty()) {
+    //     BABYLON_LOG(WARNING) << "depend data f not empty";    
+    //     *g.emit() = *e + *f;
+    // } else {
+    //     BABYLON_LOG(WARNING) << "depend data f xxx empty";
+    //     *g.emit() = *e;
+    // }
+    BABYLON_LOG(WARNING) << "result:" << *e << " + " << *h;
+    auto committer = g.emit();
+    *committer = *e + *h;
+    BABYLON_LOG(WARNING) << "g:" << *committer;
     return 0;
   }
   ANYFLOW_INTERFACE(ANYFLOW_DEPEND_DATA(::std::string, e)
-                    ANYFLOW_DEPEND_DATA(::std::string, f, 1)
+                    ANYFLOW_DEPEND_DATA(::std::string, h)
                         ANYFLOW_EMIT_DATA(::std::string, g))
 };
 
@@ -66,6 +70,7 @@ struct EndSameProcessor : public GraphProcessor {
   virtual int process() noexcept override {
     BABYLON_LOG(WARNING) << "GraphProcessor";
     *h.emit() = *e;
+
     return 0;
   }
   ANYFLOW_INTERFACE(ANYFLOW_DEPEND_DATA(::std::string, e)
@@ -100,11 +105,14 @@ int main(int argc, char** argv) {
             vertex.set_name("MiddelProcessor");
         }
         {
+
+        }
+        {
             auto& vertex = builder.add_vertex([] {
                 return ::std::unique_ptr<EndProcessor>(new EndProcessor);
             });
             vertex.named_depend("e").to("E");
-            vertex.named_depend("f").to("F").on("C2");
+            vertex.named_depend("h").to("H"); //结合条件表达式使用
             vertex.named_emit("g").to("G");
             vertex.set_name("EndProcessor");
         }
@@ -116,6 +124,8 @@ int main(int argc, char** argv) {
         //     vertex.named_emit("h").to("H");
         //     vertex.set_name("EndSameProcessor");
         // }
+
+        ExpressionProcessor::apply(builder, "H", "C2 ? E: F");
         builder.finish();
         auto graph = builder.build();
 
@@ -131,7 +141,7 @@ int main(int argc, char** argv) {
         // *c2->emit<bool>() = true;
         auto closure = graph->run(g);
         // auto tmp = *g->value<::std::string>();
-        BABYLON_LOG(INFO) << "result code:" << closure.get() << " , data:" << g->empty();
+        BABYLON_LOG(INFO) << "result code:" << closure.get() << " , data:" << *g->value<std::string>();
         // BABYLON_LOG(INFO) << ", result:" << tmp;
 
 

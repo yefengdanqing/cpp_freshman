@@ -8,9 +8,10 @@ message("proto buf files: ${PBUF_FILES}")
 CUSTOM_PROTOBUF_GENERATE_CPP(PBUF_SRCS PBUF_HDRS ${PBUF_FILES})
 message("protobuf result files:[${PBUF_SRCS}][${PBUF_HDRS}]")
 
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin/protobuf)
+# set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin/protobuf)
+# set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib/protobuf)
 
-set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin/protobuf)
-set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib/protobuf)
 
 add_executable(protobuf_main ${protobuf_source_dir} ${PBUF_SRCS} ${protocol_dir})
 

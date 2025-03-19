@@ -3,8 +3,8 @@ aux_source_directory(${PROJECT_SOURCE_DIR}/example/cassandra_driver source_dir)
 message(STATUS "This is SOURCE dir " ${source_dir})
 
 
-set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin/cassandra_driver)
-set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib/cassandra_driver)
+# set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin/)
+# set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
 
 add_executable(cassandra_driver_main ${source_dir})
 

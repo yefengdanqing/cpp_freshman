@@ -6,6 +6,8 @@
 #include "babylon/anyflow/builtin/expression.h"
 #include "babylon/application_context.h"
 #include "babylon/any.h"
+#include "gflags/gflags.h"
+#include "babylon/reusable/page_allocator.h"
 
 
 
@@ -27,8 +29,11 @@ using ::babylon::Any;
 namespace utopian {
 namespace framework {
 
+DEFINE_uint64(framework_max_free_page_num, 8192, "framework_free_page_num");
+DEFINE_uint64(framework_page_size, 4096, "framework_page_size");
 
 std::unique_ptr<GraphExecutor> GraphEngine::_executor = nullptr;
+::std::unique_ptr<PageHeap> GraphEngine::_s_page_heap = std::unique_ptr<PageHeap>(new PageHeap());
 
 
 
@@ -75,6 +80,9 @@ int GraphEngine::initialize() noexcept {
 //可以从配置文件加载
 
 bool GraphEngine::init_pool(int size, int cache_size, const std::string& name) noexcept {
+    {
+        _s_page_heap.reset(new PageHeap(FLAGS_framework_max_free_page_num, FLAGS_framework_page_size));
+    }
     if (_graphs.find(name) == _graphs.end()) {
         auto iter = _graphs.emplace(name, std::make_unique<GraphPool>());
         if (iter.second == true) {
@@ -87,6 +95,10 @@ bool GraphEngine::init_pool(int size, int cache_size, const std::string& name) n
         
         // Use bthread to run graph processor
         builder.set_executor(BthreadGraphExecutor::instance());
+
+        //use page
+        // babylon::PageAllocator *page_allocator = _s_page_heap.get();
+        // builder.set_page_allocator(*page_allocator);
 
         boost::property_tree::ptree pt;
         std::ifstream xml_file("config.xml"); 

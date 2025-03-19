@@ -1,5 +1,5 @@
-set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin/design_model)
-set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib/design_model)
+
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin/design_model)
 
 
 aux_source_directory(${PROJECT_SOURCE_DIR}/example/design_model/template_method template_method_dir)

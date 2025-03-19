@@ -97,7 +97,7 @@ endif()
 # elseif(EXEC_NAME STREQUAL empty)
 #     message("build default googltest and brcp finish")
 # endif()
-
+include(${PROJECT_SOURCE_DIR}/cmakes/design_model.cmake)
 include(${PROJECT_SOURCE_DIR}/cmakes/boost.cmake)
 
 include(${PROJECT_SOURCE_DIR}/cmakes/protobuf.cmake)
