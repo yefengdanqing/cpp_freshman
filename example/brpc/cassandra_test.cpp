@@ -7,7 +7,7 @@
 #include <memory>
 
 DEFINE_int32(dmp_timeout_ms, 13,  "dmp cass request timeout(ms)");
-DEFINE_string(dmp_addrs, "list://172.31.16.245:9042",  "dmp address list");
+DEFINE_string(dmp_addrs, "list://127.0.0.1",  "dmp address list");
 
 bool GetDmpDataFromCassandra(const butil::StringPiece& query, brpc::Channel& m_dmp_channel_) {
     brpc::CassandraRequest creq;

@@ -109,7 +109,5 @@ include(${PROJECT_SOURCE_DIR}/cmakes/performance_units.cmake)
 
 #include(${PROJECT_SOURCE_DIR}/cmakes/fmt.cmake)
 
-
-
 message("finish build ${EXEC_NAME}")
 
