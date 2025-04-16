@@ -77,7 +77,7 @@ int main(int argc, char* argv[]) {
     CassFuture* connect_future = NULL;
     CassCluster* cluster = cass_cluster_new();
     CassSession* session = cass_session_new();
-    char* hosts = "172.31.16.245";
+    char* hosts = "127.0.0.1";
 
     if (argc > 1) {
         total_req_count = std::stoi(argv[1]);
