@@ -51,13 +51,13 @@ endif ()
 #string(REPLACE ";" "|" TBOOST_CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH}")
 
 #find_package(boost QUIET)
-if (NOT BOOST_FOUND)
-    ExternalProject_Add(Boost
+
+ExternalProject_Add(Boost
         GIT_REPOSITORY        ${BOOST_GIT_URL}
         GIT_TAG               ${BOOST_GIT_TAG}
         # PREFIX                  "${EXTERNAL_BOOST_ROOT}" #debug code
-        SOURCE_DIR            "${EXTERNAL_BOOST_ROOT}"
-        INSTALL_DIR           "${EXTERNAL_BOOST_ROOT}"
+        SOURCE_DIR            ${EXTERNAL_BOOST_ROOT}
+        INSTALL_DIR           ${EXTERNAL_BOOST_ROOT}
         UPDATE_COMMAND ""
         CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${EXTERNAL_BOOST_ROOT}
                 -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
@@ -69,9 +69,9 @@ if (NOT BOOST_FOUND)
                 -DCMAKE_PREFIX_PATH=${TBOOST_CMAKE_PREFIX_PATH}
                 -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
                 -DBUILD_SHARED_LIBS=OFF
+                -DCMAKE_INSTALL_MANIFEST_CONTENT=${EXTERNAL_BOOST_ROOT}
         LIST_SEPARATOR  |
         BUILD_BYPRODUCTS ${BOOST_LIBRARIES})
-endif()
 
 
 ADD_LIBRARY(boost STATIC IMPORTED GLOBAL)

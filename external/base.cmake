@@ -27,12 +27,13 @@ endfunction(thirdparty_in_fetchcontent)
 
 #不要用master,除非人为升级
 #begin include
+
+include(${PROJECT_SOURCE_DIR}/external/boost/config.cmake)
 set(EXTERNAL_PREFIX ${CMAKE_BINARY_DIR}/external)
 include(${PROJECT_SOURCE_DIR}/external/protobuf/config.cmake)
 include(${PROJECT_SOURCE_DIR}/external/googletest/config.cmake)
 include(${PROJECT_SOURCE_DIR}/external/yaml-cpp/config.cmake)
 
-include(${PROJECT_SOURCE_DIR}/external/boost/config.cmake)
 #include(${PROJECT_SOURCE_DIR}/external/fmt/config.cmake)
 include(${PROJECT_SOURCE_DIR}/external/absl/config.cmake)
 
@@ -101,6 +102,93 @@ endfunction()
 set(protocol_protobuf ${PROJECT_BINARY_DIR}/protocol/protobuf/cpp)
 file(MAKE_DIRECTORY ${protocol_protobuf})
 include_directories(${PROJECT_BINARY_DIR}/protocol/protobuf/cpp)
+
+
+function(add_git_external name)
+    # 参数：
+    #   name - 库的名字，同时作为 PREFIX 和 TARGET 名称基础
+    # 可选变量（必须在调用前用 set() 赋值）：
+    #   <name>_GIT_URL       - Git 仓库地址（必填）
+    #   <name>_GIT_TAG       - Git 标签或分支（必填）
+    #   <name>_INSTALL_DIR   - 安装目录（必填）
+    #   <name>_CMAKE_ARGS   - 传给被构建项目的 CMake 参数（可选）
+    #   <name>_LIB_PATTERN  - 库文件匹配模式，用于自动收集 so/dll 文件（可选，默认 lib<name>_*.so）
+
+    cmake_parse_arguments(PARSE_ARGV 1
+        "" "" ""
+    )
+
+    # 取变量值
+    set(url_var "${name}_GIT_URL")
+    set(tag_var "${name}_GIT_TAG")
+    set(install_dir_var "${name}_INSTALL_DIR")
+    set(cmake_args_var "${name}_CMAKE_ARGS")
+    set(lib_pattern_var "${name}_LIB_PATTERN")
+
+    if(NOT DEFINED ${url_var})
+        message(FATAL_ERROR "Variable ${url_var} must be set before calling add_git_external")
+    endif()
+    if(NOT DEFINED ${tag_var})
+        message(FATAL_ERROR "Variable ${tag_var} must be set before calling add_git_external")
+    endif()
+    if(NOT DEFINED ${install_dir_var})
+        message(FATAL_ERROR "Variable ${install_dir_var} must be set before calling add_git_external")
+    endif()
+
+    set(url ${${url_var}})
+    set(tag ${${tag_var}})
+    set(install_dir ${${install_dir_var}})
+    set(cmake_args ${${cmake_args_var}})
+    set(lib_pattern ${${lib_pattern_var}})
+
+    if(NOT lib_pattern)
+        # 默认库文件匹配模式
+        string(TOLOWER ${name} lname)
+        set(lib_pattern "${install_dir}/lib/lib${lname}_*.so")
+    endif()
+
+    # 目录变量
+    set(prefix_dir ${install_dir})
+
+    # 避免重复添加 CMAKE_PREFIX_PATH
+    list(FIND CMAKE_PREFIX_PATH ${prefix_dir} _idx)
+    if(_idx EQUAL -1)
+        list(APPEND CMAKE_PREFIX_PATH ${prefix_dir})
+    endif()
+
+    ExternalProject_Add(${name}_external
+        PREFIX          ${prefix_dir}
+        GIT_REPOSITORY  ${url}
+        GIT_TAG         ${tag}
+        INSTALL_DIR     ${install_dir}
+        CMAKE_ARGS
+            -DCMAKE_INSTALL_PREFIX=${install_dir}
+            -DCMAKE_INSTALL_LIBDIR=lib
+            -DCMAKE_POSITION_INDEPENDENT_CODE=ON
+            -DBUILD_SHARED_LIBS=ON
+            -DABSL_BUILD_TESTING=OFF
+            ${cmake_args}
+    )
+
+    # 收集库文件列表
+    file(GLOB_RECURSE libs LIST_DIRECTORIES false "${lib_pattern}")
+
+    add_library(${name} SHARED IMPORTED GLOBAL)
+    set_property(TARGET ${name} PROPERTY IMPORTED_LOCATION "${libs}")
+    add_dependencies(${name} ${name}_external)
+
+    # 头文件和库路径
+    set(${name}_INCLUDE_DIR ${install_dir}/include PARENT_SCOPE)
+    set(${name}_LIB_DIR ${install_dir}/lib PARENT_SCOPE)
+
+    include_directories(${${name}_INCLUDE_DIR})
+    link_directories(${${name}_LIB_DIR})
+
+    # 把库和依赖加入全局变量，方便后续统一链接
+    set(LIB_BIBRARY ${libs} ${LIB_BIBRARY} PARENT_SCOPE)
+    set(LIB_DEPENDS ${name} ${LIB_DEPENDS} PARENT_SCOPE)
+endfunction()
+
 
 
 

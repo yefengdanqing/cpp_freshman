@@ -18,6 +18,13 @@ add_dependencies(struct_pb_main  compile_all_protos_brpc ${LIB_DEPENDS})
 target_link_libraries(struct_pb_main ${LIB_BIBRARY} dl z stdc++fs)
 set_target_properties(struct_pb_main PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin/performance_units)
 
+## debug cache line
+add_executable(debug_cache_line ${PROJECT_SOURCE_DIR}/example/performance_units/debug_cache_line.cpp)
+add_dependencies(debug_cache_line ${LIB_DEPENDS})
+target_link_libraries(debug_cache_line ${LIB_BIBRARY} dl z stdc++fs)
+set_target_properties(debug_cache_line PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin/performance_units)
+
+
 
 
 
