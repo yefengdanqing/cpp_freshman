@@ -14,7 +14,7 @@ include_directories(${PROTOBUF_INCLUDE_DIR})
 link_directories(${PROTOBUF_LIB_DIR})
 
 set(PROTOBUF_GIT_TAG  v3.21.3)  # 指定版本
-set(PROTOBUF_GIT_URL  https://github.com/protocolbuffers/protobuf.git) 
+set(PROTOBUF_GIT_URL  git@github.com:protocolbuffers/protobuf.git) 
 set(PROTOBUF_VERSION "protobuf-3.5.1")
 
 # execute_process(
@@ -51,6 +51,8 @@ string(REPLACE ";" "|" TPROTO_CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH}")
 #   BUILD_COMMAND       cd <SOURCE_DIR> && cmake . -DCMAKE_CXX_STANDARD=17 -DCMAKE_INSTALL_PREFIX=${EXTERNAL_PROTOBUF_ROOT} -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER} -DBUILD_SHARED_LIBS=OFF -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS} -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS} -DCMAKE_INSTALL_LIBDIR=lib && cmake --build . --parallel 10 && cmake --install .
 #   BUILD_IN_SOURCE 1
 # )
+find_package(ZLIB REQUIRED)
+# target_link_libraries(protobuf ZLIB::ZLIB)
 ExternalProject_Add(
   PROTOBUF
   GIT_REPOSITORY       ${PROTOBUF_GIT_URL}
@@ -64,10 +66,12 @@ ExternalProject_Add(
     -DCMAKE_INSTALL_LIBDIR=lib
     -DBUILD_SHARED_LIBS=OFF
     -DCMAKE_CXX_STANDARD=17
+    -Dprotobuf_WITH_ZLIB=ON 
     -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
     -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
     -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
     -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS}
+    
   BUILD_BYPRODUCTS ${PROTOBUF_SELF_LIBRARIES}
   BUILD_IN_SOURCE 0
   UPDATE_COMMAND ""
@@ -79,10 +83,11 @@ ExternalProject_Add(
 add_library(protobuf_protobuf STATIC IMPORTED GLOBAL)
 set_property(TARGET protobuf_protobuf PROPERTY IMPORTED_LOCATION ${PROTOBUF_SELF_LIBRARIES})
 add_dependencies(protobuf_protobuf PROTOBUF)
-
+target_link_libraries(protobuf_protobuf INTERFACE  ZLIB::ZLIB)
 set(LIB_BIBRARY
     ${PROTOBUF_SELF_LIBRARIES}
     ${LIB_BIBRARY})
 set(LIB_DEPENDS
         "protobuf_protobuf"
         ${LIB_DEPENDS})
+

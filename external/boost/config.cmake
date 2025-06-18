@@ -1,7 +1,8 @@
 include(ExternalProject)
 set(EXTERNAL_BOOST_ROOT ${CMAKE_BINARY_DIR}/external/boost)
 set(BOOST_GIT_TAG boost-1.83.0)
-set(BOOST_GIT_URL https://github.com/boostorg/boost.git)
+set(BOOST_GIT_URL git@github.com:boostorg/boost.git)
+#git@github.com:boostorg/boost.git
 
 
 set(BOOST_LIB_DIR       ${EXTERNAL_BOOST_ROOT}/lib)
@@ -86,6 +87,6 @@ set(LIB_DEPENDS
         ${LIB_DEPENDS})
 
     
-# https://github.com/PaddlePaddle/Paddle/blob/develop/cmake/external/boost.cmake
-#https://github.com/tushushu/bigflow/tree/ab494e49a02b446bb2f504a2652f866c924c1baf/cmake
+# git@github.com:PaddlePaddle/Paddle/blob/develop/cmake/external/boost.cmake
+#git@github.com:tushushu/bigflow/tree/ab494e49a02b446bb2f504a2652f866c924c1baf/cmake
 

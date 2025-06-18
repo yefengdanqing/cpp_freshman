@@ -71,7 +71,7 @@
 
 # set(EXTERNAL_ABSL_ROOT ${EXTERNAL_PREFIX}/absl)
 # set(ABSL_GIT_TAG 20230802.1)  # 指定版本
-# set(ABSL_GIT_URL https://github.com/abseil/abseil-cpp.git)  # 指定git仓库地址
+# set(ABSL_GIT_URL git@github.com:abseil/abseil-cpp.git)  # 指定git仓库地址
 
 # list(FIND CMAKE_PREFIX_PATH ${EXTERNAL_ABSL_ROOT} INDEX)
 # if(INDEX EQUAL -1)
@@ -147,7 +147,7 @@ set(ABSL_INCLUDE_DIR ${ABSL_INSTALL_DIR}/include)
 set(ABSL_LIB_DIR ${ABSL_INSTALL_DIR}/lib)
 
 # ABSL 仓库信息
-set(ABSL_GIT_URL https://github.com/abseil/abseil-cpp.git)
+set(ABSL_GIT_URL git@github.com:abseil/abseil-cpp.git)
 set(ABSL_GIT_TAG 20230802.1)
 
 # 避免重复添加路径

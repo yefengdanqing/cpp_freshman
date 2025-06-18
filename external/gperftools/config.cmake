@@ -9,7 +9,7 @@
 # # #"${GPERFTOOLS_INSTALL_DIR}/lib/libtcmalloc_and_profiler.a"
 
 # # set(_DEP_VER 2.7)
-# # set(_DEP_URL https://github.com/gperftools/gperftools/archive/gperftools-2.7.tar.gz)
+# # set(_DEP_URL git@github.com:gperftools/gperftools/archive/gperftools-2.7.tar.gz)
                          
 
 # # include_directories(SYSTEM ${GPERFTOOLS_INCLUDE_DIR})
@@ -17,7 +17,7 @@
 
 # # ExternalProject_Add(
 # #     gperftools_gperftools
-# #     GIT_REPOSITORY  "https://github.com/gperftools/gperftools.git"
+# #     GIT_REPOSITORY  "git@github.com:gperftools/gperftools.git"
 # #     GIT_TAG         master
 # #     PREFIX          ${GPERFTOOLS_SOURCE_DIR}
 # #     UPDATE_COMMAND  ""
@@ -56,7 +56,7 @@
 
 
 # set(GPERFTOOLS_GIT_TAG gperftools-2.15)  # 指定版本
-# set(GPERFTOOLS_GIT_URL https://github.com/gperftools/gperftools.git)  # 指定git仓库地址
+# set(GPERFTOOLS_GIT_URL git@github.com:gperftools/gperftools.git)  # 指定git仓库地址
 
 
 
@@ -120,7 +120,7 @@ set(GPERFTOOLS_LIBRAYIES "${GPERFTOOLS_INSTALL_DIR}/lib/libtcmalloc.a"
                          "${GPERFTOOLS_INSTALL_DIR}/lib/libtcmalloc_and_profiler.a")
 
 set(GPERFTOOLS_GIT_TAG gperftools-2.15)
-set(GPERFTOOLS_GIT_URL https://github.com/gperftools/gperftools.git)
+set(GPERFTOOLS_GIT_URL git@github.com:gperftools/gperftools.git)
 
 set(GPERFTOOLS_CONFIGURE cd ${GPERFTOOLS_SOURCE_DIR}/src/gperftools_gperftools && autoreconf -i -m && ./configure --prefix=${GPERFTOOLS_INSTALL_DIR} --enable-shared=no --enable-static=yes --enable-frame-pointers --libdir=${GPERFTOOLS_LIB_DIR})
 

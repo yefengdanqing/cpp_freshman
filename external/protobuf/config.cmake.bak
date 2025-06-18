@@ -20,7 +20,7 @@ link_directories(${PROTOBUF_LIB_DIR})
 #set(PROTOBUF_GIT_TAG  v3.21.3)  # 指定版本
 set(PROTOBUF_GIT_TAG  v3.5.1)  # 指定版本
 set(PROTOBUF_VERSION "protobuf-3.5.1")
-set(PROTOBUF_GIT_URL  https://github.com/protocolbuffers/protobuf.git) 
+set(PROTOBUF_GIT_URL  git@github.com:protocolbuffers/protobuf.git) 
 
 
 

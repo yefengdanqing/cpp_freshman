@@ -8,6 +8,9 @@
 #include <atomic>
 #include <string_view>
 #include <functional>
+#include <chrono>
+#include <filesystem>
+#include <ctime>
 
 #include "bthread/bthread.h"
 
@@ -24,13 +27,32 @@ namespace ranker {
 class DictBase;
 
 
+
+// inline static std::time_t get_file_last_mtime(const std::string& file) {
+//     if (file.empty() || !std::filesystem::exists(file)) {
+//         return 0;
+//     }
+//     auto f_time = std::filesystem::last_write_time(file);
+//     return std::chrono::file_clock::to_time_t(f_time); // 使用 file_clock 转换
+// }
+
+
 inline static std::time_t get_file_last_mtime(const std::string& file) {
     if (file.empty() || !std::filesystem::exists(file)) {
         return 0;
     }
-    auto f_time = std::filesystem::last_write_time(file);
-    return decltype(f_time)::clock::to_time_t(f_time);
+
+    auto ftime = std::filesystem::last_write_time(file);
+
+    // 将 file_time_type 转换为 time_t
+    auto sctp = std::chrono::time_point_cast<std::chrono::system_clock::duration>(
+        ftime - decltype(ftime)::clock::now() + std::chrono::system_clock::now()
+    );
+
+    return std::chrono::system_clock::to_time_t(sctp);
 }
+
+
 template<typename T>
 std::shared_ptr<DictBase> __create_func(const std::string& file_path) {
     return std::make_shared<T>(file_path);

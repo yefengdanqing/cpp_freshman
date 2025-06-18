@@ -49,7 +49,7 @@ add_executable(brpc_server_main example/brpc/brpc_server.cpp
             ${util_dir})
 
 add_dependencies(brpc_server_main compile_all_protos_brpc ${LIB_DEPENDS})
-target_link_libraries(brpc_server_main dl z stdc++fs ${LIB_BIBRARY})
+target_link_libraries(brpc_server_main dl z stdc++fs ${LIB_BIBRARY} ZLIB::ZLIB)
 
 # add_executable(cassandra_test_main example/brpc/cassandra_test.cpp ${PBUF_SRCS} ${PBUF_HDRS})
 # add_dependencies(cassandra_test_main compile_all_protos_brpc)

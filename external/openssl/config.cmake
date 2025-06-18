@@ -9,8 +9,10 @@
 include(ExternalProject)
 
 set(EXTERNAL_OPENSSL_ROOT ${CMAKE_BINARY_DIR}/external/openssl)
-set(OPENSSL_GIT_TAG  master)  # 指定版本
-set(OPENSSL_GIT_URL https://github.com/openssl/openssl.git)  # 指定git仓库地址
+set(OPENSSL_ROOT_DIR ${EXTERNAL_OPENSSL_ROOT})
+
+#指定版本
+set(OPENSSL_GIT_URL git@github.com:openssl/openssl.git)  # 指定git仓库地址
 
 # 指定编译好的静态库文件的路径
 set(OPENSSL_LIB_DIR       ${EXTERNAL_OPENSSL_ROOT}/lib64)
@@ -18,6 +20,9 @@ set(OPENSSL_LIB_DIR       ${EXTERNAL_OPENSSL_ROOT}/lib64)
 set(OPENSSL_INCLUDE_DIR   ${EXTERNAL_OPENSSL_ROOT}/include)
 set(OPENSSL_LIBRARIES "${OPENSSL_LIB_DIR}/libssl.a"
                         "${OPENSSL_LIB_DIR}/libcrypto.a" CACHE FILEPATH "SSL_LIBRARIES" FORCE)
+
+set(OPENSSL_CRYPTO_LIBRARY  "${OPENSSL_LIB_DIR}/libcrypto.a")
+set(OPENSSL_SSL_LIBRARY  "${OPENSSL_LIB_DIR}/libssl.a")
 
 include_directories(${OPENSSL_INCLUDE_DIR})
 link_directories(${OPENSSL_LIB_DIR})
@@ -35,8 +40,8 @@ endif ()
 
 find_package(OpenSSL QUIET)
 
-if(NOT OpenSSL_FOUND)
-        ExternalProject_Add(OPENSSL
+
+ExternalProject_Add(OPENSSL
                 PREFIX            ${EXTERNAL_OPENSSL_ROOT}          
                 GIT_REPOSITORY    ${OPENSSL_GIT_URL}
                 GIT_TAG           ${OPENSSL_GIT_TAG}
@@ -59,7 +64,6 @@ if(NOT OpenSSL_FOUND)
                                 -DCMAKE_INSTALL_LIBDIR=lib
         )
 
-endif()
 
 message("skt lib64: ${OPENSSL_LIB_DIR}")
         include_directories(${OPENSSL_INCLUDE_DIR})
@@ -76,5 +80,8 @@ set(LIB_BIBRARY
 set(LIB_DEPENDS
         ${LIB_DEPENDS}
         "openssl_openssl")
+
+
+
 # add_library(openssl gflags)
 

@@ -16,7 +16,7 @@ if(INDEX EQUAL -1)
 endif()
         ExternalProject_Add(GOOGLETEST
                 PREFIX ${EXTERNAL_GTEST_ROOT}
-                GIT_REPOSITORY        https://github.com/google/googletest.git
+                GIT_REPOSITORY        git@github.com:google/googletest.git
                 GIT_TAG main
                 INSTALL_DIR           ${EXTERNAL_GTEST_ROOT}
                 CMAKE_ARGS

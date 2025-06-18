@@ -16,7 +16,7 @@ set(YAMLCPP_LIB_LIBRARIES "${YAMLCPP_LIB_DIR}/libyaml-cpp.a"
 set(YAMLCPP_GIT_TAG master)
 
 # 设置 Git 仓库 URL
-set(YAMLCPP_GIT_URL https://github.com/jbeder/yaml-cpp.git)
+set(YAMLCPP_GIT_URL git@github.com:jbeder/yaml-cpp.git)
 
 # 将 yaml-cpp 的 include 目录添加到 CMake 的包含路径中
 include_directories(${YAMLCPP_INCLUDE_DIR})
@@ -81,7 +81,7 @@ set(LIB_DEPENDS
 
 # FetchContent_Declare(
 #   yaml-cpp
-#   GIT_REPOSITORY https://github.com/jbeder/yaml-cpp.git
+#   GIT_REPOSITORY git@github.com:jbeder/yaml-cpp.git
 #   GIT_TAG master # Can be a tag (yaml-cpp-x.x.x), a commit hash, or a branch name (master)
 # )
 # FetchContent_MakeAvailable(yaml-cpp)

@@ -17,7 +17,7 @@ endif()
 
 # FetchContent_Declare(
 #   boost
-#   GIT_REPOSITORY https://github.com/boostorg/boost.git
+#   GIT_REPOSITORY git@github.com:boostorg/boost.git
 #   GIT_TAG boost-1.81.0
 #   SOURCE_DIR ${BOOST_ROOT}
 #   BINARY_DIR ${BOOST_ROOT}
@@ -32,7 +32,7 @@ if(NOT TARGET Boost::boost)
     include(ExternalProject)
     ExternalProject_Add(
         Boost
-        GIT_REPOSITORY "https://github.com/boostorg/boost.git"
+        GIT_REPOSITORY "git@github.com:boostorg/boost.git"
         GIT_TAG boost-1.83.0
         PREFIX ${BOOST_ROOT}
         # 因为执行b2的时候，需要在同目录下读取boost-build.jam，因此BUILD_IN_SOURCE

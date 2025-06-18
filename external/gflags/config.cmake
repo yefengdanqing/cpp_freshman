@@ -6,7 +6,7 @@
 # include(FetchContent)
 
 # FetchContent_Declare(gflags
-# 	GIT_REPOSITORY	https://github.com/gflags/gflags.git
+# 	GIT_REPOSITORY	git@github.com:gflags/gflags.git
 # 	GIT_TAG			master
 # )
 
@@ -75,7 +75,7 @@ set(GFLAGS_INCLUDE_DIR   ${EXTERNAL_GFLAGS_ROOT}/include)
 set(GFLAGS_SELF_LIBRARY "${GFLAGS_LIB_DIR}/libgflags.so" CACHE FILEPATH "GFLAGS_LIBRARIES" FORCE)
 
 set(GFLAGS_GIT_TAG  master)  # 指定版本
-set(GFLAGS_GIT_URL https://github.com/gflags/gflags.git)  # 指定git仓库地址
+set(GFLAGS_GIT_URL git@github.com:gflags/gflags.git)  # 指定git仓库地址
 set(EXTERNAL_PREFIX ${CMAKE_BINARY_DIR}/external)
 #
 set(GFLAGS_CONFIGURE    cd ${EXTERNAL_GFLAGS_ROOT}/src/GFLAGS && rm -fr build && mkdir build && cd build && CXXFLAGS=-fPIC cmake .. -DCMAKE_INSTALL_PREFIX=${EXTERNAL_GFLAGS_ROOT} -DBUILD_SHARED_LIBS=ON -DBUILD_TESTING=OFF)  # 指定配置指令（注意此处修改了安装目录，否则默认情况下回安装到系统目录）

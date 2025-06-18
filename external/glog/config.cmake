@@ -10,7 +10,7 @@ include(ExternalProject)
 # set(EXTERNAL_PREFIX ${CMAKE_BINARY_DIR}/external)
 set(EXTERNAL_GLOG_ROOT ${CMAKE_BINARY_DIR}/external/glog)
 set(GLOG_GIT_TAG  master)  # 指定版本
-set(GLOG_GIT_URL https://github.com/google/glog.git)  # 指定git仓库地址
+set(GLOG_GIT_URL git@github.com:google/glog.git)  # 指定git仓库地址
 # 指定编译好的静态库文件的路径
 set(GLOG_LIB_DIR       ${EXTERNAL_GLOG_ROOT}/lib)
 # 指定头文件所在的目录

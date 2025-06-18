@@ -8,8 +8,8 @@ set(BABYLON_INCLUDE_DIR   ${EXTERNAL_BABYLON_ROOT}/include)
 set(BABYLON_LIB_LIBRARIES "${BABYLON_LIB_DIR}/libbabylon.a"
 CACHE FILEPATH "BABYLON_LIBRARIES" FORCE)
 set(BABYLON_GIT_TAG main)
-#set(BABYLON_GIT_URL https://github.com/yefengdanqing/babylon_cpp.git)
-set(BABYLON_GIT_URL https://github.com/baidu/babylon.git)
+#set(BABYLON_GIT_URL git@github.com:yefengdanqing/babylon_cpp.git)
+set(BABYLON_GIT_URL git@github.com:baidu/babylon.git)
 
 
 include_directories(${BABYLON_INCLUDE_DIR})
@@ -63,6 +63,6 @@ set(LIB_DEPENDS
         ${LIB_DEPENDS})
 
     
-# https://github.com/PaddlePaddle/Paddle/blob/develop/cmake/external/babylon.cmake
-#https://github.com/tushushu/bigflow/tree/ab494e49a02b446bb2f504a2652f866c924c1baf/cmake
+# git@github.com:PaddlePaddle/Paddle/blob/develop/cmake/external/babylon.cmake
+#git@github.com:tushushu/bigflow/tree/ab494e49a02b446bb2f504a2652f866c924c1baf/cmake
 

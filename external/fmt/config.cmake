@@ -23,7 +23,7 @@ set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
 
 #         ExternalProject_Add(FMT
 #                 PREFIX                  ${EXTERNAL_FMT_ROOT}
-#                 GIT_REPOSITORY          https://github.com/fmtlib/fmt.git
+#                 GIT_REPOSITORY          git@github.com:fmtlib/fmt.git
 #                 GIT_TAG                 master
 #                 CONFIGURE_COMMAND       cd ${EXTERNAL_FMT_ROOT}/src/FMT && cmake 
 #                                 -D CMAKE_INSTALL_PREFIX=${EXTERNAL_FMT_ROOT} -DBUILD_SHARED_LIBS=ON 
@@ -46,7 +46,7 @@ set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
 # include(FetchContent)
 
 # FetchContent_Declare(fmt
-# 	GIT_REPOSITORY	https://github.com/fmt/fmt.git
+# 	GIT_REPOSITORY	git@github.com:fmt/fmt.git
 # 	GIT_TAG			master
 # )
 
@@ -72,7 +72,7 @@ set(FMT_INCLUDE_DIR   ${EXTERNAL_FMT_ROOT}/include)
 set(FMT_SELF_LIBRARY "${FMT_LIB_DIR}/libfmt.a" CACHE FILEPATH "FMT_LIBRARIES" FORCE)
 
 set(FMT_GIT_TAG  master)  # 指定版本
-set(FMT_GIT_URL https://github.com/fmtlib/fmt.git)  # 指定git仓库地址
+set(FMT_GIT_URL git@github.com:fmtlib/fmt.git)  # 指定git仓库地址
 #
 set(FMT_CONFIGURE    cd ${EXTERNAL_FMT_ROOT}/src/FMT && rm -fr build && mkdir build && cd build && CXXFLAGS=-fPIC cmake .. -DCMAKE_INSTALL_PREFIX=${EXTERNAL_FMT_ROOT} -DBUILD_SHARED_LIBS=ON -DBUILD_TESTING=OFF)  # 指定配置指令（注意此处修改了安装目录，否则默认情况下回安装到系统目录）
 

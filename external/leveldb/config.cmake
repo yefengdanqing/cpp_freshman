@@ -9,7 +9,7 @@ set(EXTERNAL_PREFIX ${CMAKE_BINARY_DIR}/external)
 set(EXTERNAL_LEVELDB_ROOT ${EXTERNAL_PREFIX}/leveldb)
 
 # LevelDB Git 源信息
-set(LEVELDB_GIT_URL https://github.com/google/leveldb.git)
+set(LEVELDB_GIT_URL git@github.com:google/leveldb.git)
 set(LEVELDB_GIT_TAG main)
 
 # 安装输出路径
@@ -42,6 +42,9 @@ ExternalProject_Add(LEVELDB
         -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
         -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
         -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS}
+        -DCMAKE_CXX_STANDARD=17
+        -DCMAKE_CXX_STANDARD_REQUIRED=ON
+        -DCMAKE_CXX_EXTENSIONS=OFF
         -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
     BUILD_BYPRODUCTS ${LEVELDB_LIB_DIR}/libleveldb.so
 )
