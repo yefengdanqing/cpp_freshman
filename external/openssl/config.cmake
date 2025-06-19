@@ -40,7 +40,7 @@ endif ()
 
 find_package(OpenSSL QUIET)
 
-
+if (NOT OpenSSL_FOUND)
 ExternalProject_Add(OPENSSL
                 PREFIX            ${EXTERNAL_OPENSSL_ROOT}          
                 GIT_REPOSITORY    ${OPENSSL_GIT_URL}
@@ -64,6 +64,7 @@ ExternalProject_Add(OPENSSL
                                 -DCMAKE_INSTALL_LIBDIR=lib
         )
 
+endif()
 
 message("skt lib64: ${OPENSSL_LIB_DIR}")
         include_directories(${OPENSSL_INCLUDE_DIR})

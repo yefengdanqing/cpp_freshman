@@ -24,6 +24,12 @@ add_dependencies(debug_cache_line ${LIB_DEPENDS})
 target_link_libraries(debug_cache_line ${LIB_BIBRARY} dl z stdc++fs)
 set_target_properties(debug_cache_line PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin/performance_units)
 
+## debug cache line
+add_executable(virtual_alignas_test ${PROJECT_SOURCE_DIR}/example/performance_units/virtual_alignas_test.cpp)
+add_dependencies(virtual_alignas_test ${LIB_DEPENDS})
+target_link_libraries(virtual_alignas_test ${LIB_BIBRARY} dl z stdc++fs)
+set_target_properties(virtual_alignas_test PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin/performance_units)
+
 
 
 
