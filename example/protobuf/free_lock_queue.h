@@ -38,9 +38,9 @@ public:
                 return -1;
             }
             //保证不是别的线程出队了数据
-            _sync_bool_compare_and_swap(&head, cur, cur->next);
+            __sync_bool_compare_and_swap(&head, cur, cur->next);
             int val =cur ->next->val;
-            delete val;
+            delete cur;
             return val;
         }
 
