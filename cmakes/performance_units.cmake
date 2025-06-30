@@ -28,7 +28,8 @@ set_target_properties(debug_cache_line PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PRO
 add_executable(virtual_alignas_test ${PROJECT_SOURCE_DIR}/example/performance_units/virtual_alignas_test.cpp)
 add_dependencies(virtual_alignas_test ${LIB_DEPENDS})
 target_link_libraries(virtual_alignas_test ${LIB_BIBRARY} dl z stdc++fs)
-set_target_properties(virtual_alignas_test PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin/performance_units)
+set_target_properties(virtual_alignas_test PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin/performan
+ce_units)
 
 ## alignas line
 add_executable(lock_free_queue ${PROJECT_SOURCE_DIR}/example/performance_units/lock_free_queue.cpp)
@@ -36,6 +37,8 @@ add_dependencies(lock_free_queue ${LIB_DEPENDS})
 target_link_libraries(lock_free_queue ${LIB_BIBRARY} dl z stdc++fs)
 set_target_properties(lock_free_queue PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin/performance_units)
 
-
-
-
+#shared_ptr;
+add_executable(my_shared_ptr ${PROJECT_SOURCE_DIR}/example/performance_units/my_shared_ptr.cpp)
+add_dependencies(my_shared_ptr ${LIB_DEPENDS})
+target_link_libraries(my_shared_ptr ${LIB_BIBRARY} dl z stdc++fs)
+set_target_properties(my_shared_ptr PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin/performance_units)
