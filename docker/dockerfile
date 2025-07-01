@@ -1,0 +1,25 @@
+FROM pytorch/pytorch:2.7.1-cuda11.8-cudnn9-runtime
+
+# 安装构建工具和依赖
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    cmake \
+    wget \
+    unzip \
+    libopenblas-dev \
+    libjpeg-dev \
+    libpng-dev \
+    libopencv-dev \
+    git && \
+    apt-get clean
+
+# 下载 LibTorch CUDA 11.8 版本
+RUN wget https://download.pytorch.org/libtorch/cu118/libtorch-shared-with-deps-2.3.0%2Bcu118.zip && \
+    unzip libtorch-shared-with-deps-2.3.0+cu118.zip -d /opt && \
+    rm libtorch-shared-with-deps-2.3.0+cu118.zip
+
+# 设置环境变量
+ENV TORCH_HOME=/opt/libtorch
+ENV LD_LIBRARY_PATH=/opt/libtorch/lib:$LD_LIBRARY_PATH
+
+WORKDIR /workspace

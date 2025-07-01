@@ -50,7 +50,31 @@ RUN apt-get update && \
     gdb \
     curl \
     build-essential \
+    unzip \
+    libopenblas-dev\
+    libjpeg-dev \
+    libpng-dev\
     && rm -rf /var/lib/apt/lists/*
+
+
+# 安装基础依赖
+RUN apt-get update && apt-get install -y wget gnupg2
+
+# 添加 NVIDIA 公钥
+RUN wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/3bf863cc.pub \
+    && apt-key add 3bf863cc.pub \
+    && rm 3bf863cc.pub
+
+# 添加 CUDA 11.8 apt 源
+RUN echo "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/ /" > /etc/apt/sources.list.d/cuda.list
+
+# 更新 apt 源并安装 cuda-toolkit-11-8
+RUN apt-get update && apt-get install -y cuda-toolkit-11-8
+
+# 清理缓存，减小镜像体积
+RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+
+
 
 # 6. 验证安装
 RUN gcc --version && \
