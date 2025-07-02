@@ -58,7 +58,8 @@ RUN apt-get update && \
     unzip \
     libopenblas-dev\
     libjpeg-dev \
-    libpng-dev\
+    libpng-dev \
+    libopencv-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # 安装 python3-pip 以及依赖
