@@ -1,5 +1,8 @@
 # 使用阿里云 Ubuntu 22.04 基础镜像
-FROM registry.cn-hangzhou.aliyuncs.com/acs/ubuntu:22.04
+#FROM registry.cn-hangzhou.aliyuncs.com/acs/ubuntu:22.04
+
+#使用navidia的基础镜像
+FROM nvidia/cuda:11.8.0-devel-ubuntu22.04
 
 # 设置环境变量（避免交互式提示）
 ENV DEBIAN_FRONTEND=noninteractive
@@ -19,6 +22,8 @@ RUN apt-get update && \
     iputils-ping \
     ca-certificates \
     git \
+    vim \
+    gnupg2 \
     openssh-client \
     && rm -rf /var/lib/apt/lists/*
 
@@ -56,20 +61,23 @@ RUN apt-get update && \
     libpng-dev\
     && rm -rf /var/lib/apt/lists/*
 
+# 安装 python3-pip 以及依赖
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+      python3-pip \
+      ca-certificates \
+      libopenblas-dev && \
+    rm -rf /var/lib/apt/lists/*
 
-# 安装基础依赖
-RUN apt-get update && apt-get install -y wget gnupg2
+# 配置 pip 使用国内镜像并添加超时、重试
+RUN pip3 config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple && \
+    pip3 install torch torchvision torchaudio \
+      --extra-index-url https://download.pytorch.org/whl/cu118 \
+      --default-timeout=100 \
+      --retries 5 \
+      --no-cache-dir
 
-# 添加 NVIDIA 公钥
-RUN wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/3bf863cc.pub \
-    && apt-key add 3bf863cc.pub \
-    && rm 3bf863cc.pub
 
-# 添加 CUDA 11.8 apt 源
-RUN echo "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/ /" > /etc/apt/sources.list.d/cuda.list
-
-# 更新 apt 源并安装 cuda-toolkit-11-8
-RUN apt-get update && apt-get install -y cuda-toolkit-11-8
 
 # 清理缓存，减小镜像体积
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
