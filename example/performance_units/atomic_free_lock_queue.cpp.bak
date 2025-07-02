@@ -1,0 +1,126 @@
+
+#include <iostream>
+#include <thread>
+#include <vector>
+#include <atomic>
+#include <string>
+#include <mutex>
+#include <condition_variable>
+
+struct ListNode {
+    std::string log_info;
+    std::atomic<ListNode*> next;
+
+    ListNode(const std::string& data = "") : log_info(data), next(nullptr) {}
+};
+
+class LockFreeQueue {
+private:
+    std::atomic<ListNode*> head;
+    std::atomic<ListNode*> tail;
+    std::mutex mtx;
+    std::condition_variable cv;
+
+public:
+    LockFreeQueue() {
+        ListNode* dummy = new ListNode();
+        head.store(dummy);
+        tail.store(dummy);
+    }
+
+    ~LockFreeQueue() {
+        while (true) {
+            std::string msg = try_output();
+            if (msg.empty()) break;
+        }
+        delete head.load();
+    }
+
+    bool input(const std::string& data) {
+        ListNode* node = new ListNode(data);
+        while (true) {
+            ListNode* last = tail.load();
+            ListNode* next = last->next.load();
+
+            if (next == nullptr) {
+                if (last->next.compare_exchange_weak(next, node)) {
+                    tail.compare_exchange_weak(last, node);
+                    cv.notify_one();
+                    return true;
+                }
+            } else {
+                tail.compare_exchange_weak(last, next);
+            }
+        }
+    }
+
+    std::string output() {
+        std::unique_lock<std::mutex> lock(mtx);
+        cv.wait(lock, [&] { return head.load()->next.load() != nullptr; });
+
+        while (true) {
+            ListNode* first = head.load();
+            ListNode* next = first->next.load();
+
+            if (next == nullptr) {
+                continue;
+            }
+
+            if (head.compare_exchange_weak(first, next)) {
+                std::string result = next->log_info;
+                delete first;
+                return result;
+            }
+        }
+    }
+
+    std::string try_output() {
+        while (true) {
+            ListNode* first = head.load();
+            ListNode* next = first->next.load();
+
+            if (next == nullptr) {
+                return "";
+            }
+
+            if (head.compare_exchange_weak(first, next)) {
+                std::string result = next->log_info;
+                delete first;
+                return result;
+            }
+        }
+    }
+};
+
+int main() {
+    LockFreeQueue log_test;
+    std::vector<std::thread> threads;
+    const int produce_count = 10;
+    const int consume_count = 20;
+
+    for (int i = 0; i < produce_count; i++) {
+        threads.emplace_back([&log_test, i]() {
+            int j = 0;
+            while (true) {
+                std::string tmp = "datata--" + std::to_string(i) + "-" + std::to_string(j++);
+                std::cout << "produce: " << tmp << std::endl;
+                log_test.input(tmp);
+                std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            }
+        });
+    }
+
+    for (int i = 0; i < consume_count; i++) {
+        threads.emplace_back([&log_test]() {
+            while (true) {
+                std::string msg = log_test.output();
+                if (!msg.empty()) {
+                    std::cout << "consume: " << msg << std::endl;
+                }
+            }
+        });
+    }
+
+    for (auto& t : threads) t.join();
+    return 0;
+}
